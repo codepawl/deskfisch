@@ -1,5 +1,5 @@
 import { BACTERIA, ROOM_TEMP, TAP, WASTE_PER_HOUR, REFERENCE_VOLUME } from "../data/constants";
-import { AIR_PUMPS, BASE_AERATION, FILTERS, HEATERS, LIGHTS } from "../data/items";
+import { AIR_PUMPS, BASE_AERATION, DECOR, FILTERS, HEATERS, LIGHTS } from "../data/items";
 import { clamp } from "../engine/rng";
 import type { GameState } from "./state";
 
@@ -52,6 +52,9 @@ export function stepTank(state: GameState, hours: number, wasteLoad: number): vo
   const acid = 7.4 - t.no3 * 0.01 - t.dirt * 0.004;
   t.pH += (Math.min(TAP.pH, acid) - t.pH) * 0.02 * hours;
 
+  for (const d of state.decor) {
+    t.no3 = Math.max(0, t.no3 - (DECOR.find((k) => k.id === d.kind)?.no3Uptake ?? 0) * hours);
+  }
   t.dirt = Math.max(0, t.dirt - filter.dirtRemovalPerHour * hours);
   t.chlorine = Math.max(0, t.chlorine - 0.15 * hours);
   const light = eq.lightOn ? LIGHTS[eq.light].intensity : 0;

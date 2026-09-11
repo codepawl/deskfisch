@@ -1,6 +1,7 @@
 import { clamp, rand } from "../engine/rng";
 import { HOURS_TO_STARVE, STRESS_EASE_PER_HOUR } from "../data/constants";
 import { SPECIES, type Species } from "../data/species";
+import { DECOR_COMFORT, MAX_DECOR_COMFORT } from "../data/items";
 import type { GameState } from "./state";
 import { EAT_RADIUS, HUNGER_PER_PELLET, nearestPellet } from "./food";
 
@@ -136,6 +137,7 @@ export function stressTarget(state: GameState, f: Fish): number {
   }
   const crowding = wasteLoad(state) - t.volumeL / 10;
   if (crowding > 0) s += crowding * 10;
+  s -= Math.min(state.decor.length, MAX_DECOR_COMFORT) * DECOR_COMFORT;
   return clamp(s, 0, 100);
 }
 

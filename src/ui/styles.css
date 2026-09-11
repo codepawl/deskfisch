@@ -134,3 +134,36 @@ button.tool:disabled { opacity: 0.4; cursor: default; }
 .bar-fill { height: 100%; background: #a7f070; }
 .bar-fill.warn { background: #ffcd75; }
 .bar-fill.bad { background: #ef7d57; }
+
+/* --- Shop ----------------------------------------------------------- */
+
+.panel-shop {
+  top: calc(20px * var(--s));
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(200px * var(--s));
+}
+.tabs { display: flex; gap: calc(2px * var(--s)); margin-bottom: calc(2px * var(--s)); }
+button.tab {
+  font: inherit;
+  text-transform: capitalize;
+  color: var(--ink);
+  background: none;
+  border: none;
+  border-bottom: calc(1px * var(--s)) solid transparent;
+  padding: 0 calc(2px * var(--s));
+  cursor: pointer;
+}
+button.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.shop-list { display: flex; flex-direction: column; gap: calc(1px * var(--s)); }
+.shop-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: calc(4px * var(--s));
+  padding: calc(1px * var(--s)) 0;
+  border-bottom: 1px solid #000;
+}
+.shop-row button.tool { min-width: calc(24px * var(--s)); }
+.shop-note { color: #ef7d57; min-height: 1.2em; }
+.panel-actions { display: flex; gap: calc(2px * var(--s)); margin-top: calc(2px * var(--s)); }

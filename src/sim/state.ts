@@ -33,6 +33,12 @@ export interface Equipment {
   testKit: boolean;
 }
 
+export interface Decor {
+  kind: string;
+  /** Left edge on the substrate. */
+  x: number;
+}
+
 export interface GameState {
   version: 1;
   /** Epoch ms of the last simulated instant. */
@@ -42,6 +48,9 @@ export interface GameState {
   equipment: Equipment;
   fish: Fish[];
   pellets: Pellet[];
+  decor: Decor[];
+  /** Next fish id, so ids stay unique across sells and deaths. */
+  nextFishId: number;
   /** Item id -> count. */
   inventory: Record<string, number>;
   /** Total hours the tank has been running, for achievements and cycle detection. */
@@ -52,7 +61,7 @@ export function newGame(now = Date.now()): GameState {
   return {
     version: 1,
     simTime: now,
-    coins: 150,
+    coins: 200,
     tank: {
       volumeL: 60,
       temp: TAP.temp,
@@ -79,7 +88,9 @@ export function newGame(now = Date.now()): GameState {
     },
     fish: [],
     pellets: [],
-    inventory: { flakes: 20 },
+    decor: [],
+    nextFishId: 1,
+    inventory: { flakes: 20, conditioner: 2 },
     ageHours: 0,
   };
 }

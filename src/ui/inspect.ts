@@ -1,6 +1,8 @@
 import { SPECIES } from "../data/species";
 import { happiness, type Fish } from "../sim/fish";
-import { el } from "./dom";
+import { removeFish, sellPrice } from "../sim/shop";
+import type { GameState } from "../sim/state";
+import { button, el } from "./dom";
 
 /** Small card for one fish: name, species and need bars. */
 export class InspectPanel {
@@ -15,11 +17,20 @@ export class InspectPanel {
     mood: el("div.bar-fill"),
   };
 
-  constructor(overlay: HTMLElement) {
+  private readonly action: HTMLButtonElement;
+
+  constructor(overlay: HTMLElement, private readonly state: GameState, private readonly onChange: () => void) {
     this.root = el("div.panel.panel-inspect", { hidden: true }, this.title, this.sub);
     for (const [key, fill] of Object.entries(this.bars)) {
       this.root.append(el("div.bar-row", {}, el("span.stat-label", {}, key), el("div.bar", {}, fill)));
     }
+    this.action = button("tool", "", () => {
+      if (!this.fish) return;
+      removeFish(this.state, this.fish.id);
+      this.show(null);
+      this.onChange();
+    });
+    this.root.append(el("div.panel-actions", {}, this.action, button("tool", "Close", () => this.show(null))));
     overlay.append(this.root);
   }
 
@@ -40,6 +51,7 @@ export class InspectPanel {
     setBar(this.bars.stress, f.stress, true);
     setBar(this.bars.health, f.health, false);
     setBar(this.bars.mood, happiness(f), false);
+    this.action.textContent = f.alive ? `Sell $ ${sellPrice(this.state, f.id)}` : "Scoop out";
   }
 }
 

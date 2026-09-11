@@ -10,11 +10,16 @@ export class Hud {
   private readonly coins = el("span.hud-coins");
   private readonly clock = el("span.hud-clock");
   private readonly feedBtn: HTMLButtonElement;
+  private readonly lightBtn: HTMLButtonElement;
   private readonly bar = el("div.toolbar");
 
   constructor(overlay: HTMLElement, private readonly state: GameState) {
     this.feedBtn = button("tool", "Feed", () => this.toggleTool("feed"));
-    this.bar.append(this.feedBtn);
+    this.lightBtn = button("tool", "Light", () => {
+      state.equipment.lightOn = !state.equipment.lightOn;
+      this.refresh();
+    });
+    this.bar.append(this.feedBtn, this.lightBtn);
     this.root = el("div.hud", {}, el("div.hud-top", {}, this.coins, this.clock), this.bar);
     overlay.append(this.root);
     this.refresh();
@@ -44,5 +49,7 @@ export class Hud {
     this.feedBtn.disabled = flakes <= 0;
     this.feedBtn.classList.toggle("active", this.tool === "feed");
     if (this.tool === "feed" && flakes <= 0) this.tool = null;
+    this.lightBtn.hidden = s.equipment.light === 0;
+    this.lightBtn.textContent = s.equipment.lightOn ? "Light: on" : "Light: off";
   }
 }

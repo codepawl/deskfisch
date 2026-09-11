@@ -1,6 +1,6 @@
 import { COLOR, rgba } from "../engine/palette";
 import { PixelBuffer } from "../engine/pixelbuffer";
-import { sprite } from "../engine/sprite";
+import { sprite, type Sprite } from "../engine/sprite";
 import { rand } from "../engine/rng";
 import { SPECIES } from "../data/species";
 import type { Bounds, Fish } from "../sim/fish";
@@ -47,15 +47,33 @@ const PLANT_TALL = sprite([
   ".t....",
 ]);
 
+const ROCK = sprite([
+  "....DDDD....",
+  "..DDLLLDDD..",
+  ".DLLLDDDDDD.",
+  "DDLDDDDDDdDD",
+  "DDDDDDdDDddD",
+  ".DdDDDdddDd.",
+]);
+
+const WOOD = sprite([
+  "t..........",
+  "tt........t",
+  ".ttt....ttt",
+  "..ttttttts.",
+  "...tsttts..",
+  "...ts.tt...",
+  "..tt..tt...",
+]);
+
+const DECOR_SPRITES: Record<string, Sprite> = { plant: PLANT, plantTall: PLANT_TALL, rock: ROCK, wood: WOOD };
+
 interface Bubble { x: number; y: number; speed: number; wobble: number }
 
 export class TankScene {
   private bubbles: Bubble[] = [];
   private time = 0;
   private sandSpeckles: [number, number][] = [];
-  private plants: { x: number; tall: boolean }[] = [
-    { x: 40, tall: true }, { x: 60, tall: false }, { x: 300, tall: false }, { x: 330, tall: true },
-  ];
 
   constructor() {
     for (let i = 0; i < 90; i++) {
@@ -79,13 +97,19 @@ export class TankScene {
     buf.clear(COLOR.K);
     this.drawWater(buf);
     this.drawSand(buf);
-    this.drawPlants(buf);
+    this.drawDecor(buf, state);
     for (const p of state.pellets) {
       buf.set(p.x, p.y, COLOR.t);
       buf.set(p.x + 1, p.y, COLOR.s);
     }
     for (const f of state.fish) this.drawFish(buf, f);
     this.drawBubbles(buf);
+    if (state.equipment.light === 0 || !state.equipment.lightOn) {
+      buf.tintRect(WATER.x0, WATER.y0, WATER.x1 - WATER.x0, WATER.y1 - WATER.y0, COLOR.n, 0.35);
+    }
+    if (state.tank.algae > 10) {
+      buf.tintRect(WATER.x0, WATER.y0, WATER.x1 - WATER.x0, WATER.y1 - WATER.y0, COLOR.g, state.tank.algae / 250);
+    }
     this.drawGlass(buf);
   }
 
@@ -120,11 +144,13 @@ export class TankScene {
     for (const [x, y] of this.sandSpeckles) buf.set(x, y, ((x | 0) & 1) ? COLOR.t : COLOR.S);
   }
 
-  private drawPlants(buf: PixelBuffer): void {
-    for (const p of this.plants) {
-      const s = p.tall ? PLANT_TALL : PLANT;
-      const sway = Math.round(Math.sin(this.time * 1.5 + p.x) * 1);
-      buf.blit(s, p.x + sway, SAND_Y - s.h + 1, sway < 0);
+  private drawDecor(buf: PixelBuffer, state: GameState): void {
+    for (const d of state.decor) {
+      const s = DECOR_SPRITES[d.kind];
+      if (!s) continue;
+      const plant = d.kind.startsWith("plant");
+      const sway = plant ? Math.round(Math.sin(this.time * 1.5 + d.x)) : 0;
+      buf.blit(s, d.x + sway, SAND_Y - s.h + 1, sway < 0);
     }
   }
 

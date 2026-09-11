@@ -4,7 +4,7 @@ import { Input } from "./engine/input";
 import { startLoop } from "./engine/loop";
 import { SPECIES } from "./data/species";
 import { AUTOSAVE_SECONDS } from "./data/constants";
-import { moveFish, spawnFish, type Fish } from "./sim/fish";
+import { moveFish, type Fish } from "./sim/fish";
 import { dropPellets, updatePellets } from "./sim/food";
 import { newGame, type GameState } from "./sim/state";
 import { advance } from "./sim/tick";
@@ -13,6 +13,7 @@ import { SCREEN_H, SCREEN_W, TankScene, WATER } from "./scenes/tank";
 import { Hud } from "./ui/hud";
 import { StatsPanel } from "./ui/stats";
 import { InspectPanel } from "./ui/inspect";
+import { ShopPanel } from "./ui/shop";
 
 const PELLETS_PER_PINCH = 6;
 
@@ -23,16 +24,7 @@ const input = new Input(screen, SCREEN_W, SCREEN_H);
 const scene = new TankScene();
 
 async function boot(): Promise<void> {
-  let state = await loadGame();
-  if (!state) {
-    state = newGame();
-    // Temporary starter stock until the shop exists.
-    let id = 1;
-    for (const [sp, name] of [["neon", "Neo"], ["neon", "Nia"], ["guppy", "Gus"], ["cory", "Cody"]] as const) {
-      state.fish.push(spawnFish(SPECIES[sp], name, WATER, id++));
-    }
-  }
-  run(state);
+  run((await loadGame()) ?? newGame());
 }
 
 function run(state: GameState): void {
@@ -40,9 +32,11 @@ function run(state: GameState): void {
   (window as unknown as { fisch: GameState }).fisch = state;
   const hud = new Hud(overlay, state);
   const stats = new StatsPanel(overlay, state);
-  const inspect = new InspectPanel(overlay);
+  const inspect = new InspectPanel(overlay, state, () => hud.refresh());
+  const shop = new ShopPanel(overlay, state, WATER, () => hud.refresh());
   hud.addButton("Water", () => stats.toggle());
-  (window as unknown as { fischUi: unknown }).fischUi = { hud, stats, inspect };
+  hud.addButton("Shop", () => shop.toggle());
+  (window as unknown as { fischUi: unknown }).fischUi = { hud, stats, inspect, shop };
 
   let sinceSave = 0;
   const persist = () => {
@@ -77,6 +71,7 @@ function run(state: GameState): void {
     hud.refresh();
     stats.refresh();
     inspect.refresh();
+    shop.refresh();
     if (++sinceSave >= AUTOSAVE_SECONDS) persist();
   };
   tick();

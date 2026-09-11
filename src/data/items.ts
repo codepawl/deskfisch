@@ -31,3 +31,30 @@ export const LIGHTS: LightTier[] = [
 
 /** Surface gas exchange with no equipment at all. */
 export const BASE_AERATION = 0.25;
+
+/** Everything else the shop sells. `apply` mutates the game state on purchase. */
+export interface Consumable { id: string; name: string; price: number; blurb: string }
+export const SUPPLIES: Consumable[] = [
+  { id: "flakes", name: "Flake food ×10", price: 10, blurb: "Ten pinches. Feed once or twice a day." },
+  { id: "conditioner", name: "Water conditioner ×5", price: 15, blurb: "Neutralises chlorine in tap water." },
+  { id: "bacteria", name: "Bottled bacteria", price: 40, blurb: "Kick-starts the nitrogen cycle." },
+  { id: "thermometer", name: "Thermometer", price: 12, blurb: "Reveals the water temperature." },
+  { id: "testKit", name: "Test kit", price: 60, blurb: "Reveals pH, ammonia, nitrite, nitrate, oxygen." },
+];
+
+export interface DecorKind { id: string; name: string; price: number; /** Nitrate removed per hour. */ no3Uptake: number }
+export const DECOR: DecorKind[] = [
+  { id: "plant", name: "Small plant", price: 20, no3Uptake: 0.05 },
+  { id: "plantTall", name: "Tall plant", price: 30, no3Uptake: 0.08 },
+  { id: "rock", name: "Rock", price: 25, no3Uptake: 0 },
+  { id: "wood", name: "Driftwood", price: 45, no3Uptake: 0 },
+];
+
+/** Each decoration is a hiding spot; stress relief tops out at this many. */
+export const MAX_DECOR_COMFORT = 5;
+export const DECOR_COMFORT = 2;
+
+export const FISH_NAMES = [
+  "Bubbles", "Finn", "Coral", "Pearl", "Ziggy", "Momo", "Luna", "Kiwi", "Pip", "Sunny",
+  "Blue", "Dot", "Mochi", "Taro", "Boba", "Nori", "Miso", "Pebble", "Echo", "Juno",
+];
