@@ -58,6 +58,8 @@ export interface Settings {
   chill: boolean;
   /** Filter hum and bubbles in the background. */
   ambient: boolean;
+  /** UI language; "auto" follows the system. */
+  lang: "auto" | "en" | "vi";
 }
 
 /** Lifetime counters for the journal. */
@@ -139,6 +141,6 @@ export function newGame(now = Date.now()): GameState {
     guideSeen: false,
     mode: "window",
     pinned: true,
-    settings: { transparent: true, volume: 0.5, muted: false, simSpeed: 1, quality: "high", maxFps: 60, chill: false, ambient: true },
+    settings: { transparent: true, volume: 0.5, muted: false, simSpeed: 1, quality: "high", maxFps: 60, chill: false, ambient: true, lang: "auto" },
   };
 }

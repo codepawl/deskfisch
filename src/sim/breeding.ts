@@ -24,9 +24,10 @@ export function canBreed(state: GameState, female: Fish): boolean {
   return state.fish.some((m) => m.alive && m.speciesId === sp.id && m.sex === "m" && m.size >= ADULT_SIZE && m.stress <= 30);
 }
 
-/** Advance gestation and deliver fry. Returns one message per birth. */
-export function stepBreeding(state: GameState, hours: number, water: Bounds): string[] {
-  const births: string[] = [];
+/** Advance gestation and deliver fry. Returns one record per birth. */
+export interface Birth { name: string; n: number }
+export function stepBreeding(state: GameState, hours: number, water: Bounds): Birth[] {
+  const births: Birth[] = [];
   for (const f of state.fish) {
     if (f.breedCooldown) f.breedCooldown = Math.max(0, f.breedCooldown - hours);
     if (!canBreed(state, f)) {
@@ -44,7 +45,7 @@ export function stepBreeding(state: GameState, hours: number, water: Bounds): st
     state.stats.born += count;
     f.gravidHours = 0;
     f.breedCooldown = BREED_COOLDOWN_HOURS;
-    births.push(`${f.name} had ${count} fry!`);
+    births.push({ name: f.name, n: count });
   }
   return births;
 }

@@ -1,4 +1,5 @@
 import { newGame, type GameState } from "../sim/state";
+import { backupRaw } from "./backup";
 
 const KEY = "fisch-save";
 
@@ -32,6 +33,13 @@ async function backend(): Promise<Backend> {
 
 export async function loadGame(): Promise<GameState | null> {
   const raw = await (await backend()).get();
+  if (!raw || typeof raw !== "object") return null;
+  await backupRaw(raw);
+  return normalise(raw);
+}
+
+/** Bring any save object up to the current shape, or null if it is not a save at all. */
+export function normalise(raw: unknown): GameState | null {
   if (!raw || typeof raw !== "object" || (raw as GameState).version !== 1) return null;
   // Fields added since the save was written fall back to a fresh game's defaults.
   const fresh = newGame();

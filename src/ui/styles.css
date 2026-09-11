@@ -393,3 +393,9 @@ input.rename {
 }
 
 .toast-ask { pointer-events: auto; display: flex; align-items: center; gap: calc(3px * var(--s)); }
+
+/* Pixelify Sans has no Vietnamese glyphs; VT323 does, so Vietnamese UI uses it throughout
+   instead of mixing faces glyph by glyph. */
+html[lang="vi"] #overlay { font-family: "VT323", "Pixelify Sans", monospace; font-size: calc(7px * var(--s)); line-height: 1.15; }
+html[lang="vi"] .panel h2 { font-size: calc(9px * var(--s)); }
+html[lang="vi"] .panel-guide h2 { font-size: calc(10px * var(--s)); }

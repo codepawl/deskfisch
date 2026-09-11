@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.1 — unreleased
+
+- Vietnamese UI (Settings → Language, follows the system by default). Vietnamese text uses VT323 because Pixelify Sans has no Vietnamese glyphs.
+- Saves: the last 5 saves are backed up before each launch; Settings gets Export and Import.
+
 ## 0.3.0 — 2026-09-11
 
 - Auto-update: the app checks GitHub Releases for signed builds and offers to install them. Installs from 0.3.0 on update themselves; 0.2.x needs one manual download.

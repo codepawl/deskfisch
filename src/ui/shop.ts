@@ -4,6 +4,7 @@ import { buyDecor, buyFish, buySupply, GEAR, upgradeGear, type GearKey } from ".
 import type { Bounds } from "../sim/fish";
 import type { GameState } from "../sim/state";
 import { button, el } from "./dom";
+import { t } from "../i18n";
 
 type Tab = "fish" | "gear" | "supplies" | "decor";
 
@@ -21,10 +22,10 @@ export class ShopPanel {
     private readonly onChange: () => void,
   ) {
     const tabs = el("div.tabs");
-    for (const t of ["fish", "gear", "supplies", "decor"] as Tab[]) {
-      tabs.append(button("tab", t, () => this.setTab(t)));
+    for (const tab of ["fish", "gear", "supplies", "decor"] as Tab[]) {
+      tabs.append(button("tab", t(tab), () => this.setTab(tab)));
     }
-    this.root = el("div.panel.panel-shop", { hidden: true }, el("h2", {}, "Shop"), tabs, this.list, this.note);
+    this.root = el("div.panel.panel-shop", { hidden: true }, el("h2", {}, t("Shop")), tabs, this.list, this.note);
     overlay.append(this.root);
   }
 
@@ -39,14 +40,14 @@ export class ShopPanel {
   }
 
   private attempt(err: string | null): void {
-    this.note.textContent = err ?? "";
+    this.note.textContent = err ? t(err) : "";
     this.onChange();
     this.refresh();
   }
 
   refresh(): void {
     if (this.root.hidden) return;
-    for (const b of this.root.querySelectorAll(".tab")) b.classList.toggle("active", b.textContent === this.tab);
+    for (const b of this.root.querySelectorAll(".tab")) b.classList.toggle("active", b.textContent === t(this.tab));
     this.list.replaceChildren();
     const coins = this.state.coins;
     const row = (name: string, sub: string, price: number, action: () => void, disabled = false) =>
@@ -57,8 +58,8 @@ export class ShopPanel {
     switch (this.tab) {
       case "fish":
         for (const sp of Object.values(SPECIES)) {
-          const sub = `${sp.tempRange[0]}–${sp.tempRange[1]}°C · pH ${sp.phRange[0]}–${sp.phRange[1]}` + (sp.minGroup > 1 ? ` · group of ${sp.minGroup}+` : "");
-          row(sp.name, sub, sp.price, () => this.attempt(buyFish(this.state, sp.id, this.water)), coins < sp.price);
+          const sub = `${sp.tempRange[0]}–${sp.tempRange[1]}°C · pH ${sp.phRange[0]}–${sp.phRange[1]}` + (sp.minGroup > 1 ? t(" · group of {n}+", { n: sp.minGroup }) : "");
+          row(t(sp.name), sub, sp.price, () => this.attempt(buyFish(this.state, sp.id, this.water)), coins < sp.price);
         }
         break;
       case "gear":
@@ -66,19 +67,19 @@ export class ShopPanel {
           const { label, tiers } = GEAR[key];
           const cur = tiers[this.state.equipment[key]];
           const next = tiers[this.state.equipment[key] + 1];
-          if (next) row(`${label}: ${cur.name}`, `Upgrade to ${next.name}`, next.price, () => this.attempt(upgradeGear(this.state, key)), coins < next.price);
-          else row(`${label}: ${cur.name}`, "Top tier", 0, () => {}, true);
+          if (next) row(`${t(label)}: ${t(cur.name)}`, t("Upgrade to {name}", { name: t(next.name) }), next.price, () => this.attempt(upgradeGear(this.state, key)), coins < next.price);
+          else row(`${t(label)}: ${t(cur.name)}`, t("Top tier"), 0, () => {}, true);
         }
         break;
       case "supplies":
         for (const it of SUPPLIES) {
           const owned = (it.id === "thermometer" || it.id === "testKit") && this.state.equipment[it.id];
-          row(it.name, owned ? "Owned" : it.blurb, it.price, () => this.attempt(buySupply(this.state, it.id)), owned || coins < it.price);
+          row(t(it.name), owned ? t("Owned") : t(it.blurb), it.price, () => this.attempt(buySupply(this.state, it.id)), owned || coins < it.price);
         }
         break;
       case "decor":
         for (const d of DECOR) {
-          row(d.name, (d.no3Uptake ? "Absorbs nitrate" : "A hiding spot") + " · drag to place", d.price, () => this.attempt(buyDecor(this.state, d.id, this.water)), coins < d.price);
+          row(t(d.name), (d.no3Uptake ? t("Absorbs nitrate") : t("A hiding spot")) + t(" · drag to place"), d.price, () => this.attempt(buyDecor(this.state, d.id, this.water)), coins < d.price);
         }
         break;
     }

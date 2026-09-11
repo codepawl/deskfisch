@@ -1,0 +1,13 @@
+"InstallScript"
+{
+  "Run Process"
+  {
+    "WebView2"
+    {
+      "HasRunKey" "HKEY_LOCAL_MACHINE\\SOFTWARE\\Valve\\Steam\\Apps\\APPID"
+      "process 1" "%INSTALLDIR%\\MicrosoftEdgeWebview2Setup.exe"
+      "command 1" "/silent /install"
+      "NoCleanUp" "1"
+    }
+  }
+}

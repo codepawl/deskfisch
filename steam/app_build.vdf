@@ -1,0 +1,13 @@
+"AppBuild"
+{
+  "AppID" "APPID"
+  "Desc" "Deskfisch VERSION"
+  "ContentRoot" "../steam-content/"
+  "BuildOutput" "../steam-output/"
+  "Depots"
+  {
+    "APPID1" "depot_windows.vdf"
+    "APPID2" "depot_macos.vdf"
+    "APPID3" "depot_linux.vdf"
+  }
+}

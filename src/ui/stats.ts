@@ -1,6 +1,7 @@
 import type { GameState } from "../sim/state";
 import { isCycled } from "../sim/tank";
 import { el } from "./dom";
+import { t as tr } from "../i18n";
 
 type Level = "ok" | "warn" | "bad";
 
@@ -34,11 +35,11 @@ export class StatsPanel {
   private readonly volume = el("div.muted");
 
   constructor(overlay: HTMLElement, private readonly state: GameState) {
-    this.root = el("div.panel.panel-stats", { hidden: true }, el("h2", {}, "Water"), this.volume);
+    this.root = el("div.panel.panel-stats", { hidden: true }, el("h2", {}, tr("Water")), this.volume);
     for (const r of ROWS) {
       const v = el("span.stat-value");
       this.cells.set(r, v);
-      this.root.append(el("div.stat-row", {}, el("span.stat-label", {}, r.label), v));
+      this.root.append(el("div.stat-row", {}, el("span.stat-label", {}, tr(r.label)), v));
     }
     this.root.append(this.cycle);
     overlay.append(this.root);
@@ -52,7 +53,7 @@ export class StatsPanel {
   refresh(): void {
     if (this.root.hidden) return;
     const s = this.state;
-    this.volume.textContent = `${s.tank.volumeL} L tank`;
+    this.volume.textContent = tr("{n} L tank", { n: s.tank.volumeL });
     for (const [r, cell] of this.cells) {
       const known = r.gate === null || s.equipment[r.gate];
       cell.className = "stat-value";
@@ -65,13 +66,13 @@ export class StatsPanel {
       cell.classList.add(r.level(v));
     }
     if (!s.equipment.testKit) {
-      this.cycle.textContent = "Buy a test kit to read the water.";
+      this.cycle.textContent = tr("Buy a test kit to read the water.");
     } else if (isCycled(s)) {
-      this.cycle.textContent = "Cycle: established";
+      this.cycle.textContent = tr("Cycle: established");
     } else {
       const t = s.tank;
       const phase = t.nh3 > 0.25 && t.no2 < 0.25 ? "ammonia stage" : t.no2 > 0.25 ? "nitrite stage" : "starting";
-      this.cycle.textContent = `Cycle: ${phase}`;
+      this.cycle.textContent = tr("Cycle: {phase}", { phase: tr(phase) });
     }
   }
 }

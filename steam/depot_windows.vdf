@@ -1,0 +1,5 @@
+"DepotBuild"
+{
+  "DepotID" "APPID1"
+  "FileMapping" { "LocalPath" "windows/*" "DepotPath" "." "recursive" "1" }
+}

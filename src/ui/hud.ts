@@ -1,6 +1,7 @@
 import type { GameState } from "../sim/state";
 import { button, el, setLabel } from "./dom";
 import { icon, type IconName } from "./icons";
+import { t } from "../i18n";
 
 export type Tool = "feed" | "scrub" | "vacuum" | null;
 
@@ -22,17 +23,17 @@ export class Hud {
   private readonly bar = el("div.toolbar");
 
   constructor(overlay: HTMLElement, private readonly state: GameState) {
-    this.feedBtn = button("tool", "Feed", () => this.toggleTool("feed"), "feed");
-    this.lightBtn = button("tool", "Light", () => {
+    this.feedBtn = button("tool", t("Feed"), () => this.toggleTool("feed"), "feed");
+    this.lightBtn = button("tool", t("Light"), () => {
       state.equipment.lightOn = !state.equipment.lightOn;
       this.refresh();
     }, "light");
-    this.bar.append(
-      this.feedBtn,
-      button("tool", "Scrub", () => this.toggleTool("scrub"), "scrub"),
-      button("tool", "Vacuum", () => this.toggleTool("vacuum"), "vacuum"),
-      this.lightBtn,
-    );
+    const scrubBtn = button("tool", t("Scrub"), () => this.toggleTool("scrub"), "scrub");
+    const vacuumBtn = button("tool", t("Vacuum"), () => this.toggleTool("vacuum"), "vacuum");
+    this.feedBtn.dataset.tool = "feed";
+    scrubBtn.dataset.tool = "scrub";
+    vacuumBtn.dataset.tool = "vacuum";
+    this.bar.append(this.feedBtn, scrubBtn, vacuumBtn, this.lightBtn);
     // Labels follow the last hovered button, not :hover, so crossing the gap
     // between two buttons hands the label over instead of collapsing it.
     this.bar.addEventListener("pointerover", (e) => {
@@ -47,8 +48,8 @@ export class Hud {
     this.bar.addEventListener("pointerleave", clearHover);
     // Once a button is chosen the label has done its job.
     this.bar.addEventListener("click", clearHover);
-    this.dragHandle = el("div.hud-top", {}, this.coins, el("span.grip", {}, "⋮⋮ drag ⋮⋮"), this.clock);
-    this.restore = button("hud-restore", "Show controls", () => {}, "settings");
+    this.dragHandle = el("div.hud-top", {}, this.coins, el("span.grip", {}, t("⋮⋮ drag ⋮⋮")), this.clock);
+    this.restore = button("hud-restore", t("Show controls"), () => {}, "settings");
     this.root = el("div.hud", {}, this.dragHandle, this.bar);
     overlay.append(this.root, this.resizeHandle, this.restore);
     this.refresh();
@@ -74,17 +75,17 @@ export class Hud {
     const mm = String(now.getMinutes()).padStart(2, "0");
     const h = now.getHours();
     const sky = h >= 21 || h < 6 ? "☾" : h >= 17 || h < 8 ? "☁" : "☀";
-    this.clock.textContent = `Day ${day} · ${sky} ${hh}:${mm}`;
+    this.clock.textContent = t("Day {day} · {sky} {time}", { day, sky, time: `${hh}:${mm}` });
     const flakes = s.inventory.flakes ?? 0;
-    setLabel(this.feedBtn, `Feed ×${flakes}`);
+    setLabel(this.feedBtn, t("Feed ×{n}", { n: flakes }));
     this.feedBtn.disabled = flakes <= 0;
     if (this.tool === "feed" && flakes <= 0) this.tool = null;
     for (const b of this.bar.querySelectorAll("button")) {
-      b.classList.toggle("active", this.tool !== null && b.textContent!.trim().toLowerCase().startsWith(this.tool));
+      b.classList.toggle("active", this.tool !== null && b.dataset.tool === this.tool);
     }
     const hasLight = s.equipment.light > 0;
     this.lightBtn.disabled = !hasLight;
-    setLabel(this.lightBtn, !hasLight ? "No light yet (Shop → Gear)" : s.equipment.lightOn ? "Light: on" : "Light: off");
+    setLabel(this.lightBtn, !hasLight ? t("No light yet (Shop → Gear)") : s.equipment.lightOn ? t("Light: on") : t("Light: off"));
     this.lightBtn.classList.toggle("lit", s.equipment.lightOn);
   }
 }

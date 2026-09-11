@@ -5,8 +5,8 @@ import type { GameState } from "./state";
 import { stepTank } from "./tank";
 import { decayPellets } from "./food";
 import { stepBags } from "./bag";
-import { stepBreeding } from "./breeding";
-import { stepDisease } from "./disease";
+import { stepBreeding, type Birth } from "./breeding";
+import { stepDisease, type Illness } from "./disease";
 import type { Bounds } from "./fish";
 
 /** Where fry appear; the scene sets the real tank bounds at boot. */
@@ -18,10 +18,8 @@ const INCOME_RATE = 0.02;
 export interface SimEvents {
   /** Names of fish that died. */
   died: string[];
-  /** Birth announcements. */
-  born: string[];
-  /** Fish that fell ill. */
-  sick: string[];
+  born: Birth[];
+  sick: Illness[];
 }
 
 /**

@@ -1,0 +1,61 @@
+name: Steam
+
+# Manual: pushes an existing GitHub release to Steam. Needs the Steamworks
+# secrets described in docs/steam.md; without them the job stops early.
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag, e.g. v0.3.1"
+        required: true
+      branch:
+        description: "Steam branch to set live (blank = none)"
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  push:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check secrets
+        run: |
+          if [ -z "${{ secrets.STEAM_USERNAME }}" ] || [ -z "${{ secrets.STEAM_CONFIG_VDF }}" ] || [ -z "${{ secrets.STEAM_APP_ID }}" ]; then
+            echo "STEAM_USERNAME, STEAM_CONFIG_VDF and STEAM_APP_ID must be set. See docs/steam.md."; exit 1; fi
+      - name: Download release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p dl steam-content/windows steam-content/macos steam-content/linux
+          gh release download "${{ inputs.tag }}" --repo "${{ github.repository }}" --dir dl \
+            --pattern "*_x64-setup.exe" --pattern "*.app.tar.gz" --pattern "*.AppImage"
+          ls -la dl
+      - name: Lay out depots
+        run: |
+          # Linux: extract the AppImage so Steam runs AppRun without needing FUSE.
+          chmod +x dl/*.AppImage
+          (cd steam-content/linux && ../../dl/*.AppImage --appimage-extract >/dev/null && mv squashfs-root/* . && rmdir squashfs-root)
+          # macOS: the notarized .app bundle.
+          tar -xzf dl/*.app.tar.gz -C steam-content/macos
+          # Windows: unpack the NSIS installer (it is a 7z archive) and add the WebView2 bootstrapper.
+          sudo apt-get install -y p7zip-full >/dev/null
+          7z x -osteam-content/windows dl/*_x64-setup.exe >/dev/null || true
+          curl -fsSL -o steam-content/windows/MicrosoftEdgeWebview2Setup.exe "https://go.microsoft.com/fwlink/p/?LinkId=2124703"
+          cp steam/installscript.vdf steam-content/windows/
+          find steam-content -maxdepth 2 | head -40
+      - name: Fill build scripts
+        run: |
+          sed -i "s/APPID1/${{ secrets.STEAM_APP_ID }}1/; s/APPID2/${{ secrets.STEAM_APP_ID }}2/; s/APPID3/${{ secrets.STEAM_APP_ID }}3/; s/APPID/${{ secrets.STEAM_APP_ID }}/; s/VERSION/${{ inputs.tag }}/" steam/*.vdf
+      - uses: game-ci/steam-deploy@v3
+        with:
+          username: ${{ secrets.STEAM_USERNAME }}
+          configVdf: ${{ secrets.STEAM_CONFIG_VDF }}
+          appId: ${{ secrets.STEAM_APP_ID }}
+          buildDescription: ${{ inputs.tag }}
+          rootPath: steam-content
+          depot1Path: windows
+          depot2Path: macos
+          depot3Path: linux
+          releaseBranch: ${{ inputs.branch }}

@@ -4,6 +4,7 @@ import { removeFish, sellPrice } from "../sim/shop";
 import { GESTATION_HOURS } from "../sim/breeding";
 import type { GameState } from "../sim/state";
 import { button, el } from "./dom";
+import { t } from "../i18n";
 
 /** Small card for one fish: name, species and need bars. */
 export class InspectPanel {
@@ -23,7 +24,7 @@ export class InspectPanel {
   constructor(overlay: HTMLElement, private readonly state: GameState, private readonly onChange: () => void) {
     this.root = el("div.panel.panel-inspect", { hidden: true }, this.title, this.sub);
     for (const [key, fill] of Object.entries(this.bars)) {
-      this.root.append(el("div.bar-row", {}, el("span.stat-label", {}, key), el("div.bar", {}, fill)));
+      this.root.append(el("div.bar-row", {}, el("span.stat-label", {}, t(key)), el("div.bar", {}, fill)));
     }
     this.action = button("tool", "", () => {
       if (!this.fish) return;
@@ -31,7 +32,7 @@ export class InspectPanel {
       this.show(null);
       this.onChange();
     });
-    this.root.append(el("div.panel-actions", {}, this.action, button("tool", "Rename", () => this.rename()), button("tool", "Close", () => this.show(null))));
+    this.root.append(el("div.panel-actions", {}, this.action, button("tool", t("Rename"), () => this.rename()), button("tool", t("Close"), () => this.show(null))));
     overlay.append(this.root);
   }
 
@@ -73,16 +74,16 @@ export class InspectPanel {
     this.title.textContent = f.name;
     const days = Math.floor(f.ageHours / 24);
     const sex = f.sex === "f" ? "♀" : "♂";
-    const stage = f.size < 0.5 ? "fry" : f.size < 0.8 ? "juvenile" : "adult";
-    const gravid = f.gravidHours ? ` · carrying fry ${Math.round((f.gravidHours / GESTATION_HOURS) * 100)}%` : "";
-    const sick = f.sick === "ich" ? " · ICH: medicine or 29 °C+" : f.sick === "finrot" ? " · FIN ROT: medicine + clean water" : "";
-    this.sub.textContent = f.alive ? `${sex} ${sp.name} · ${stage} · ${days}d${gravid}${sick}` : `${sp.name} · dead`;
+    const stage = t(f.size < 0.5 ? "fry" : f.size < 0.8 ? "juvenile" : "adult");
+    const gravid = f.gravidHours ? t(" · carrying fry {p}%", { p: Math.round((f.gravidHours / GESTATION_HOURS) * 100) }) : "";
+    const sick = f.sick === "ich" ? t(" · ICH: medicine or 29 °C+") : f.sick === "finrot" ? t(" · FIN ROT: medicine + clean water") : "";
+    this.sub.textContent = f.alive ? `${sex} ${t(sp.name)} · ${stage} · ${days}d${gravid}${sick}` : `${t(sp.name)} · ${t("dead")}`;
     this.sub.classList.toggle("bad", !!f.sick);
     setBar(this.bars.hunger, f.hunger, true);
     setBar(this.bars.stress, f.stress, true);
     setBar(this.bars.health, f.health, false);
     setBar(this.bars.mood, happiness(f), false);
-    this.action.textContent = f.alive ? `Sell for ${sellPrice(this.state, f.id)} coins` : "Scoop out";
+    this.action.textContent = f.alive ? t("Sell for {n} coins", { n: sellPrice(this.state, f.id) }) : t("Scoop out");
   }
 }
 

@@ -1,6 +1,7 @@
 import { doWaterChange } from "../sim/tank";
 import type { GameState } from "../sim/state";
 import { button, el } from "./dom";
+import { t } from "../i18n";
 
 const HEATER_MIN = 18;
 const HEATER_MAX = 32;
@@ -25,20 +26,20 @@ export class CarePanel {
       this.refresh();
     };
     this.heaterRow.append(
-      el("span", {}, "Heater target"),
+      el("span", {}, t("Heater target")),
       el("span.panel-actions", {}, button("tool", "−", () => nudge(-1)), this.heaterValue, button("tool", "+", () => nudge(1))),
     );
     this.root = el(
       "div.panel.panel-care",
       { hidden: true },
-      el("h2", {}, "Care"),
+      el("h2", {}, t("Care")),
       this.heaterRow,
-      el("h2", {}, "Water change"),
-      el("div.muted", {}, "Swaps old water for tap water. Dilutes nitrate, resets temperature."),
+      el("h2", {}, t("Water change")),
+      el("div.muted", {}, t("Swaps old water for tap water. Dilutes nitrate, resets temperature.")),
       this.doses,
       row,
       this.note,
-      el("div.panel-actions", {}, button("tool", "Close", () => this.toggle())),
+      el("div.panel-actions", {}, button("tool", t("Close"), () => this.toggle())),
     );
     overlay.append(this.root);
   }
@@ -51,7 +52,7 @@ export class CarePanel {
 
   private change(fraction: number): void {
     const { conditioned } = doWaterChange(this.state, fraction);
-    this.note.textContent = conditioned ? "" : "No conditioner: chlorine went in. Buy some at the shop.";
+    this.note.textContent = conditioned ? "" : t("No conditioner: chlorine went in. Buy some at the shop.");
     this.onChange();
     this.refresh();
   }
@@ -59,7 +60,7 @@ export class CarePanel {
   refresh(): void {
     if (this.root.hidden) return;
     const n = this.state.inventory.conditioner ?? 0;
-    this.doses.textContent = n > 0 ? `Conditioner doses: ${n}` : "No conditioner doses left.";
+    this.doses.textContent = n > 0 ? t("Conditioner doses: {n}", { n }) : t("No conditioner doses left.");
     this.heaterRow.hidden = this.state.equipment.heater === 0;
     this.heaterValue.textContent = `${this.state.equipment.heaterTarget} °C`;
   }

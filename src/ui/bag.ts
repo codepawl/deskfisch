@@ -2,6 +2,7 @@ import { SPECIES } from "../data/species";
 import { addTankWater, ADDS_NEEDED, FLOAT_MINUTES, secondsUntilNextAdd, type Bag } from "../sim/bag";
 import type { GameState } from "../sim/state";
 import { button, el } from "./dom";
+import { t } from "../i18n";
 
 /** Acclimation card for a floating bag. */
 export class BagPanel {
@@ -15,9 +16,10 @@ export class BagPanel {
   private readonly note = el("div.shop-note");
 
   constructor(overlay: HTMLElement, private readonly state: GameState) {
-    this.addBtn = button("tool", "Add tank water", () => {
+    this.addBtn = button("tool", t("Add tank water"), () => {
       if (!this.bag) return;
-      this.note.textContent = addTankWater(this.state, this.bag) ?? "";
+      const err = addTankWater(this.state, this.bag);
+      this.note.textContent = err ? t(err) : "";
       this.refresh();
     });
     this.root = el(
@@ -25,11 +27,11 @@ export class BagPanel {
       { hidden: true },
       this.title,
       this.sub,
-      el("div.bar-row", {}, el("span.stat-label", {}, "float"), el("div.bar", {}, this.floatFill)),
-      el("div.bar-row", {}, el("span.stat-label", {}, "mixed"), el("div.bar", {}, this.addsFill)),
-      el("div.muted", {}, "Drag the bag under the surface to release."),
+      el("div.bar-row", {}, el("span.stat-label", {}, t("float")), el("div.bar", {}, this.floatFill)),
+      el("div.bar-row", {}, el("span.stat-label", {}, t("mixed")), el("div.bar", {}, this.addsFill)),
+      el("div.muted", {}, t("Drag the bag under the surface to release.")),
       this.note,
-      el("div.panel-actions", {}, this.addBtn, button("tool", "Close", () => this.show(null))),
+      el("div.panel-actions", {}, this.addBtn, button("tool", t("Close"), () => this.show(null))),
     );
     overlay.append(this.root);
   }
@@ -49,7 +51,7 @@ export class BagPanel {
       return;
     }
     this.title.textContent = b.name;
-    this.sub.textContent = `${SPECIES[b.speciesId].name} · in the bag`;
+    this.sub.textContent = `${t(SPECIES[b.speciesId].name)} · ${t("in the bag")}`;
     const floated = Math.min(1, (Date.now() - b.floatedAt) / (FLOAT_MINUTES * 60_000));
     this.floatFill.style.width = `${Math.round(floated * 100)}%`;
     this.floatFill.className = `bar-fill ${floated < 0.5 ? "bad" : floated < 1 ? "warn" : ""}`;
@@ -58,6 +60,6 @@ export class BagPanel {
     const wait = Math.ceil(secondsUntilNextAdd(b));
     const full = b.waterAdds >= ADDS_NEEDED;
     this.addBtn.disabled = full || wait > 0;
-    this.addBtn.textContent = full ? "Bag mixed" : wait > 0 ? `Add water in ${Math.floor(wait / 60)}:${String(wait % 60).padStart(2, "0")}` : "Add tank water";
+    this.addBtn.textContent = full ? t("Bag mixed") : wait > 0 ? t("Add water in {t}", { t: `${Math.floor(wait / 60)}:${String(wait % 60).padStart(2, "0")}` }) : t("Add tank water");
   }
 }

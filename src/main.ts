@@ -17,6 +17,7 @@ import { Toasts } from "./ui/toast";
 import { SettingsPanel } from "./ui/settings";
 import { GuidePanel } from "./ui/guide";
 import { checkForUpdate } from "./updater";
+import { detectLang, setLang, t } from "./i18n";
 import { setLabel } from "./ui/dom";
 import { isCycled } from "./sim/tank";
 import { Sfx } from "./engine/audio";
@@ -48,7 +49,9 @@ const sfx = new Sfx();
 const SCRUB_SOUND_INTERVAL = 0.12;
 
 async function boot(): Promise<void> {
-  run((await loadGame()) ?? newGame());
+  const state = (await loadGame()) ?? newGame();
+  setLang(state.settings.lang === "auto" ? detectLang() : state.settings.lang);
+  run(state);
 }
 
 function run(state: GameState): void {
@@ -68,24 +71,26 @@ function run(state: GameState): void {
     void applyMode(state.mode, state.pinned, st.transparent);
   };
   const offerUpdate = (version: string, install: () => Promise<void>) =>
-    toasts.ask(`Deskfisch ${version} is available.`, "Update and restart", () => {
+    toasts.ask(t("Deskfisch {v} is available.", { v: version }), t("Update and restart"), () => {
       persist();
-      toasts.show("Downloading update…", 60000);
-      install().catch((e) => toasts.show(`Update failed: ${String(e)}`, 8000));
+      toasts.show(t("Downloading update…"), 60000);
+      install().catch((e) => toasts.show(t("Update failed: {e}", { e: String(e) }), 8000));
     });
-  const settings = new SettingsPanel(overlay, state, applySettings, offerUpdate);
+  const settings = new SettingsPanel(overlay, state, applySettings, offerUpdate, () => {
+    void saveGame(state).then(() => location.reload());
+  });
   // Quiet startup check; a failed or offline check is simply silent.
   setTimeout(() => void checkForUpdate().then((u) => u && offerUpdate(u.version, u.install)), 15000);
   const guide = new GuidePanel(overlay, state);
-  hud.addButton("Change water", () => care.toggle(), "water");
-  hud.addButton("Test water", () => stats.toggle(), "test");
-  hud.addButton("Shop", () => shop.toggle(), "coin");
+  hud.addButton(t("Change water"), () => care.toggle(), "water");
+  hud.addButton(t("Test water"), () => stats.toggle(), "test");
+  hud.addButton(t("Shop"), () => shop.toggle(), "coin");
 
   const MODES: Mode[] = ["window", "pet", "fullscreen"];
   const modeBtn = hud.addButton("", () => setMode(MODES[(MODES.indexOf(state.mode) + 1) % MODES.length]), "mode");
   const setMode = (mode: Mode) => {
     state.mode = mode;
-    setLabel(modeBtn, `Mode: ${mode}`);
+    setLabel(modeBtn, t("Mode: {mode}", { mode: t(mode) }));
     void applyMode(mode, state.pinned, state.settings.transparent);
   };
   sfx.setVolume(state.settings.volume, state.settings.muted);
@@ -94,14 +99,14 @@ function run(state: GameState): void {
   if (isTauri) {
     const pinBtn = hud.addButton("", () => {
       state.pinned = !state.pinned;
-      setLabel(pinBtn, state.pinned ? "Unpin" : "Pin");
+      setLabel(pinBtn, state.pinned ? t("Unpin") : t("Pin"));
       reflectPin();
       void setPinned(state.pinned, state.mode);
     }, "pin");
-    setLabel(pinBtn, state.pinned ? "Unpin" : "Pin");
+    setLabel(pinBtn, state.pinned ? t("Unpin") : t("Pin"));
   }
-  hud.addButton("Guide", () => guide.toggle(), "guide");
-  hud.addButton("Settings", () => settings.toggle(), "settings");
+  hud.addButton(t("Guide"), () => guide.toggle(), "guide");
+  hud.addButton(t("Settings"), () => settings.toggle(), "settings");
   hud.resizeHandle.addEventListener("pointerdown", () => {
     if (state.mode === "pet" && !state.pinned) void startWindowResize();
   });
@@ -110,10 +115,10 @@ function run(state: GameState): void {
   const setChill = (on: boolean) => {
     state.settings.chill = on;
     document.documentElement.dataset.chill = String(on);
-    if (on) toasts.show("Chill mode. Double-click the tank, press Esc, or tap the corner button to bring the controls back.", 6000);
+    if (on) toasts.show(t("Chill mode. Double-click the tank, press Esc, or tap the corner button to bring the controls back."), 6000);
   };
   screen.addEventListener("dblclick", () => setChill(false));
-  hud.addButton("Chill", () => setChill(true), "chill");
+  hud.addButton(t("Chill"), () => setChill(true), "chill");
   hud.restore.onclick = () => setChill(false);
   window.addEventListener("keydown", (e) => {
     if (e.key === "Escape") setChill(false);
@@ -124,7 +129,7 @@ function run(state: GameState): void {
   reflectPin();
   hud.dragHandle.addEventListener("pointerdown", () => {
     if (state.mode !== "pet") return;
-    if (state.pinned) toasts.show("Unpin to move the tank.", 2500);
+    if (state.pinned) toasts.show(t("Unpin to move the tank."), 2500);
     else void startWindowDrag();
   });
 
@@ -182,8 +187,8 @@ function run(state: GameState): void {
     if (drag.y + BAG_H / 2 > WATER.y0 + 24) {
       const shock = releaseShock(state, drag.bag);
       const f = releaseBag(state, drag.bag, drag.x + BAG_W / 2, drag.y + BAG_H / 2, WATER);
-      toasts.show(shock > 15 ? `${f.name} is shocked. Float longer and mix more water next time.` : `${f.name} settled in nicely.`);
-      if (!isCycled(state)) toasts.show("The tank is not cycled yet. Watch ammonia and change water if it climbs.", 8000);
+      toasts.show(shock > 15 ? t("{name} is shocked. Float longer and mix more water next time.", { name: f.name }) : t("{name} settled in nicely.", { name: f.name }));
+      if (!isCycled(state)) toasts.show(t("The tank is not cycled yet. Watch ammonia and change water if it climbs."), 8000);
       bagPanel.show(null);
       hud.refresh();
     }
@@ -196,12 +201,12 @@ function run(state: GameState): void {
     const { away, died, born, sick } = advance(state);
     if (away) {
       const h = away.hours >= 1 ? `${away.hours.toFixed(1)} h` : `${Math.round(away.hours * 60)} min`;
-      toasts.show(`Away ${h}${away.capped ? " (capped)" : ""}: +${Math.floor(away.coinsEarned)} coins`, 8000);
+      toasts.show(t("Away {h}{capped}: +{n} coins", { h, capped: away.capped ? t(" (capped)") : "", n: Math.floor(away.coinsEarned) }), 8000);
     }
-    for (const name of died) toasts.show(`${name} died. Scoop it out before it fouls the water.`, 8000);
-    for (const msg of born) toasts.show(msg, 8000);
-    for (const msg of sick) toasts.show(`${msg}. Check the fish card.`, 8000);
-    for (const a of checkAchievements(state)) toasts.show(`${a.title}: +${a.reward} coins`, 8000);
+    for (const name of died) toasts.show(t("{name} died. Scoop it out before it fouls the water.", { name }), 8000);
+    for (const b of born) toasts.show(t("{name} had {n} fry!", { ...b }), 8000);
+    for (const s of sick) toasts.show(t(s.disease === "ich" ? "{name} has ich (white spots). Check the fish card." : "{name} has fin rot. Check the fish card.", { name: s.name }), 8000);
+    for (const a of checkAchievements(state)) toasts.show(t("{title}: +{n} coins", { title: t(a.title), n: a.reward }), 8000);
     hud.refresh();
     stats.refresh();
     inspect.refresh();
@@ -249,7 +254,7 @@ function run(state: GameState): void {
           vacuumGravel(state, VACUUM_RATE * dt);
         } else if (!vacuumHintShown) {
           vacuumHintShown = true;
-          toasts.show("The siphon only lifts dirt from the gravel. Drag it along the bottom.", 5000);
+          toasts.show(t("The siphon only lifts dirt from the gravel. Drag it along the bottom."), 5000);
         }
       }
       sfx.vacuum(vacuuming);

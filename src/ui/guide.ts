@@ -3,6 +3,7 @@ import { isCycled } from "../sim/tank";
 import { BACTERIA } from "../data/constants";
 import { ACHIEVEMENTS } from "../sim/achievements";
 import { button, el } from "./dom";
+import { t } from "../i18n";
 
 interface Step {
   title: string;
@@ -32,11 +33,11 @@ export class GuidePanel {
     this.root = el(
       "div.panel.panel-guide",
       { hidden: state.guideSeen },
-      el("h2", {}, "Getting started"),
+      el("h2", {}, t("Getting started")),
       el("div.guide-body", {},
-        el("div", {}, el("h3", {}, "Checklist"), this.list),
-        el("div", {}, el("h3", {}, "Journal"), this.journal)),
-      el("div.panel-actions", {}, button("tool", "Got it", () => this.close())),
+        el("div", {}, el("h3", {}, t("Checklist")), this.list),
+        el("div", {}, el("h3", {}, t("Journal")), this.journal)),
+      el("div.panel-actions", {}, button("tool", t("Got it"), () => this.close())),
     );
     overlay.append(this.root);
     this.refresh();
@@ -64,21 +65,21 @@ export class GuidePanel {
     const oldest = Math.max(0, ...s.fish.filter((f) => f.alive).map((f) => f.ageHours));
     this.journal.replaceChildren(
       ...[
-        ["Tank age", `${Math.floor(s.ageHours / 24)} days`],
-        ["Fish now", String(alive)],
-        ["Bought / born", `${s.stats.bought} / ${s.stats.born}`],
-        ["Sold / lost", `${s.stats.sold} / ${s.stats.died}`],
-        ["Oldest fish", `${Math.floor(oldest / 24)} days`],
-        ["Coins earned", String(Math.floor(s.stats.coinsEarned))],
-        ["Achievements", `${s.achievements.length} / ${ACHIEVEMENTS.length}`],
+        [t("Tank age"), t("{n} days", { n: Math.floor(s.ageHours / 24) })],
+        [t("Fish now"), String(alive)],
+        [t("Bought / born"), `${s.stats.bought} / ${s.stats.born}`],
+        [t("Sold / lost"), `${s.stats.sold} / ${s.stats.died}`],
+        [t("Oldest fish"), t("{n} days", { n: Math.floor(oldest / 24) })],
+        [t("Coins earned"), String(Math.floor(s.stats.coinsEarned))],
+        [t("Achievements"), `${s.achievements.length} / ${ACHIEVEMENTS.length}`],
       ].map(([k, v]) => el("div.stat-row", {}, el("span.stat-label", {}, k), el("span.num", {}, v))),
     );
     this.list.replaceChildren();
     let current = true;
     for (const step of STEPS) {
       const done = step.done(this.state);
-      const row = el("div.guide-step", { className: `guide-step ${done ? "done" : current ? "current" : ""}` }, el("div", {}, `${done ? "✔" : "○"} ${step.title}`));
-      if (!done && current) row.append(el("div.muted", {}, step.tip));
+      const row = el("div.guide-step", { className: `guide-step ${done ? "done" : current ? "current" : ""}` }, el("div", {}, `${done ? "✔" : "○"} ${t(step.title)}`));
+      if (!done && current) row.append(el("div.muted", {}, t(step.tip)));
       if (!done) current = false;
       this.list.append(row);
     }

@@ -17,11 +17,12 @@ function chance(perHour: number, hours: number): boolean {
   return Math.random() < 1 - Math.exp(-perHour * hours);
 }
 
-/** Infect, spread and (in warm water) clear diseases. Returns names of fish that just fell ill. */
-export function stepDisease(state: GameState, hours: number): string[] {
+/** Infect, spread and (in warm water) clear diseases. Returns fish that just fell ill. */
+export interface Illness { name: string; disease: Disease }
+export function stepDisease(state: GameState, hours: number): Illness[] {
   const t = state.tank;
   const ichAround = state.fish.some((f) => f.alive && f.sick === "ich");
-  const fellIll: string[] = [];
+  const fellIll: Illness[] = [];
   for (const f of state.fish) {
     if (!f.alive) continue;
     const sp = SPECIES[f.speciesId];
@@ -34,12 +35,12 @@ export function stepDisease(state: GameState, hours: number): string[] {
     const ichRisk = (f.stress > 60 || cold ? ICH_RATE : 0) + (ichAround ? ICH_CONTAGION : 0);
     if (ichRisk > 0 && chance(ichRisk, hours)) {
       f.sick = "ich";
-      fellIll.push(`${f.name} has ich (white spots)`);
+      fellIll.push({ name: f.name, disease: "ich" });
       continue;
     }
     if (t.dirt > 60 && f.stress > 40 && chance(FINROT_RATE, hours)) {
       f.sick = "finrot";
-      fellIll.push(`${f.name} has fin rot`);
+      fellIll.push({ name: f.name, disease: "finrot" });
     }
   }
   return fellIll;
