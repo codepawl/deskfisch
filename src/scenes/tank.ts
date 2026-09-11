@@ -1,0 +1,159 @@
+import { COLOR, rgba } from "../engine/palette";
+import { PixelBuffer } from "../engine/pixelbuffer";
+import { sprite } from "../engine/sprite";
+import { rand } from "../engine/rng";
+import { SPECIES } from "../data/species";
+import type { Bounds, Fish } from "../sim/fish";
+
+export const SCREEN_W = 384;
+export const SCREEN_H = 216;
+
+/** Inner water area. Glass frame sits just outside it. */
+export const WATER: Bounds = { x0: 8, y0: 16, x1: 376, y1: 204 };
+const SAND_Y = 190;
+
+const WATER_TOP = rgba("#3b7dd8");
+const WATER_MID = rgba("#2f5fc4");
+const WATER_DEEP = rgba("#29366f");
+const GLASS = COLOR.d;
+const GLASS_HI = COLOR.L;
+
+const PLANT = sprite([
+  "..G....",
+  ".gGg.G.",
+  ".gGg.gG",
+  "..g.gG.",
+  "gG.g.g.",
+  ".gGg.g.",
+  "..g..g.",
+  "..g.g..",
+  "..gg...",
+  "..t....",
+]);
+
+const PLANT_TALL = sprite([
+  "G.....",
+  "gG..G.",
+  ".g.gG.",
+  ".g.g..",
+  "G.g...",
+  "gG.g..",
+  ".g.G..",
+  ".gg...",
+  ".g....",
+  ".g.G..",
+  ".gg...",
+  ".t....",
+]);
+
+interface Bubble { x: number; y: number; speed: number; wobble: number }
+
+export class TankScene {
+  private bubbles: Bubble[] = [];
+  private time = 0;
+  private sandSpeckles: [number, number][] = [];
+  private plants: { x: number; tall: boolean }[] = [
+    { x: 40, tall: true }, { x: 60, tall: false }, { x: 300, tall: false }, { x: 330, tall: true },
+  ];
+
+  constructor() {
+    for (let i = 0; i < 90; i++) {
+      this.sandSpeckles.push([rand(WATER.x0, WATER.x1), rand(SAND_Y + 1, WATER.y1 - 1)]);
+    }
+  }
+
+  update(dt: number): void {
+    this.time += dt;
+    if (Math.random() < dt * 1.2) {
+      this.bubbles.push({ x: rand(WATER.x0 + 30, WATER.x0 + 40), y: WATER.y1 - 6, speed: rand(18, 30), wobble: rand(0, 6) });
+    }
+    for (const b of this.bubbles) {
+      b.y -= b.speed * dt;
+      b.wobble += dt * 4;
+    }
+    this.bubbles = this.bubbles.filter((b) => b.y > WATER.y0);
+  }
+
+  render(buf: PixelBuffer, fish: Fish[]): void {
+    buf.clear(COLOR.K);
+    this.drawWater(buf);
+    this.drawSand(buf);
+    this.drawPlants(buf);
+    for (const f of fish) this.drawFish(buf, f);
+    this.drawBubbles(buf);
+    this.drawGlass(buf);
+  }
+
+  private drawWater(buf: PixelBuffer): void {
+    const h = WATER.y1 - WATER.y0;
+    for (let y = WATER.y0; y < WATER.y1; y++) {
+      const t = (y - WATER.y0) / h;
+      const c = t < 0.5 ? mix(WATER_TOP, WATER_MID, t * 2) : mix(WATER_MID, WATER_DEEP, (t - 0.5) * 2);
+      buf.fillRect(WATER.x0, y, WATER.x1 - WATER.x0, 1, c);
+    }
+    // Light shafts: sparse dithered pale bands drifting slowly, fading with depth.
+    for (let i = 0; i < 3; i++) {
+      const cx = WATER.x0 + 70 + i * 110 + Math.sin(this.time * 0.3 + i) * 10;
+      for (let y = WATER.y0 + 1; y < SAND_Y; y++) {
+        const w = 5 + (y - WATER.y0) * 0.1;
+        const fade = 1 - (y - WATER.y0) / (SAND_Y - WATER.y0);
+        for (let x = (cx - w) | 0; x < cx + w; x++) {
+          if ((x + y * 2) % 5 === 0) buf.blendPixel(x, y, COLOR.c, 0.18 * fade);
+        }
+      }
+    }
+    // Surface ripple line.
+    for (let x = WATER.x0; x < WATER.x1; x++) {
+      const dy = Math.round(Math.sin(x * 0.25 + this.time * 2) * 0.6);
+      buf.set(x, WATER.y0 + dy, COLOR.c);
+    }
+  }
+
+  private drawSand(buf: PixelBuffer): void {
+    buf.fillRect(WATER.x0, SAND_Y, WATER.x1 - WATER.x0, WATER.y1 - SAND_Y, COLOR.s);
+    buf.fillRect(WATER.x0, SAND_Y, WATER.x1 - WATER.x0, 1, COLOR.S);
+    for (const [x, y] of this.sandSpeckles) buf.set(x, y, ((x | 0) & 1) ? COLOR.t : COLOR.S);
+  }
+
+  private drawPlants(buf: PixelBuffer): void {
+    for (const p of this.plants) {
+      const s = p.tall ? PLANT_TALL : PLANT;
+      const sway = Math.round(Math.sin(this.time * 1.5 + p.x) * 1);
+      buf.blit(s, p.x + sway, SAND_Y - s.h + 1, sway < 0);
+    }
+  }
+
+  private drawFish(buf: PixelBuffer, f: Fish): void {
+    const sp = SPECIES[f.speciesId];
+    const frame = sp.frames[Math.floor(f.phase) % sp.frames.length];
+    const bob = Math.sin(f.phase * 0.8) * 0.8;
+    buf.blit(frame, f.x, f.y + bob, f.facing < 0);
+  }
+
+  private drawBubbles(buf: PixelBuffer): void {
+    for (const b of this.bubbles) {
+      const x = b.x + Math.sin(b.wobble) * 1.5;
+      buf.set(x, b.y, COLOR.c);
+      buf.set(x + 1, b.y, COLOR.W);
+      buf.set(x, b.y + 1, COLOR.B);
+    }
+  }
+
+  private drawGlass(buf: PixelBuffer): void {
+    const t = 3;
+    buf.fillRect(WATER.x0 - t, WATER.y0 - t, WATER.x1 - WATER.x0 + t * 2, t, GLASS);
+    buf.fillRect(WATER.x0 - t, WATER.y1, WATER.x1 - WATER.x0 + t * 2, t, GLASS);
+    buf.fillRect(WATER.x0 - t, WATER.y0 - t, t, WATER.y1 - WATER.y0 + t * 2, GLASS);
+    buf.fillRect(WATER.x1, WATER.y0 - t, t, WATER.y1 - WATER.y0 + t * 2, GLASS);
+    // Reflection highlight down the left pane.
+    buf.fillRect(WATER.x0 + 2, WATER.y0 + 6, 1, 60, GLASS_HI);
+    buf.fillRect(WATER.x0 + 3, WATER.y0 + 10, 1, 30, GLASS_HI);
+  }
+}
+
+function mix(a: number, b: number, t: number): number {
+  const r = ((a & 0xff) * (1 - t) + (b & 0xff) * t) | 0;
+  const g = (((a >>> 8) & 0xff) * (1 - t) + ((b >>> 8) & 0xff) * t) | 0;
+  const bl = (((a >>> 16) & 0xff) * (1 - t) + ((b >>> 16) & 0xff) * t) | 0;
+  return ((0xff << 24) | (bl << 16) | (g << 8) | r) >>> 0;
+}
