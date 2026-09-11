@@ -1,6 +1,7 @@
 import { BACTERIA, TAP } from "../data/constants";
 import type { Fish } from "./fish";
 import type { Pellet } from "./food";
+import type { Bag } from "./bag";
 
 export interface TankState {
   volumeL: number;
@@ -48,6 +49,7 @@ export interface GameState {
   equipment: Equipment;
   fish: Fish[];
   pellets: Pellet[];
+  bags: Bag[];
   decor: Decor[];
   /** Next fish id, so ids stay unique across sells and deaths. */
   nextFishId: number;
@@ -88,6 +90,7 @@ export function newGame(now = Date.now()): GameState {
     },
     fish: [],
     pellets: [],
+    bags: [],
     decor: [],
     nextFishId: 1,
     inventory: { flakes: 20, conditioner: 2 },

@@ -2,7 +2,7 @@ import { FISH_NAMES, SUPPLIES, DECOR, FILTERS, HEATERS, AIR_PUMPS, LIGHTS } from
 import { SPECIES } from "../data/species";
 import { pick, rand } from "../engine/rng";
 import type { Bounds } from "./fish";
-import { spawnFish } from "./fish";
+import { newBag } from "./bag";
 import type { GameState } from "./state";
 
 /** Purchase rules for every shop item. Each returns an error message or null on success. */
@@ -17,10 +17,10 @@ export function buyFish(state: GameState, speciesId: string, water: Bounds): str
   const sp = SPECIES[speciesId];
   const err = pay(state, sp.price);
   if (err) return err;
-  const taken = new Set(state.fish.map((f) => f.name));
+  const taken = new Set([...state.fish, ...state.bags].map((f) => f.name));
   const free = FISH_NAMES.filter((n) => !taken.has(n));
   const name = free.length ? pick(free) : `${sp.name} ${state.nextFishId}`;
-  state.fish.push(spawnFish(sp, name, water, state.nextFishId++));
+  state.bags.push(newBag(state, sp.id, name, water));
   return null;
 }
 

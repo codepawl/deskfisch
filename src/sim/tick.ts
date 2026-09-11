@@ -4,6 +4,7 @@ import { happiness, stepFish, wasteLoad } from "./fish";
 import type { GameState } from "./state";
 import { stepTank } from "./tank";
 import { decayPellets } from "./food";
+import { stepBags } from "./bag";
 
 /** Coins per hour from a fully happy fish, as a fraction of its shop price. */
 const INCOME_RATE = 0.02;
@@ -13,6 +14,7 @@ export function simulate(state: GameState, seconds: number): string[] {
   const hours = seconds / 3600;
   stepTank(state, hours, wasteLoad(state));
   decayPellets(state, hours);
+  stepBags(state, hours);
   const died = stepFish(state, hours);
   for (const f of state.fish) {
     state.coins += (happiness(f) / 100) * SPECIES[f.speciesId].price * INCOME_RATE * hours;

@@ -5,6 +5,8 @@ import { rand } from "../engine/rng";
 import { SPECIES } from "../data/species";
 import type { Bounds, Fish } from "../sim/fish";
 import type { GameState } from "../sim/state";
+import type { Bag } from "../sim/bag";
+
 
 export const SCREEN_W = 384;
 export const SCREEN_H = 240;
@@ -12,6 +14,13 @@ export const SCREEN_H = 240;
 /** Inner water area. Glass frame sits just outside it; the toolbar lives below. */
 export const WATER: Bounds = { x0: 8, y0: 18, x1: 376, y1: 208 };
 const SAND_Y = 194;
+
+/** A bag being dragged by the pointer, drawn at the pointer instead of the surface. */
+export interface DragBag { bag: Bag; x: number; y: number }
+export const BAG_W = 26;
+export const BAG_H = 22;
+/** Bags float with their top above the water line. */
+export const BAG_Y = WATER.y0 - 8;
 
 const WATER_TOP = rgba("#3b7dd8");
 const WATER_MID = rgba("#2f5fc4");
@@ -93,7 +102,7 @@ export class TankScene {
     this.bubbles = this.bubbles.filter((b) => b.y > WATER.y0);
   }
 
-  render(buf: PixelBuffer, state: GameState): void {
+  render(buf: PixelBuffer, state: GameState, drag: DragBag | null = null): void {
     buf.clear(COLOR.K);
     this.drawWater(buf);
     this.drawSand(buf);
@@ -104,6 +113,10 @@ export class TankScene {
     }
     for (const f of state.fish) this.drawFish(buf, f);
     this.drawBubbles(buf);
+    for (const b of state.bags) {
+      if (drag?.bag === b) this.drawBag(buf, b, drag.x, drag.y);
+      else this.drawBag(buf, b, b.x, BAG_Y + Math.round(Math.sin(this.time * 1.2 + b.x) * 1));
+    }
     if (state.equipment.light === 0 || !state.equipment.lightOn) {
       buf.tintRect(WATER.x0, WATER.y0, WATER.x1 - WATER.x0, WATER.y1 - WATER.y0, COLOR.n, 0.35);
     }
@@ -165,6 +178,19 @@ export class TankScene {
     }
     const bob = Math.sin(f.phase * 0.8) * 0.8;
     buf.blit(frame, f.x, f.y + bob, f.facing < 0);
+  }
+
+  private drawBag(buf: PixelBuffer, bag: Bag, x: number, y: number): void {
+    // Knotted top, translucent body, fish centred inside.
+    buf.tintRect(x, y + 4, BAG_W, BAG_H - 4, COLOR.c, 0.35);
+    buf.fillRect(x, y + 4, BAG_W, 1, COLOR.W);
+    buf.fillRect(x, y + BAG_H - 1, BAG_W, 1, COLOR.W);
+    buf.fillRect(x, y + 4, 1, BAG_H - 4, COLOR.W);
+    buf.fillRect(x + BAG_W - 1, y + 4, 1, BAG_H - 4, COLOR.W);
+    buf.fillRect(x + BAG_W / 2 - 2, y, 4, 4, COLOR.L);
+    const sp = SPECIES[bag.speciesId];
+    const frame = sp.frames[Math.floor(this.time * 3) % sp.frames.length];
+    buf.blit(frame, x + (BAG_W - frame.w) / 2, y + 4 + (BAG_H - 4 - frame.h) / 2);
   }
 
   private drawBubbles(buf: PixelBuffer): void {

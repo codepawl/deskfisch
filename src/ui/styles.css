@@ -113,6 +113,8 @@ button.tool:disabled { opacity: 0.4; cursor: default; }
 
 .panel-stats { top: calc(20px * var(--s)); right: calc(8px * var(--s)); }
 .panel-inspect { top: calc(20px * var(--s)); left: calc(8px * var(--s)); }
+/* Bags float at the top, so their card sits low and out of the way. */
+.panel-bag { bottom: calc(32px * var(--s)); left: calc(8px * var(--s)); }
 
 .stat-row, .bar-row {
   display: flex;

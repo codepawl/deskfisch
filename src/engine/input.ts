@@ -2,6 +2,9 @@
 export class Input {
   x = 0;
   y = 0;
+  /** Where the current/last press started, so a fast drag still hits what was pressed. */
+  pressX = 0;
+  pressY = 0;
   down = false;
   /** True for exactly one frame after a press. */
   pressed = false;
@@ -14,6 +17,8 @@ export class Input {
     screen.addEventListener("pointermove", (e) => this.track(e));
     screen.addEventListener("pointerdown", (e) => {
       this.track(e);
+      this.pressX = this.x;
+      this.pressY = this.y;
       this.down = true;
       this.pendingPress = true;
       screen.setPointerCapture(e.pointerId);
