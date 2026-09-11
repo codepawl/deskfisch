@@ -10,15 +10,9 @@ export interface Overlay { x: number; y: number; w: number; h: number; color: nu
 export class PixelBuffer {
   readonly image: ImageData;
   readonly px: Uint32Array;
-  private readonly back: HTMLCanvasElement;
-  private readonly backCtx: CanvasRenderingContext2D;
 
   constructor(readonly w: number, readonly h: number) {
-    this.back = document.createElement("canvas");
-    this.back.width = w;
-    this.back.height = h;
-    this.backCtx = this.back.getContext("2d")!;
-    this.image = this.backCtx.createImageData(w, h);
+    this.image = new ImageData(w, h);
     this.px = new Uint32Array(this.image.data.buffer);
   }
 
@@ -79,34 +73,26 @@ export class PixelBuffer {
   }
 
   /**
-   * Draw onto the visible canvas. The backing store uses the largest integer
-   * scale that fits (crisp pixels); CSS then stretches it the last fraction so
-   * the tank hugs the window edges. Returns the effective on-screen scale.
+   * Put the frame on the visible canvas at 1:1 and let CSS (`image-rendering:
+   * pixelated`) do the upscale in the compositor. Scaling with drawImage cost a
+   * software raster of the whole window every frame. Returns the on-screen scale.
    */
   present(screen: HTMLCanvasElement, overlays: Overlay[] = []): number {
-    this.backCtx.putImageData(this.image, 0, 0);
+    if (screen.width !== this.w || screen.height !== this.h) {
+      screen.width = this.w;
+      screen.height = this.h;
+    }
+    const ctx = screen.getContext("2d")!;
+    ctx.putImageData(this.image, 0, 0);
     for (const o of overlays) {
       if (o.alpha <= 0) continue;
-      this.backCtx.fillStyle = css(o.color, o.alpha);
-      this.backCtx.fillRect(o.x, o.y, o.w, o.h);
+      ctx.fillStyle = css(o.color, o.alpha);
+      ctx.fillRect(o.x, o.y, o.w, o.h);
     }
     const stage = screen.parentElement!;
     const fit = Math.max(0.5, Math.min(stage.clientWidth / this.w, stage.clientHeight / this.h));
-    const scale = Math.max(1, Math.floor(fit));
-    const cw = this.w * scale;
-    const ch = this.h * scale;
-    if (screen.width !== cw || screen.height !== ch) {
-      screen.width = cw;
-      screen.height = ch;
-    }
     screen.style.width = `${Math.floor(this.w * fit)}px`;
     screen.style.height = `${Math.floor(this.h * fit)}px`;
-    const ctx = screen.getContext("2d")!;
-    ctx.imageSmoothingEnabled = false;
-    // Transparent framebuffer pixels would composite over the previous frame
-    // and leave trails, so wipe the canvas first.
-    ctx.clearRect(0, 0, cw, ch);
-    ctx.drawImage(this.back, 0, 0, cw, ch);
     return fit;
   }
 }

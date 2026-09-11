@@ -49,6 +49,8 @@ const SCRUB_SOUND_INTERVAL = 0.12;
 
 async function boot(): Promise<void> {
   const state = (await loadGame()) ?? newGame();
+  // Embedded on the website: skip the onboarding card so the hero shows the tank.
+  if (window.self !== window.top) state.guideSeen = true;
   setLang(state.settings.lang === "auto" ? detectLang() : state.settings.lang);
   run(state);
 }

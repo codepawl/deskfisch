@@ -8,7 +8,9 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "site": "tsc && vite build --base=/play/ --outDir site/play --emptyOutDir",
+    "site:deploy": "pnpm site && wrangler deploy"
   },
   "dependencies": {
     "@fontsource/vt323": "^5.3.0",

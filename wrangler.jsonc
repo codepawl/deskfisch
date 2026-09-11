@@ -1,0 +1,8 @@
+{
+  // Static landing site + browser build, served by Cloudflare Workers assets.
+  // Deploy: pnpm site && npx wrangler deploy
+  "name": "deskfisch-site",
+  "compatibility_date": "2026-09-01",
+  "assets": { "directory": "./site", "not_found_handling": "404-page" },
+  "routes": [{ "pattern": "deskfisch.codepawl.com", "custom_domain": true }]
+}
