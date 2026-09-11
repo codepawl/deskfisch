@@ -93,7 +93,7 @@ const WOOD = sprite([
   "..tt..tt...",
 ]);
 
-const DECOR_SPRITES: Record<string, Sprite> = { plant: PLANT, plantTall: PLANT_TALL, rock: ROCK, wood: WOOD };
+export const DECOR_SPRITES: Record<string, Sprite> = { plant: PLANT, plantTall: PLANT_TALL, rock: ROCK, wood: WOOD };
 
 interface Bubble { x: number; y: number; speed: number; wobble: number }
 

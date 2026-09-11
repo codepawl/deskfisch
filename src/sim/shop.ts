@@ -23,6 +23,7 @@ export function buyFish(state: GameState, speciesId: string, water: Bounds): str
   const free = FISH_NAMES.filter((n) => !taken.has(n));
   const name = free.length ? pick(free) : `${sp.name} ${state.nextFishId}`;
   state.bags.push(newBag(state, sp.id, name, water));
+  state.stats.bought++;
   return null;
 }
 
@@ -100,6 +101,9 @@ export function sellPrice(state: GameState, fishId: number): number {
 export function removeFish(state: GameState, fishId: number): void {
   const idx = state.fish.findIndex((x) => x.id === fishId);
   if (idx < 0) return;
-  if (state.fish[idx].alive) state.coins += sellPrice(state, fishId);
+  if (state.fish[idx].alive) {
+    state.coins += sellPrice(state, fishId);
+    state.stats.sold++;
+  }
   state.fish.splice(idx, 1);
 }

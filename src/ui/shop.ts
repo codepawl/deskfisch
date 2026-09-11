@@ -78,7 +78,7 @@ export class ShopPanel {
         break;
       case "decor":
         for (const d of DECOR) {
-          row(d.name, d.no3Uptake ? "Absorbs nitrate" : "A hiding spot", d.price, () => this.attempt(buyDecor(this.state, d.id, this.water)), coins < d.price);
+          row(d.name, (d.no3Uptake ? "Absorbs nitrate" : "A hiding spot") + " · drag to place", d.price, () => this.attempt(buyDecor(this.state, d.id, this.water)), coins < d.price);
         }
         break;
     }

@@ -337,9 +337,18 @@ html[data-chill="true"] .hud, html[data-chill="true"] .panel, html[data-chill="t
   top: calc(24px * var(--s));
   left: 50%;
   transform: translateX(-50%);
-  width: calc(230px * var(--s));
+  width: calc(320px * var(--s));
   padding: calc(5px * var(--s)) calc(8px * var(--s)) calc(6px * var(--s));
   line-height: 1.5;
+}
+.guide-body { display: grid; grid-template-columns: 3fr 2fr; gap: calc(10px * var(--s)); }
+.panel-guide h3 {
+  margin: 0 0 calc(2px * var(--s));
+  font-size: inherit;
+  font-weight: normal;
+  color: #94b0c2;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
 }
 .panel-guide h2 {
   text-align: center;
@@ -368,3 +377,6 @@ input.rename {
   width: calc(60px * var(--s));
   margin-bottom: calc(2px * var(--s));
 }
+
+.journal { display: flex; flex-direction: column; gap: calc(1px * var(--s)); color: #94b0c2; }
+.journal .stat-row span:last-child { color: var(--ink); }

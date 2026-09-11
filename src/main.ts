@@ -21,6 +21,8 @@ import { Sfx } from "./engine/audio";
 import { checkAchievements } from "./sim/achievements";
 import { applyMode, isTauri, onModeRequest, setPinned, startWindowDrag, startWindowResize, type Mode } from "./platform";
 import { releaseBag, releaseShock, type Bag } from "./sim/bag";
+import type { Decor } from "./sim/state";
+import { DECOR_SPRITES } from "./scenes/tank";
 import { BagPanel } from "./ui/bag";
 import { Hud } from "./ui/hud";
 import { StatsPanel } from "./ui/stats";
@@ -126,6 +128,8 @@ function run(state: GameState): void {
 
   const inWater = (x: number, y: number) => x >= WATER.x0 && x < WATER.x1 && y >= WATER.y0 && y < WATER.y1;
   let drag: DragBag | null = null;
+  /** A decoration being slid along the substrate. */
+  let decorDrag: { item: Decor; grabX: number } | null = null;
 
   const handleClick = () => {
     const { pressX: x, pressY: y } = input;
@@ -137,6 +141,13 @@ function run(state: GameState): void {
       return;
     }
     if (!inWater(x, y)) return;
+    if (!hud.tool && y >= SAND_Y - 14) {
+      const item = decorAt(state.decor, x, y);
+      if (item) {
+        decorDrag = { item, grabX: x - item.x };
+        return;
+      }
+    }
     if (hud.tool === "feed") {
       const flakes = state.inventory.flakes ?? 0;
       if (flakes <= 0) return;
@@ -202,6 +213,11 @@ function run(state: GameState): void {
         drag.x = input.x - BAG_W / 2;
         drag.y = input.y - BAG_H / 2;
       }
+      if (decorDrag) {
+        const w = DECOR_SPRITES[decorDrag.item.kind]?.w ?? 8;
+        decorDrag.item.x = Math.round(Math.max(WATER.x0, Math.min(WATER.x1 - w, input.x - decorDrag.grabX)));
+        if (input.released) decorDrag = null;
+      }
       if (input.released) handleRelease();
       scene.update(dt, state.settings.quality);
       const working = input.down && !drag && inWater(input.x, input.y);
@@ -241,6 +257,14 @@ function run(state: GameState): void {
       overlay.style.height = screen.style.height;
     },
   });
+}
+
+function decorAt(decor: Decor[], x: number, y: number): Decor | null {
+  for (const d of decor) {
+    const s = DECOR_SPRITES[d.kind];
+    if (s && x >= d.x && x < d.x + s.w && y >= SAND_Y + 1 - s.h) return d;
+  }
+  return null;
 }
 
 function bagAt(bags: Bag[], x: number, y: number): Bag | null {

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { newGame } from "../src/sim/state";
 import { simulate, catchUp } from "../src/sim/tick";
 import { isCycled, waterChange } from "../src/sim/tank";
@@ -41,6 +41,8 @@ describe("nitrogen cycle", () => {
   });
 
   it("bacteria grow to cycle a fed tank within a few days", () => {
+    // Chemistry only: no random disease outbreaks in this scenario.
+    vi.spyOn(Math, "random").mockReturnValue(1);
     const g = stocked();
     // Keep fish alive by feeding: reset hunger every hour.
     for (let h = 0; h < 24 * 6; h++) {
@@ -48,6 +50,7 @@ describe("nitrogen cycle", () => {
       for (const f of g.fish) f.hunger = 0;
     }
     expect(isCycled(g)).toBe(true);
+    vi.restoreAllMocks();
   });
 
   it("water change dilutes nitrate and adds chlorine unless conditioned", () => {

@@ -60,6 +60,15 @@ export interface Settings {
   ambient: boolean;
 }
 
+/** Lifetime counters for the journal. */
+export interface Stats {
+  bought: number;
+  born: number;
+  died: number;
+  sold: number;
+  coinsEarned: number;
+}
+
 export interface GameState {
   version: 1;
   /** Epoch ms of the last simulated instant. */
@@ -78,6 +87,7 @@ export interface GameState {
   /** Total hours the tank has been running, for achievements and cycle detection. */
   ageHours: number;
   achievements: string[];
+  stats: Stats;
   /** The getting-started checklist has been dismissed once. */
   guideSeen: boolean;
   /** How the desktop window is presented; ignored in the browser build. */
@@ -125,6 +135,7 @@ export function newGame(now = Date.now()): GameState {
     inventory: { flakes: 20, conditioner: 2 },
     ageHours: 0,
     achievements: [],
+    stats: { bought: 0, born: 0, died: 0, sold: 0, coinsEarned: 0 },
     guideSeen: false,
     mode: "window",
     pinned: true,

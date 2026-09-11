@@ -1,6 +1,7 @@
 import type { GameState } from "../sim/state";
 import { isCycled } from "../sim/tank";
 import { BACTERIA } from "../data/constants";
+import { ACHIEVEMENTS } from "../sim/achievements";
 import { button, el } from "./dom";
 
 interface Step {
@@ -25,13 +26,16 @@ const STEPS: Step[] = [
 export class GuidePanel {
   readonly root: HTMLElement;
   private readonly list = el("div.guide-list");
+  private readonly journal = el("div.journal");
 
   constructor(overlay: HTMLElement, private readonly state: GameState) {
     this.root = el(
       "div.panel.panel-guide",
       { hidden: state.guideSeen },
       el("h2", {}, "Getting started"),
-      this.list,
+      el("div.guide-body", {},
+        el("div", {}, el("h3", {}, "Checklist"), this.list),
+        el("div", {}, el("h3", {}, "Journal"), this.journal)),
       el("div.panel-actions", {}, button("tool", "Got it", () => this.close())),
     );
     overlay.append(this.root);
@@ -55,6 +59,20 @@ export class GuidePanel {
 
   refresh(): void {
     if (this.root.hidden) return;
+    const s = this.state;
+    const alive = s.fish.filter((f) => f.alive).length;
+    const oldest = Math.max(0, ...s.fish.filter((f) => f.alive).map((f) => f.ageHours));
+    this.journal.replaceChildren(
+      ...[
+        ["Tank age", `${Math.floor(s.ageHours / 24)} days`],
+        ["Fish now", String(alive)],
+        ["Bought / born", `${s.stats.bought} / ${s.stats.born}`],
+        ["Sold / lost", `${s.stats.sold} / ${s.stats.died}`],
+        ["Oldest fish", `${Math.floor(oldest / 24)} days`],
+        ["Coins earned", String(Math.floor(s.stats.coinsEarned))],
+        ["Achievements", `${s.achievements.length} / ${ACHIEVEMENTS.length}`],
+      ].map(([k, v]) => el("div.stat-row", {}, el("span.stat-label", {}, k), el("span", {}, v))),
+    );
     this.list.replaceChildren();
     let current = true;
     for (const step of STEPS) {

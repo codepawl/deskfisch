@@ -43,6 +43,7 @@ export async function loadGame(): Promise<GameState | null> {
     equipment: { ...fresh.equipment, ...saved.equipment },
     inventory: { ...fresh.inventory, ...saved.inventory },
     settings: { ...fresh.settings, ...saved.settings },
+    stats: { ...fresh.stats, ...saved.stats },
     fish: (saved.fish ?? []).map((f) => ({ ...f, sex: f.sex ?? (Math.random() < 0.5 ? "m" : "f") })),
   };
 }

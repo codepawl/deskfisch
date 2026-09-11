@@ -41,6 +41,7 @@ export function stepBreeding(state: GameState, hours: number, water: Bounds): st
     if (f.gravidHours < GESTATION_HOURS) continue;
     const count = randInt(2, 4);
     for (let i = 0; i < count; i++) state.fish.push(fry(state, f, water));
+    state.stats.born += count;
     f.gravidHours = 0;
     f.breedCooldown = BREED_COOLDOWN_HOURS;
     births.push(`${f.name} had ${count} fry!`);

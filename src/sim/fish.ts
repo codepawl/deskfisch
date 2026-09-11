@@ -266,6 +266,7 @@ export function stepFish(state: GameState, hours: number): string[] {
     if (f.health <= 0) {
       f.alive = false;
       died.push(f.name);
+      state.stats.died++;
     }
   }
   return died;

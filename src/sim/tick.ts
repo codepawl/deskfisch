@@ -37,7 +37,9 @@ export function simulate(state: GameState, seconds: number): SimEvents {
   const died = stepFish(state, hours);
   const born = stepBreeding(state, hours, SIM_WATER);
   for (const f of state.fish) {
-    state.coins += (happiness(f) / 100) * SPECIES[f.speciesId].price * INCOME_RATE * hours;
+    const income = (happiness(f) / 100) * SPECIES[f.speciesId].price * INCOME_RATE * hours;
+    state.coins += income;
+    state.stats.coinsEarned += income;
   }
   state.ageHours += hours;
   return { died, born, sick };

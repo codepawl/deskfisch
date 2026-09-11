@@ -5,8 +5,8 @@ import type { GameState } from "./state";
 export type Disease = "ich" | "finrot";
 
 /** Chance per hour of catching something when conditions allow it. */
-const ICH_RATE = 0.02;
-const ICH_CONTAGION = 0.05;
+const ICH_RATE = 0.01;
+const ICH_CONTAGION = 0.03;
 const FINROT_RATE = 0.015;
 /** Ich dies off in warm water; this is the recovery chance per hour above ICH_CURE_TEMP. */
 const ICH_CURE_TEMP = 29;
@@ -31,7 +31,7 @@ export function stepDisease(state: GameState, hours: number): string[] {
     }
     if (f.sick) continue;
     const cold = t.temp < sp.tempRange[0] - 1;
-    const ichRisk = (f.stress > 50 || cold ? ICH_RATE : 0) + (ichAround ? ICH_CONTAGION : 0);
+    const ichRisk = (f.stress > 60 || cold ? ICH_RATE : 0) + (ichAround ? ICH_CONTAGION : 0);
     if (ichRisk > 0 && chance(ichRisk, hours)) {
       f.sick = "ich";
       fellIll.push(`${f.name} has ich (white spots)`);
