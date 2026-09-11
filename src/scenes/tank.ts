@@ -242,21 +242,6 @@ export class TankScene {
     }
   }
 
-  /** Bright ripples drifting through see-through water so it reads as water, not tinted glass. */
-  private caustics(buf: PixelBuffer): void {
-    const w = WATER.x1 - WATER.x0;
-    const light = withAlpha(COLOR.c, 0.55);
-    for (let band = 0; band < 6; band++) {
-      const baseY = WATER.y0 + 6 + band * 28;
-      if (baseY >= SAND_Y - 2) break;
-      const phase = this.time * 0.9 + band * 1.7;
-      for (let x = 0; x < w; x += 2) {
-        const y = baseY + Math.round(Math.sin(x * 0.07 + phase) * 4 + Math.sin(x * 0.023 - phase * 0.6) * 3);
-        if (y > WATER.y0 && y < SAND_Y) buf.set(WATER.x0 + x, y, light);
-      }
-    }
-  }
-
   /** Water bends what is behind it: a slow sideways ripple plus a 1 px offset below the surface. */
   private refract(buf: PixelBuffer): void {
     const t = this.time;
@@ -282,7 +267,6 @@ export class TankScene {
         paint(y, t < 0.5 ? mix(WATER_TOP, WATER_MID, t * 2) : mix(WATER_MID, WATER_DEEP, (t - 0.5) * 2));
       }
     }
-    if (seeThrough && quality !== "low") this.caustics(buf);
     // Light shafts from the tank light: sparse dithered pale bands drifting slowly, fading with depth.
     for (let i = 0; i < (quality === "high" && lit ? 3 : 0); i++) {
       const cx = WATER.x0 + 70 + i * 110 + Math.sin(this.time * 0.3 + i) * 10;
