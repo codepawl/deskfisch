@@ -71,7 +71,7 @@ export class GuidePanel {
         ["Oldest fish", `${Math.floor(oldest / 24)} days`],
         ["Coins earned", String(Math.floor(s.stats.coinsEarned))],
         ["Achievements", `${s.achievements.length} / ${ACHIEVEMENTS.length}`],
-      ].map(([k, v]) => el("div.stat-row", {}, el("span.stat-label", {}, k), el("span", {}, v))),
+      ].map(([k, v]) => el("div.stat-row", {}, el("span.stat-label", {}, k), el("span.num", {}, v))),
     );
     this.list.replaceChildren();
     let current = true;

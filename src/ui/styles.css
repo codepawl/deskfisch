@@ -380,3 +380,10 @@ input.rename {
 
 .journal { display: flex; flex-direction: column; gap: calc(1px * var(--s)); color: #94b0c2; }
 .journal .stat-row span:last-child { color: var(--ink); }
+
+/* Pixelify's "5" reads as "S"; digits use a pixel mono face instead. */
+.num, .stat-value, .hud-coins span, .hud-clock, .heater-value, .shop-row button.tool .label {
+  font-family: "VT323", "Pixelify Sans", monospace;
+  font-size: calc(7px * var(--s));
+  line-height: 1;
+}

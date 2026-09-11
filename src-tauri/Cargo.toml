@@ -1,7 +1,7 @@
 [package]
 name = "fisch"
-version = "0.2.1"
-description = "Fischlein: a cozy pixel aquarium for your desktop"
+version = "0.2.2"
+description = "Deskfisch: a cozy pixel aquarium for your desktop"
 authors = ["Nguyen Xuan An"]
 edition = "2021"
 

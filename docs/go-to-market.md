@@ -1,4 +1,4 @@
-# Fischlein — kế hoạch bán và marketing
+# Deskfisch — kế hoạch bán và marketing
 
 Trạng thái: bản nháp 2026-09-11, sau release 0.2.0. Mọi con số là ước lượng để lập kế hoạch, không phải dữ liệu đo được.
 
@@ -16,7 +16,7 @@ Trạng thái: bản nháp 2026-09-11, sau release 0.2.0. Mọi con số là ư�
 - *Rusty's Retirement* (Steam, 2024, $7): idle farm nằm dưới đáy màn hình. Chứng minh thị trường "game chạy trong lúc làm việc" bán tốt.
 - *Desktop Fishes* (Steam, 2025): hồ cá pixel overlay trên desktop, có breeding và di truyền hàng nghìn tổ hợp. **Đối thủ trực tiếp nhất.** Không có sim nước.
 - *Deskquarium*, *PC FISH: Taskbar Aquarium*, *Desktop Fisher* (Steam, 2025): cùng ngách "hồ cá/câu cá nằm trên desktop". Ngách này đã đông, tên "Desktop + Fish" đã bão hoà.
-- *Fisch* (Roblox): game câu cá rất phổ biến. Tên gốc "Fisch" của app trùng với nó, nên đã đổi thành **Fischlein** (xem mục 7).
+- *Fisch* (Roblox): game câu cá rất phổ biến. Tên gốc "Fisch" của app trùng với nó, nên đã đổi thành **Deskfisch** (xem mục 7).
 
 Khe hở của mình: không ai trong nhóm trên có **fishkeeping thật** (chu trình nitơ, acclimate, test kit, bệnh). Đó phải là câu đầu tiên trên Steam page, vì "cá pixel trên desktop" thôi thì người ta đã có 4 lựa chọn.
 
@@ -82,7 +82,7 @@ Marketing assets:
 
 ## 7. Rủi ro
 
-- **Tên.** "Fisch" trùng game Roblox lớn nên đã đổi thành **Fischlein** (tiếng Đức: cá nhỏ). Đã kiểm tra: không có game/app nào tên Fischlein trên Steam, App Store, Google Play (2026-09-11). Còn phải kiểm tra trademark và giữ domain `fischlein.app` trước khi mở Steam page. "Fischkeeper" và "Fischtank" đều đụng game có sẵn; "Deskfisch" trống nhưng chìm giữa 4 game "Desktop Fish…" đang có. Tên Đức là điểm khác biệt, không phải điểm trừ: cần tagline tiếng Anh ngay dưới tên ("a little fish tank that lives on your desk") và ghi cách đọc "fish-line" trong press kit.
+- **Tên.** "Fisch" trùng game Roblox lớn nên đã đổi thành **Deskfisch** (desk + Fisch: cá trên bàn làm việc). Kiểm tra 2026-09-11: không có game/app nào tên Deskfisch/Deskfish trên Steam, App Store, Google Play; "Fischkeeper", "Fischtank" đụng game có sẵn; "Fischlein" trống nhưng khó đọc với người không biết tiếng Đức. Rủi ro còn lại: ngách "Desktop Fish…" trên Steam đã có 4 game, nên tagline phải nói ngay điểm khác (fishkeeping thật). Còn phải kiểm tra trademark và giữ domain `deskfisch.app` trước khi mở Steam page.
 - **Cửa sổ trong suốt trên Linux/Wayland** phụ thuộc XWayland; ghi rõ trong mô tả Steam là "Linux: X11 hoặc XWayland".
 - **Cá chết làm người chơi cozy bỏ game.** Giữ chế độ "Gentle" trong Settings: không bệnh, không chết, chỉ stress — bật mặc định cho người mới, người thích sim thật tự tắt.
 - **Một người làm.** Không hứa ngày ra trước khi trailer và bản ký số xong.

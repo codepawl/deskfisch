@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.2 — 2026-09-11
+
+- Renamed again, to **Deskfisch**: reads in English, keeps the Fisch, and is its own search term. Numbers now use a pixel mono face so 5 no longer looks like S.
+
 ## 0.2.1 — 2026-09-11
 
 - Renamed to **Fischlein**. "Fisch" collides with an unrelated Roblox game in every search box; the new name keeps the word and stays findable. Bundle id is unchanged, saves carry over.

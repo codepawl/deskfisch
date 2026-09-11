@@ -46,7 +46,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: ${{ github.ref_name }}
-          releaseName: "Fischlein ${{ github.ref_name }}"
+          releaseName: "Deskfisch ${{ github.ref_name }}"
           releaseDraft: true
           args: ${{ matrix.args }}
 
@@ -65,5 +65,5 @@ jobs:
       - run: pnpm build
       - uses: actions/upload-artifact@v4
         with:
-          name: fischlein-web
+          name: deskfisch-web
           path: dist

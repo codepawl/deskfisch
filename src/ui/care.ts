@@ -11,7 +11,7 @@ export class CarePanel {
   private readonly doses = el("div.muted");
   private readonly note = el("div.shop-note");
   private readonly heaterRow = el("div.settings-row");
-  private readonly heaterValue = el("span");
+  private readonly heaterValue = el("span.heater-value");
 
   constructor(overlay: HTMLElement, private readonly state: GameState, private readonly onChange: () => void) {
     const row = el("div.panel-actions");

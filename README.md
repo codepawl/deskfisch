@@ -1,4 +1,4 @@
-# Fischlein
+# Deskfisch
 
 A cozy pixel-art aquarium for your desktop. Fish have real needs, the water
 runs a real nitrogen cycle, and new fish must be acclimated before release.
@@ -37,4 +37,4 @@ ignores always-on-top for native GTK apps; run with `GDK_BACKEND=x11` to get it.
 - New fish arrive in a bag. Float it ten minutes, add tank water three times,
   then drag the bag under the surface to release.
 
-The bundle identifier stays `com.an.fisch` so existing saves keep working after the rename to Fischlein. Saves live in the app data directory (`save.json`) via `tauri-plugin-store`.
+The bundle identifier stays `com.an.fisch` so existing saves keep working after the rename to Deskfisch. Saves live in the app data directory (`save.json`) via `tauri-plugin-store`.
