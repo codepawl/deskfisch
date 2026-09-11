@@ -83,13 +83,16 @@ html, body {
 
 button.tool {
   font: inherit;
+  /* VT323 sits high in its em box: line-height 1 and a lighter top pad centre it. */
+  line-height: 1;
   color: var(--ink);
   background: var(--panel);
   border: calc(1px * var(--s)) solid var(--panel-edge);
   box-shadow: inset 0 calc(-1px * var(--s)) 0 #000;
-  padding: calc(2px * var(--s)) calc(4px * var(--s));
+  padding: calc(1.5px * var(--s)) calc(4px * var(--s)) calc(2.5px * var(--s));
   cursor: pointer;
 }
+button.tool .label { display: inline-block; transform: translateY(calc(0.5px * var(--s))); }
 button.tool {
   display: inline-flex;
   align-items: center;
@@ -263,6 +266,7 @@ html[data-mode="pet"][data-pinned="true"] .grip { opacity: 0.35; }
 }
 .settings-row input, .settings-row select {
   font: inherit;
+  line-height: 1;
   color: var(--ink);
   background: #000;
   border: calc(1px * var(--s)) solid var(--panel-edge);
@@ -272,7 +276,7 @@ html[data-mode="pet"][data-pinned="true"] .grip { opacity: 0.35; }
 .settings-row select {
   -webkit-appearance: none;
   appearance: none;
-  padding: calc(1px * var(--s)) calc(8px * var(--s)) calc(1px * var(--s)) calc(2px * var(--s));
+  padding: calc(1.5px * var(--s)) calc(8px * var(--s)) calc(2px * var(--s)) calc(2px * var(--s));
   background-image: linear-gradient(45deg, transparent 50%, var(--accent) 50%), linear-gradient(135deg, var(--accent) 50%, transparent 50%);
   background-position: calc(100% - calc(4px * var(--s))) 50%, calc(100% - calc(2px * var(--s))) 50%;
   background-size: calc(2px * var(--s)) calc(2px * var(--s));
