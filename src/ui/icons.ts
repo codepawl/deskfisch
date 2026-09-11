@@ -62,7 +62,7 @@ const ICONS: Record<string, string[]> = {
     "..GGGG..",
     "...GG...",
   ],
-  shop: [
+  coin: [
     "..yyyy..",
     ".yyyyyy.",
     "yyySSyyy",

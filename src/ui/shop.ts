@@ -52,7 +52,7 @@ export class ShopPanel {
     const row = (name: string, sub: string, price: number, action: () => void, disabled = false) =>
       this.list.append(
         el("div.shop-row", {}, el("div", {}, el("div", {}, name), el("div.muted", {}, sub)),
-          button("tool", disabled ? "—" : `$ ${price}`, action)),
+          disabled ? button("tool", "—", action) : button("tool", String(price), action, "coin")),
       );
     switch (this.tab) {
       case "fish":

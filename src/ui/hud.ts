@@ -1,6 +1,6 @@
 import type { GameState } from "../sim/state";
 import { button, el, setLabel } from "./dom";
-import type { IconName } from "./icons";
+import { icon, type IconName } from "./icons";
 
 export type Tool = "feed" | "scrub" | "vacuum" | null;
 
@@ -14,7 +14,8 @@ export class Hud {
   /** The only control left in chill mode; brings the rest back. */
   readonly restore: HTMLButtonElement;
   tool: Tool = null;
-  private readonly coins = el("span.hud-coins");
+  private readonly coinCount = el("span");
+  private readonly coins = el("span.hud-coins", {}, icon("coin"), this.coinCount);
   private readonly clock = el("span.hud-clock");
   private readonly feedBtn: HTMLButtonElement;
   private readonly lightBtn: HTMLButtonElement;
@@ -63,7 +64,7 @@ export class Hud {
 
   refresh(): void {
     const s = this.state;
-    this.coins.textContent = `$ ${Math.floor(s.coins)}`;
+    this.coinCount.textContent = String(Math.floor(s.coins));
     const day = Math.floor(s.ageHours / 24) + 1;
     const now = new Date();
     const hh = String(now.getHours()).padStart(2, "0");

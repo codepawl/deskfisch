@@ -55,7 +55,7 @@ export class InspectPanel {
     setBar(this.bars.stress, f.stress, true);
     setBar(this.bars.health, f.health, false);
     setBar(this.bars.mood, happiness(f), false);
-    this.action.textContent = f.alive ? `Sell $ ${sellPrice(this.state, f.id)}` : "Scoop out";
+    this.action.textContent = f.alive ? `Sell for ${sellPrice(this.state, f.id)} coins` : "Scoop out";
   }
 }
 

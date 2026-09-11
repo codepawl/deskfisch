@@ -65,7 +65,7 @@ function run(state: GameState): void {
   const guide = new GuidePanel(overlay, state);
   hud.addButton("Change water", () => care.toggle(), "water");
   hud.addButton("Test water", () => stats.toggle(), "test");
-  hud.addButton("Shop", () => shop.toggle(), "shop");
+  hud.addButton("Shop", () => shop.toggle(), "coin");
 
   const MODES: Mode[] = ["window", "pet", "fullscreen"];
   const modeBtn = hud.addButton("", () => setMode(MODES[(MODES.indexOf(state.mode) + 1) % MODES.length]), "mode");
@@ -171,11 +171,11 @@ function run(state: GameState): void {
     const { away, died, born } = advance(state);
     if (away) {
       const h = away.hours >= 1 ? `${away.hours.toFixed(1)} h` : `${Math.round(away.hours * 60)} min`;
-      toasts.show(`Away ${h}${away.capped ? " (capped)" : ""}: +$ ${Math.floor(away.coinsEarned)}`, 8000);
+      toasts.show(`Away ${h}${away.capped ? " (capped)" : ""}: +${Math.floor(away.coinsEarned)} coins`, 8000);
     }
     for (const name of died) toasts.show(`${name} died. Scoop it out before it fouls the water.`, 8000);
     for (const msg of born) toasts.show(msg, 8000);
-    for (const a of checkAchievements(state)) toasts.show(`${a.title}: +$ ${a.reward}`, 8000);
+    for (const a of checkAchievements(state)) toasts.show(`${a.title}: +${a.reward} coins`, 8000);
     hud.refresh();
     stats.refresh();
     inspect.refresh();
