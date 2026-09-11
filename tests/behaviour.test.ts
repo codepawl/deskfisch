@@ -1,9 +1,18 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { newGame } from "../src/sim/state";
 import { moveFish, spawnFish } from "../src/sim/fish";
 import { SPECIES } from "../src/data/species";
 
 const WATER = { x0: 0, y0: 0, x1: 300, y1: 200 };
+
+// Wander targets are random; a fixed LCG keeps these behaviour checks repeatable.
+beforeEach(() => {
+  let seed = 12345;
+  vi.spyOn(Math, "random").mockImplementation(() => {
+    seed = (seed * 1103515245 + 12345) % 2147483648;
+    return seed / 2147483648;
+  });
+});
 
 function run(g: ReturnType<typeof newGame>, seconds: number, lure: { x: number } | null = null) {
   for (let i = 0; i < seconds * 60; i++) {
