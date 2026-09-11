@@ -54,9 +54,15 @@ Take the files from the GitHub release, name and tag them like this:
 | `Deskfisch_<v>_x64-setup.exe` | Windows | Mark as "executable" |
 | `Deskfisch_<v>_universal.dmg` | macOS | |
 | `Deskfisch_<v>_amd64.AppImage` | Linux | Mark as "executable" |
-| `site/play/` zipped with `index.html` at the root | HTML5 | Viewport 768×480, "Mobile friendly" off, "Fullscreen button" on |
+| `deskfisch-<v>-html5.zip` (`vite build --base=./`, `index.html` at the root) | HTML5, "played in the browser" | Kind of project: HTML. Viewport 768×480, Fullscreen button on. Upload through the web form: a butler-pushed directory makes itch report "Failed to find index.html". |
 
-## butler (after the project exists)
+## butler
+
+`.github/workflows/itch.yml` pushes the three installers on every published GitHub release
+(or by hand: Actions → itch.io → Run workflow with the tag). Needs the `BUTLER_API_KEY` secret.
+The browser zip is uploaded by hand as described above.
+
+## butler by hand
 
 ```bash
 # once: butler login  (opens a browser; a codepawl member does this)
