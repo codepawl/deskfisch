@@ -73,13 +73,45 @@ export interface Lure {
   x: number;
 }
 
+/** About two fish in five care what a finger on the glass is doing. Stable per fish. */
+export function isCurious(f: Fish): boolean {
+  return (f.id * 7919) % 5 < 2;
+}
+
+/** A knock on the glass: fish within `radius` dart away from the point for a moment. */
+export function startle(state: GameState, x: number, y: number, water: Bounds, radius = 90): number {
+  let hit = 0;
+  for (const f of state.fish) {
+    if (!f.alive) continue;
+    const w = SPECIES[f.speciesId].frames[0].w;
+    const cx = f.x + w / 2;
+    const d = Math.hypot(cx - x, f.y - y);
+    if (d > radius) continue;
+    const away = cx >= x ? 1 : -1;
+    f.tx = clamp(cx + away * (60 + rand(0, 50)) - w / 2, water.x0, water.x1 - w);
+    f.ty = clamp(f.y + rand(-25, 25), water.y0, floorAt(water, f.tx, SPECIES[f.speciesId].frames[0].h));
+    f.retarget = rand(0.6, 1);
+    f.pace = 2.4;
+    f.vx += away * 40;
+    f.stress = clamp(f.stress + 1.5, 0, 100);
+    hit++;
+  }
+  return hit;
+}
+
 /** Per-fish position inside its school, stable across sessions. */
 function schoolOffset(f: Fish): { x: number; y: number } {
   return { x: ((f.id * 37) % 25) - 12, y: ((f.id * 53) % 15) - 7 };
 }
 
 /** Wander: drift toward a target, pick a new one when reached or on a timer. Dead fish float up. */
-export function moveFish(f: Fish, sp: Species, water: Bounds, dt: number, state?: GameState, lure: Lure | null = null): void {
+/** A finger resting on the glass; curious fish come over for a look. */
+export interface Poke {
+  x: number;
+  y: number;
+}
+
+export function moveFish(f: Fish, sp: Species, water: Bounds, dt: number, state?: GameState, lure: Lure | null = null, poke: Poke | null = null): void {
   const w = sp.frames[0].w;
   const h = sp.frames[0].h;
   if (!f.alive) {
@@ -104,7 +136,7 @@ export function moveFish(f: Fish, sp: Species, water: Bounds, dt: number, state?
     f.retarget = 0.5;
     f.pace = 1.6;
   } else if (f.retarget <= 0 || Math.hypot(f.tx - f.x, f.ty - f.y) < 4) {
-    chooseTarget(f, sp, water, state, lure);
+    chooseTarget(f, sp, water, state, lure, poke);
   }
   const dx = f.tx - f.x;
   const dy = f.ty - f.y;
@@ -125,11 +157,20 @@ export function moveFish(f: Fish, sp: Species, water: Bounds, dt: number, state?
 }
 
 /** Pick the next place to swim, by priority: food lure, hiding, rivalry, school, foraging, wander. */
-function chooseTarget(f: Fish, sp: Species, water: Bounds, state: GameState | undefined, lure: Lure | null): void {
+function chooseTarget(f: Fish, sp: Species, water: Bounds, state: GameState | undefined, lure: Lure | null, poke: Poke | null): void {
   const w = sp.frames[0].w;
   const h = sp.frames[0].h;
   const off = schoolOffset(f);
   f.pace = 1;
+  if (poke && isCurious(f) && f.stress < 50 && Math.hypot(poke.x - f.x, poke.y - f.y) < 130 && Math.random() < 0.6) {
+    // Drift over for a look, mouth toward the finger, then hang there a moment.
+    const mouth = mouthOffset(sp, poke.x >= f.x + w / 2 ? 1 : -1);
+    f.tx = clamp(poke.x - mouth.x + off.x / 4, water.x0, water.x1 - w);
+    f.ty = clamp(poke.y - mouth.y + off.y / 3, water.y0, floorAt(water, f.tx + w / 2, h));
+    f.retarget = rand(1.2, 2);
+    f.pace = 0.7;
+    return;
+  }
   if (lure && f.hunger > 25) {
     f.tx = clamp(lure.x + off.x, water.x0, water.x1 - w);
     f.ty = water.y0 + 3 + Math.abs(off.y);

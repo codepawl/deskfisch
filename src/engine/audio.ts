@@ -57,6 +57,24 @@ export class Sfx {
     osc.stop(t + 0.13);
   }
 
+  /** A knuckle on glass: a short, dull tock. */
+  tap(): void {
+    const ctx = this.ensure();
+    if (!ctx || !this.master) return;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const t = ctx.currentTime;
+    osc.type = "triangle";
+    osc.frequency.setValueAtTime(220, t);
+    osc.frequency.exponentialRampToValueAtTime(90, t + 0.06);
+    gain.gain.setValueAtTime(0.35, t);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.09);
+    osc.connect(gain).connect(this.master);
+    osc.start(t);
+    osc.stop(t + 0.1);
+    this.noiseBurst(900, 0.02, 0.05, "lowpass");
+  }
+
   /** Short hiss of water hitting the surface. */
   splash(): void {
     this.noiseBurst(1800, 0.18, 0.2, "highpass");

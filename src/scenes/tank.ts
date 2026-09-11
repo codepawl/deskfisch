@@ -147,6 +147,20 @@ export class TankScene {
   /** Window jolts waiting to shove the sand: signed grains per column, applied in order. */
   private shoves: number[] = [];
   private settleTimer = 0;
+  /** Surface wave components: spatial frequency, drift speed, and wandering phase/amplitude. */
+  private waves = [
+    { k: 0.21, speed: 1.9, phase: 0, amp: 0.6 },
+    { k: 0.083, speed: -0.7, phase: 2.1, amp: 0.5 },
+    { k: 0.37, speed: 2.9, phase: 4.0, amp: 0.35 },
+  ];
+
+  /** Surface height offset at column x, in pixels. */
+  private surface(x: number): number {
+    let s = 0;
+    for (const w of this.waves) s += Math.sin(x * w.k + w.phase) * w.amp;
+    return s;
+  }
+
   /** Top of the sand this frame, cached for the band effects. */
   private crest = WATER.y1;
 
@@ -203,6 +217,12 @@ export class TankScene {
   update(dt: number, quality: Quality = "high"): void {
     this.time += dt;
     this.stepSlosh(dt);
+    // The surface is a few waves at unrelated frequencies whose phases and
+    // amplitudes wander, so it never settles into a visible loop.
+    for (const w of this.waves) {
+      w.phase += dt * w.speed + (Math.random() - 0.5) * dt * 0.9;
+      w.amp = Math.max(0.2, Math.min(1.2, w.amp + (Math.random() - 0.5) * dt * 0.6));
+    }
     if (quality !== "low" && Math.random() < dt * 1.2) {
       this.bubbles.push({ x: rand(WATER.x0 + 30, WATER.x0 + 40), y: WATER.y1 - 6, speed: rand(18, 30), wobble: rand(0, 6) });
     }
@@ -246,6 +266,19 @@ export class TankScene {
     }
     // A puff of water up the tube.
     this.particles.push({ x: x + rand(-1, 1), y: y - 4, vx: 0, vy: -30, life: 0.25, color: COLOR.c });
+  }
+
+  /** A knock on the glass: a ring of specks spreading from the point, briefly. */
+  tap(x: number, y: number): void {
+    for (let i = 0; i < 10; i++) {
+      const a = (i / 10) * Math.PI * 2;
+      this.particles.push({ x, y, vx: Math.cos(a) * 45, vy: Math.sin(a) * 45, life: 0.22, color: COLOR.c });
+    }
+  }
+
+  /** A curious fish mouthing the glass: one small bubble. */
+  nip(x: number, y: number): void {
+    this.particles.push({ x, y, vx: 0, vy: -18, life: 0.6, color: COLOR.W });
   }
 
   /** Ripple where food hits the surface. */
@@ -367,10 +400,9 @@ export class TankScene {
         }
       }
     }
-    // Surface ripple line.
+    // Surface line follows the wandering waves.
     for (let x = WATER.x0; x < WATER.x1; x++) {
-      const dy = Math.round(Math.sin(x * 0.25 + this.time * 2) * 0.6);
-      buf.set(x, WATER.y0 + dy, COLOR.c);
+      buf.set(x, WATER.y0 + Math.round(this.surface(x)), COLOR.c);
     }
   }
 

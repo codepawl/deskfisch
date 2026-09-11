@@ -4,7 +4,7 @@ import { Input } from "./engine/input";
 import { startLoop } from "./engine/loop";
 import { SPECIES } from "./data/species";
 import { AUTOSAVE_SECONDS } from "./data/constants";
-import { moveFish, type Fish } from "./sim/fish";
+import { isCurious, moveFish, startle, type Fish, type Poke } from "./sim/fish";
 import { dropPellets, updatePellets } from "./sim/food";
 import { demoGame, newGame, type GameState } from "./sim/state";
 import { spawnFish } from "./sim/fish";
@@ -195,8 +195,15 @@ function run(state: GameState): void {
     }
     // Scrub and vacuum act while held; a press must not open a fish card.
     if (hud.tool) return;
-    inspect.show(fishAt(state.fish, x, y));
+    const fish = fishAt(state.fish, x, y);
+    inspect.show(fish);
     bagPanel.show(null);
+    if (!fish && state.tank.fill > 0.3) {
+      // A knock on the glass.
+      scene.tap(x, y);
+      sfx.tap();
+      startle(state, x, y, WATER);
+    }
   };
 
   const handleRelease = () => {
@@ -239,6 +246,11 @@ function run(state: GameState): void {
 
   let scrubSoundIn = 0;
   let vacuumHintShown = false;
+  // A finger resting on the glass (pointer still for a moment, no tool) draws curious fish.
+  let hoverStill = 0;
+  let hoverX = 0;
+  let hoverY = 0;
+  let nipCooldown = 0;
 
   // Every painted frame costs WebKit about 6 ms of CPU regardless of the JS
   // work, so an unfocused tank (pet mode beside your work) idles at 15 fps.
@@ -286,10 +298,28 @@ function run(state: GameState): void {
       sfx.ambient(state.settings.ambient && !state.settings.muted && (eq.filter > 0 || eq.airPump > 0), eq.airPump > 0);
       updatePellets(state, WATER, dt);
       const lure = hud.tool === "feed" && input.inside && inWater(input.x, input.y) ? { x: input.x } : null;
+      if (Math.hypot(input.x - hoverX, input.y - hoverY) > 2 || !input.inside || hud.tool || drag || !inWater(input.x, input.y)) {
+        hoverStill = 0;
+        hoverX = input.x;
+        hoverY = input.y;
+      } else {
+        hoverStill += dt;
+      }
+      const poke: Poke | null = hoverStill > 0.6 ? { x: hoverX, y: hoverY } : null;
+      nipCooldown -= dt;
       const current = scene.current;
       for (const f of state.fish) {
-        moveFish(f, SPECIES[f.speciesId], WATER, dt, state, lure);
+        moveFish(f, SPECIES[f.speciesId], WATER, dt, state, lure, poke);
         if (current) f.vx += current * dt;
+        if (poke && f.alive && isCurious(f) && nipCooldown <= 0) {
+          const w = SPECIES[f.speciesId].frames[0].w;
+          const mx = f.facing > 0 ? f.x + w - 2 : f.x + 2;
+          if (Math.hypot(mx - poke.x, f.y + 3 - poke.y) < 9 && Math.random() < dt * 1.5) {
+            scene.nip(mx, f.y + 2);
+            sfx.bubble(0.5);
+            nipCooldown = 0.8;
+          }
+        }
       }
     },
     render() {

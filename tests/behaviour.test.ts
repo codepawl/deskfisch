@@ -56,3 +56,21 @@ describe("behaviour", () => {
     expect(f.x).toBeGreaterThan(200);
   });
 });
+
+describe("glass", () => {
+  it("a knock sends nearby fish darting away", async () => {
+    const { startle } = await import("../src/sim/fish");
+    const g = tankGame(0);
+    const near = spawnFish(SPECIES.neon, "near", WATER, 1);
+    near.x = 100;
+    near.y = 100;
+    const far = spawnFish(SPECIES.neon, "far", WATER, 2);
+    far.x = 280;
+    far.y = 100;
+    g.fish.push(near, far);
+    expect(startle(g, 90, 100, WATER)).toBe(1);
+    expect(near.pace).toBeGreaterThan(2);
+    expect(near.tx).toBeGreaterThan(near.x);
+    expect(far.pace ?? 1).toBe(1);
+  });
+});
