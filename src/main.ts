@@ -76,13 +76,19 @@ function run(state: GameState): void {
     const pinBtn = hud.addButton("", () => {
       state.pinned = !state.pinned;
       pinBtn.textContent = state.pinned ? "Unpin" : "Pin";
+      reflectPin();
       void setPinned(state.pinned);
     });
     pinBtn.textContent = state.pinned ? "Unpin" : "Pin";
   }
   hud.addButton("Settings", () => settings.toggle());
+  // Pinned means fixed to the screen: on top of other windows and not movable.
+  const reflectPin = () => (document.documentElement.dataset.pinned = String(state.pinned));
+  reflectPin();
   hud.dragHandle.addEventListener("pointerdown", () => {
-    if (state.mode === "pet") void startWindowDrag();
+    if (state.mode !== "pet") return;
+    if (state.pinned) toasts.show("Unpin to move the tank.", 2500);
+    else void startWindowDrag();
   });
 
   let sinceSave = 0;

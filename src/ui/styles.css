@@ -193,7 +193,11 @@ button.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
 /* --- Pet mode: see-through window, top strip drags it ---------------- */
 
 html[data-transparent="true"], html[data-transparent="true"] body { background: transparent; }
+.grip { display: none; color: var(--ink); opacity: 0.8; letter-spacing: 0.1em; }
+html[data-mode="pet"] .grip { display: inline; }
 html[data-mode="pet"] .hud-top { pointer-events: auto; cursor: move; }
+html[data-mode="pet"][data-pinned="true"] .hud-top { cursor: not-allowed; }
+html[data-mode="pet"][data-pinned="true"] .grip { opacity: 0.35; }
 
 /* --- Settings ------------------------------------------------------- */
 

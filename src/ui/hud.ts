@@ -27,7 +27,7 @@ export class Hud {
       button("tool", "Vacuum", () => this.toggleTool("vacuum")),
       this.lightBtn,
     );
-    this.dragHandle = el("div.hud-top", {}, this.coins, this.clock);
+    this.dragHandle = el("div.hud-top", {}, this.coins, el("span.grip", {}, "⋮⋮ drag ⋮⋮"), this.clock);
     this.root = el("div.hud", {}, this.dragHandle, this.bar);
     overlay.append(this.root);
     this.refresh();
