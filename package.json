@@ -10,7 +10,7 @@
     "test": "vitest run",
     "tauri": "tauri",
     "site": "tsc && vite build --base=/play/ --outDir site/play --emptyOutDir",
-    "site:deploy": "pnpm site && wrangler deploy"
+    "site:deploy": "pnpm site && pnpm dlx wrangler deploy"
   },
   "dependencies": {
     "@fontsource/vt323": "^5.3.0",
