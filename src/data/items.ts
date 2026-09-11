@@ -29,6 +29,13 @@ export const LIGHTS: LightTier[] = [
   { name: "Full-spectrum LED", price: 150, intensity: 1.6 },
 ];
 
+export interface TankTier { name: string; price: number; volumeL: number }
+export const TANKS: TankTier[] = [
+  { name: "60 L nano", price: 0, volumeL: 60 },
+  { name: "120 L", price: 300, volumeL: 120 },
+  { name: "200 L", price: 800, volumeL: 200 },
+];
+
 /** Surface gas exchange with no equipment at all. */
 export const BASE_AERATION = 0.25;
 
@@ -40,6 +47,8 @@ export const SUPPLIES: Consumable[] = [
   { id: "bacteria", name: "Bottled bacteria", price: 40, blurb: "Kick-starts the nitrogen cycle." },
   { id: "thermometer", name: "Thermometer", price: 12, blurb: "Reveals the water temperature." },
   { id: "testKit", name: "Test kit", price: 60, blurb: "Reveals pH, ammonia, nitrite, nitrate, oxygen." },
+  { id: "ichMed", name: "Ich medicine", price: 35, blurb: "Clears white spot from every fish. Knocks the filter bacteria back a bit." },
+  { id: "finrotMed", name: "Fin rot medicine", price: 35, blurb: "Clears fin rot from every fish. Knocks the filter bacteria back a bit." },
 ];
 
 export interface DecorKind { id: string; name: string; price: number; /** Nitrate removed per hour. */ no3Uptake: number }

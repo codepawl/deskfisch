@@ -170,13 +170,14 @@ function run(state: GameState): void {
   // Simulation clock: wall-clock driven so hiding the window or sleeping the
   // machine never loses time; long gaps are replayed coarsely.
   const tick = () => {
-    const { away, died, born } = advance(state);
+    const { away, died, born, sick } = advance(state);
     if (away) {
       const h = away.hours >= 1 ? `${away.hours.toFixed(1)} h` : `${Math.round(away.hours * 60)} min`;
       toasts.show(`Away ${h}${away.capped ? " (capped)" : ""}: +${Math.floor(away.coinsEarned)} coins`, 8000);
     }
     for (const name of died) toasts.show(`${name} died. Scoop it out before it fouls the water.`, 8000);
     for (const msg of born) toasts.show(msg, 8000);
+    for (const msg of sick) toasts.show(`${msg}. Check the fish card.`, 8000);
     for (const a of checkAchievements(state)) toasts.show(`${a.title}: +${a.reward} coins`, 8000);
     hud.refresh();
     stats.refresh();
@@ -224,6 +225,8 @@ function run(state: GameState): void {
         }
       }
       sfx.vacuum(vacuuming);
+      const eq = state.equipment;
+      sfx.ambient(state.settings.ambient && !state.settings.muted && (eq.filter > 0 || eq.airPump > 0), eq.airPump > 0);
       updatePellets(state, WATER, dt);
       const lure = hud.tool === "feed" && input.inside && inWater(input.x, input.y) ? { x: input.x } : null;
       for (const f of state.fish) moveFish(f, SPECIES[f.speciesId], WATER, dt, state, lure);

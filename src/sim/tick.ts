@@ -6,6 +6,7 @@ import { stepTank } from "./tank";
 import { decayPellets } from "./food";
 import { stepBags } from "./bag";
 import { stepBreeding } from "./breeding";
+import { stepDisease } from "./disease";
 import type { Bounds } from "./fish";
 
 /** Where fry appear; the scene sets the real tank bounds at boot. */
@@ -19,6 +20,8 @@ export interface SimEvents {
   died: string[];
   /** Birth announcements. */
   born: string[];
+  /** Fish that fell ill. */
+  sick: string[];
 }
 
 /**
@@ -30,18 +33,20 @@ export function simulate(state: GameState, seconds: number): SimEvents {
   stepTank(state, hours, wasteLoad(state));
   decayPellets(state, hours);
   stepBags(state, hours);
+  const sick = stepDisease(state, hours);
   const died = stepFish(state, hours);
   const born = stepBreeding(state, hours, SIM_WATER);
   for (const f of state.fish) {
     state.coins += (happiness(f) / 100) * SPECIES[f.speciesId].price * INCOME_RATE * hours;
   }
   state.ageHours += hours;
-  return { died, born };
+  return { died, born, sick };
 }
 
 function merge(into: SimEvents, from: SimEvents): void {
   into.died.push(...from.died);
   into.born.push(...from.born);
+  into.sick.push(...from.sick);
 }
 
 export interface CatchUp extends SimEvents {
@@ -63,9 +68,9 @@ export function advance(state: GameState, now = Date.now()): SimEvents & { away:
   const gap = (now - state.simTime) / 1000;
   if (gap >= COARSE_GAP_SECONDS) {
     const away = catchUp(state, now);
-    return { died: away?.died ?? [], born: away?.born ?? [], away };
+    return { died: away?.died ?? [], born: away?.born ?? [], sick: away?.sick ?? [], away };
   }
-  const events: SimEvents = { died: [], born: [] };
+  const events: SimEvents = { died: [], born: [], sick: [] };
   while (now - state.simTime >= 1000) {
     merge(events, simulate(state, state.settings.simSpeed));
     state.simTime += 1000;
@@ -83,7 +88,7 @@ export function catchUp(state: GameState, now = Date.now()): CatchUp | null {
   const capped = elapsed > MAX_CATCHUP_HOURS * 3600;
   let remaining = Math.min(elapsed, MAX_CATCHUP_HOURS * 3600);
   const coinsBefore = state.coins;
-  const events: SimEvents = { died: [], born: [] };
+  const events: SimEvents = { died: [], born: [], sick: [] };
   // Offline time is replayed at normal speed; a sped-up sim would otherwise
   // burn through days of chemistry while the app was closed.
   while (remaining > 0) {

@@ -31,9 +31,10 @@ export class StatsPanel {
   readonly root: HTMLElement;
   private readonly cells = new Map<Row, HTMLElement>();
   private readonly cycle = el("div.stat-row");
+  private readonly volume = el("div.muted");
 
   constructor(overlay: HTMLElement, private readonly state: GameState) {
-    this.root = el("div.panel.panel-stats", { hidden: true }, el("h2", {}, "Water"));
+    this.root = el("div.panel.panel-stats", { hidden: true }, el("h2", {}, "Water"), this.volume);
     for (const r of ROWS) {
       const v = el("span.stat-value");
       this.cells.set(r, v);
@@ -51,6 +52,7 @@ export class StatsPanel {
   refresh(): void {
     if (this.root.hidden) return;
     const s = this.state;
+    this.volume.textContent = `${s.tank.volumeL} L tank`;
     for (const [r, cell] of this.cells) {
       const known = r.gate === null || s.equipment[r.gate];
       cell.className = "stat-value";

@@ -1,4 +1,6 @@
-import { FISH_NAMES, SUPPLIES, DECOR, FILTERS, HEATERS, AIR_PUMPS, LIGHTS } from "../data/items";
+import { FISH_NAMES, SUPPLIES, DECOR, FILTERS, HEATERS, AIR_PUMPS, LIGHTS, TANKS } from "../data/items";
+import { doWaterChange } from "./tank";
+import { treat } from "./disease";
 import { SPECIES } from "../data/species";
 import { pick, rand } from "../engine/rng";
 import type { Bounds } from "./fish";
@@ -44,6 +46,12 @@ export function buySupply(state: GameState, id: string): string | null {
     case "testKit":
       state.equipment[id] = true;
       break;
+    case "ichMed":
+      treat(state, "ich");
+      break;
+    case "finrotMed":
+      treat(state, "finrot");
+      break;
   }
   return null;
 }
@@ -56,8 +64,9 @@ export function buyDecor(state: GameState, kind: string, water: Bounds): string 
   return null;
 }
 
-export type GearKey = "filter" | "heater" | "airPump" | "light";
+export type GearKey = "tank" | "filter" | "heater" | "airPump" | "light";
 export const GEAR: Record<GearKey, { label: string; tiers: { name: string; price: number }[] }> = {
+  tank: { label: "Tank", tiers: TANKS },
   filter: { label: "Filter", tiers: FILTERS },
   heater: { label: "Heater", tiers: HEATERS },
   airPump: { label: "Air pump", tiers: AIR_PUMPS },
@@ -72,6 +81,12 @@ export function upgradeGear(state: GameState, key: GearKey): string | null {
   if (err) return err;
   state.equipment[key] += 1;
   if (key === "light") state.equipment.lightOn = true;
+  if (key === "tank") {
+    // The extra volume is fresh tap water, so it behaves like a partial water change.
+    const before = state.tank.volumeL;
+    state.tank.volumeL = TANKS[state.equipment.tank].volumeL;
+    doWaterChange(state, 1 - before / state.tank.volumeL);
+  }
   return null;
 }
 

@@ -31,8 +31,33 @@ export class InspectPanel {
       this.show(null);
       this.onChange();
     });
-    this.root.append(el("div.panel-actions", {}, this.action, button("tool", "Close", () => this.show(null))));
+    this.root.append(el("div.panel-actions", {}, this.action, button("tool", "Rename", () => this.rename()), button("tool", "Close", () => this.show(null))));
     overlay.append(this.root);
+  }
+
+  /** Swap the title for a text box; Enter or blur commits, Escape cancels. */
+  private rename(): void {
+    const f = this.fish;
+    if (!f) return;
+    const input = document.createElement("input");
+    input.className = "rename";
+    input.value = f.name;
+    input.maxLength = 16;
+    const done = (commit: boolean) => {
+      const v = input.value.trim();
+      if (commit && v) f.name = v;
+      input.replaceWith(this.title);
+      this.refresh();
+    };
+    input.onkeydown = (e) => {
+      if (e.key === "Enter") done(true);
+      if (e.key === "Escape") done(false);
+      e.stopPropagation();
+    };
+    input.onblur = () => done(true);
+    this.title.replaceWith(input);
+    input.focus();
+    input.select();
   }
 
   show(f: Fish | null): void {
@@ -50,7 +75,9 @@ export class InspectPanel {
     const sex = f.sex === "f" ? "♀" : "♂";
     const stage = f.size < 0.5 ? "fry" : f.size < 0.8 ? "juvenile" : "adult";
     const gravid = f.gravidHours ? ` · carrying fry ${Math.round((f.gravidHours / GESTATION_HOURS) * 100)}%` : "";
-    this.sub.textContent = f.alive ? `${sex} ${sp.name} · ${stage} · ${days}d${gravid}` : `${sp.name} · dead`;
+    const sick = f.sick === "ich" ? " · ICH: medicine or 29 °C+" : f.sick === "finrot" ? " · FIN ROT: medicine + clean water" : "";
+    this.sub.textContent = f.alive ? `${sex} ${sp.name} · ${stage} · ${days}d${gravid}${sick}` : `${sp.name} · dead`;
+    this.sub.classList.toggle("bad", !!f.sick);
     setBar(this.bars.hunger, f.hunger, true);
     setBar(this.bars.stress, f.stress, true);
     setBar(this.bars.health, f.health, false);

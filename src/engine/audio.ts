@@ -8,6 +8,7 @@ export class Sfx {
   private master: GainNode | null = null;
   private noiseBuffer: AudioBuffer | null = null;
   private vacuumNode: { src: AudioBufferSourceNode; gain: GainNode } | null = null;
+  private ambientNode: { src: AudioBufferSourceNode; gain: GainNode } | null = null;
   private volume = 0.5;
   private muted = false;
 
@@ -91,6 +92,32 @@ export class Sfx {
       this.vacuumNode = null;
     }
     if (on && Math.random() < 0.06) this.bubble(1.6);
+  }
+
+  /** Soft filter hum while `on`; a bubble now and then when there is an air pump. */
+  ambient(on: boolean, bubbles: boolean): void {
+    const ctx = this.ensure();
+    if (!ctx || !this.master || !this.noiseBuffer) return;
+    if (on && !this.ambientNode) {
+      const src = ctx.createBufferSource();
+      src.buffer = this.noiseBuffer;
+      src.loop = true;
+      const filter = ctx.createBiquadFilter();
+      filter.type = "lowpass";
+      filter.frequency.value = 180;
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.12, ctx.currentTime + 1.5);
+      src.connect(filter).connect(gain).connect(this.master);
+      src.start();
+      this.ambientNode = { src, gain };
+    } else if (!on && this.ambientNode) {
+      const { src, gain } = this.ambientNode;
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.5);
+      src.stop(ctx.currentTime + 0.6);
+      this.ambientNode = null;
+    }
+    if (on && bubbles && Math.random() < 0.004) this.bubble(0.8);
   }
 
   private noiseBurst(freq: number, attack: number, length: number, type: BiquadFilterType): void {

@@ -13,6 +13,7 @@ export class SettingsPanel {
     rows.append(
       this.row("See-through pet window", this.checkbox(s.transparent, (v) => (s.transparent = v))),
       this.row("Sound", this.checkbox(!s.muted, (v) => (s.muted = !v))),
+      this.row("Ambient hum", this.checkbox(s.ambient, (v) => (s.ambient = v))),
       this.row("Volume", this.range(s.volume, (v) => (s.volume = v))),
       this.row("Sim speed", this.select(["1", "2", "5", "10"], String(s.simSpeed), (v) => {
         s.simSpeed = Number(v);

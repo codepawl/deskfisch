@@ -24,6 +24,8 @@ export interface TankState {
 }
 
 export interface Equipment {
+  /** Index into TANKS; the tank's volume lives in `tank.volumeL`. */
+  tank: number;
   filter: number;
   heater: number;
   heaterTarget: number;
@@ -54,6 +56,8 @@ export interface Settings {
   maxFps: number;
   /** Hide every control and leave only the tank. */
   chill: boolean;
+  /** Filter hum and bubbles in the background. */
+  ambient: boolean;
 }
 
 export interface GameState {
@@ -103,6 +107,7 @@ export function newGame(now = Date.now()): GameState {
       bactB: BACTERIA.seed,
     },
     equipment: {
+      tank: 0,
       filter: 0,
       heater: 0,
       heaterTarget: 25,
@@ -123,6 +128,6 @@ export function newGame(now = Date.now()): GameState {
     guideSeen: false,
     mode: "window",
     pinned: true,
-    settings: { transparent: true, volume: 0.5, muted: false, simSpeed: 1, quality: "high", maxFps: 60, chill: false },
+    settings: { transparent: true, volume: 0.5, muted: false, simSpeed: 1, quality: "high", maxFps: 60, chill: false, ambient: true },
   };
 }

@@ -151,6 +151,7 @@ button.tool:disabled { opacity: 0.4; cursor: default; }
   color: var(--accent);
 }
 .muted { color: #94b0c2; }
+.muted.bad { color: #ef7d57; }
 
 .panel-stats { top: calc(20px * var(--s)); right: calc(8px * var(--s)); }
 .panel-inspect { top: calc(20px * var(--s)); left: calc(8px * var(--s)); }
@@ -357,4 +358,13 @@ html[data-chill="true"] .hud, html[data-chill="true"] .panel, html[data-chill="t
   margin: calc(1px * var(--s)) 0 0 calc(6px * var(--s));
   padding-left: calc(3px * var(--s));
   border-left: calc(1px * var(--s)) solid var(--accent);
+}
+
+input.rename {
+  font: inherit;
+  color: var(--accent);
+  background: #000;
+  border: calc(1px * var(--s)) solid var(--panel-edge);
+  width: calc(60px * var(--s));
+  margin-bottom: calc(2px * var(--s));
 }

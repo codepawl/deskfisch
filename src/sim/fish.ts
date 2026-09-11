@@ -2,6 +2,7 @@ import { clamp, rand } from "../engine/rng";
 import { HOURS_TO_STARVE, STRESS_EASE_PER_HOUR } from "../data/constants";
 import { SPECIES, type Species } from "../data/species";
 import { DECOR_COMFORT, MAX_DECOR_COMFORT } from "../data/items";
+import { HEALTH_LOSS } from "./disease";
 import type { GameState } from "./state";
 import { EAT_RADIUS, HUNGER_PER_PELLET, nearestPellet } from "./food";
 
@@ -27,6 +28,7 @@ export interface Fish {
   gravidHours?: number;
   /** Hours until she can carry again. */
   breedCooldown?: number;
+  sick?: "ich" | "finrot";
   ageHours: number;
   /** 0 = just born .. 1 = full adult size. */
   size: number;
@@ -225,6 +227,7 @@ export function stressTarget(state: GameState, f: Fish): number {
   s += Math.max(0, 5 - t.o2) * 20;
   s += t.chlorine * 60;
   s += Math.max(0, f.hunger - 60) * 0.5;
+  if (f.sick) s += 15;
   if (sp.minGroup > 1) {
     const kin = state.fish.filter((o) => o.alive && o.speciesId === sp.id).length;
     if (kin < sp.minGroup) s += 15;
@@ -255,6 +258,7 @@ export function stepFish(state: GameState, hours: number): string[] {
       f.health += 1 * hours;
     }
     if (f.hunger >= 100) f.health -= 2 * hours;
+    if (f.sick) f.health -= HEALTH_LOSS[f.sick] * hours;
     f.ageHours += hours;
     f.size = Math.min(1, f.size + hours / (30 * 24));
     if (f.ageHours > sp.lifespanDays * 24) f.health -= 0.5 * hours;

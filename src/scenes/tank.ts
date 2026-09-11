@@ -267,6 +267,16 @@ export class TankScene {
     }
     const bob = Math.sin(f.phase * 0.8) * 0.8;
     buf.blit(frame, f.x, f.y + bob, f.facing < 0);
+    if (f.sick === "ich") {
+      // White spots scattered over the body.
+      for (let i = 0; i < 4; i++) {
+        buf.set(f.x + 3 + ((i * 5 + f.id) % Math.max(1, frame.w - 6)), f.y + bob + 1 + ((i * 3 + f.id) % Math.max(1, frame.h - 2)), COLOR.W);
+      }
+    } else if (f.sick === "finrot") {
+      // Ragged, reddened tail.
+      const tailX = f.facing > 0 ? f.x : f.x + frame.w - 4;
+      buf.tintRect(tailX, f.y + bob, 4, frame.h, COLOR.r, 0.6);
+    }
   }
 
   private drawBag(buf: PixelBuffer, bag: Bag, x: number, y: number): void {
