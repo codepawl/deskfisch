@@ -75,21 +75,33 @@ export async function startWindowDrag(): Promise<void> {
 }
 
 /**
- * Report the window's velocity (screen px/s) while it is being moved. Fires on
- * each move event; the caller decays it. No-op in the browser.
+ * Report the window's velocity (screen px/s) while it is being moved, by
+ * polling its position: X11 does not reliably deliver move events for a
+ * window the window manager is dragging. No-op in the browser.
  */
-export async function onWindowMoved(cb: (vx: number, vy: number) => void): Promise<void> {
+export async function onWindowMoved(cb: (vx: number, vy: number) => void, hz = 30): Promise<void> {
   if (!isTauri) return;
   const { getCurrentWindow } = await import("@tauri-apps/api/window");
+  const win = getCurrentWindow();
   let last: { x: number; y: number; t: number } | null = null;
-  await getCurrentWindow().onMoved(({ payload }) => {
-    const now = performance.now();
-    if (last) {
-      const dt = Math.max(0.004, (now - last.t) / 1000);
-      cb((payload.x - last.x) / dt, (payload.y - last.y) / dt);
+  let busy = false;
+  setInterval(async () => {
+    if (busy || document.hidden) return;
+    busy = true;
+    try {
+      const p = await win.outerPosition();
+      const now = performance.now();
+      if (last && (p.x !== last.x || p.y !== last.y)) {
+        const dt = Math.max(0.01, (now - last.t) / 1000);
+        cb((p.x - last.x) / dt, (p.y - last.y) / dt);
+      }
+      last = { x: p.x, y: p.y, t: now };
+    } catch {
+      // Window gone or API unavailable; stop quietly.
+    } finally {
+      busy = false;
     }
-    last = { x: payload.x, y: payload.y, t: now };
-  });
+  }, 1000 / hz);
 }
 
 /**
