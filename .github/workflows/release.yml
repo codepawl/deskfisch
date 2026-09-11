@@ -80,6 +80,22 @@ jobs:
         if: matrix.platform == 'windows-latest' && env.TAURI_WINDOWS_SIGN == '1'
         shell: pwsh
         run: dotnet tool install --global --version 1.0.60 sign
+      # The AppImage bundler downloads linuxdeploy on the fly; the Ubuntu runner's
+      # network has dropped that fetch twice. Warm the cache with retries first.
+      - name: Prefetch AppImage tools
+        if: matrix.platform == 'ubuntu-22.04'
+        shell: bash
+        run: |
+          mkdir -p ~/.cache/tauri
+          for f in linuxdeploy-x86_64.AppImage linuxdeploy-plugin-gtk.sh linuxdeploy-plugin-appimage-x86_64.AppImage AppRun-x86_64; do
+            case $f in
+              linuxdeploy-x86_64.AppImage) url=https://github.com/tauri-apps/binary-releases/releases/download/linuxdeploy/linuxdeploy-x86_64.AppImage ;;
+              linuxdeploy-plugin-gtk.sh) url=https://raw.githubusercontent.com/tauri-apps/linuxdeploy-plugin-gtk/master/linuxdeploy-plugin-gtk.sh ;;
+              linuxdeploy-plugin-appimage-x86_64.AppImage) url=https://github.com/tauri-apps/binary-releases/releases/download/linuxdeploy-plugin-appimage/linuxdeploy-plugin-appimage-x86_64.AppImage ;;
+              AppRun-x86_64) url=https://github.com/AppImage/AppImageKit/releases/download/continuous/AppRun-x86_64 ;;
+            esac
+            curl -fsSL --retry 5 --retry-all-errors --retry-delay 5 -o ~/.cache/tauri/$f "$url" || echo "prefetch of $f failed; bundler will retry"
+          done
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
