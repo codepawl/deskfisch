@@ -48,9 +48,10 @@ html, body {
 
 #overlay {
   --s: 3; /* integer scale of the framebuffer, set from JS */
-  font-family: "Pixelify Sans", "Pixel", monospace;
-  font-size: calc(5px * var(--s));
-  line-height: 1.2;
+  /* VT323: pixel face with unambiguous G, e and 5, plus Vietnamese glyphs. */
+  font-family: "VT323", "Pixel", monospace;
+  font-size: calc(7px * var(--s));
+  line-height: 1.15;
 }
 
 
@@ -147,7 +148,7 @@ button.tool:disabled { opacity: 0.4; cursor: default; }
 }
 .panel h2 {
   margin: 0 0 calc(2px * var(--s));
-  font-size: inherit;
+  font-size: calc(9px * var(--s));
   color: var(--accent);
 }
 .muted { color: #94b0c2; }
@@ -356,7 +357,7 @@ html[data-chill="true"] .hud, html[data-chill="true"] .panel, html[data-chill="t
 }
 .panel-guide h2 {
   text-align: center;
-  font-size: calc(7px * var(--s));
+  font-size: calc(11px * var(--s));
   margin-bottom: calc(4px * var(--s));
   padding-bottom: calc(2px * var(--s));
   border-bottom: calc(1px * var(--s)) solid var(--panel-edge);
@@ -364,7 +365,7 @@ html[data-chill="true"] .hud, html[data-chill="true"] .panel, html[data-chill="t
 .panel-guide .panel-actions { justify-content: center; margin-top: calc(4px * var(--s)); }
 .guide-list { display: flex; flex-direction: column; gap: calc(3px * var(--s)); }
 .guide-step { padding: calc(1px * var(--s)) 0; }
-.guide-step.done { color: #94b0c2; }
+.guide-step.done { color: #94b0c2; text-decoration: line-through; opacity: 0.6; }
 .guide-step.current { color: var(--accent); }
 .guide-step.current .muted {
   color: var(--ink);
@@ -385,17 +386,6 @@ input.rename {
 .journal { display: flex; flex-direction: column; gap: calc(1px * var(--s)); color: #94b0c2; }
 .journal .stat-row span:last-child { color: var(--ink); }
 
-/* Pixelify's "5" reads as "S"; digits use a pixel mono face instead. */
-.num, .stat-value, .hud-coins span, .hud-clock, .heater-value, .shop-row button.tool .label {
-  font-family: "VT323", "Pixelify Sans", monospace;
-  font-size: calc(7px * var(--s));
-  line-height: 1;
-}
 
 .toast-ask { pointer-events: auto; display: flex; align-items: center; gap: calc(3px * var(--s)); }
 
-/* Pixelify Sans has no Vietnamese glyphs; VT323 does, so Vietnamese UI uses it throughout
-   instead of mixing faces glyph by glyph. */
-html[lang="vi"] #overlay { font-family: "VT323", "Pixelify Sans", monospace; font-size: calc(7px * var(--s)); line-height: 1.15; }
-html[lang="vi"] .panel h2 { font-size: calc(9px * var(--s)); }
-html[lang="vi"] .panel-guide h2 { font-size: calc(10px * var(--s)); }

@@ -1,4 +1,3 @@
-import "@fontsource/pixelify-sans/500.css";
 import "@fontsource/vt323/400.css";
 import { PixelBuffer } from "./engine/pixelbuffer";
 import { Input } from "./engine/input";
