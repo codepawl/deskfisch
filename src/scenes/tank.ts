@@ -123,6 +123,8 @@ export class TankScene {
   private working = false;
   /** Full-water tints for this frame (room light, algae), composited on the GPU. */
   overlays: Overlay[] = [];
+  /** A capture of the desktop behind the glass, water-sized RGBA, when refraction is on. */
+  desktop: Uint32Array | null = null;
   /** Sloshing: surface tilt (−1..1, positive = high on the right) and heave, as damped springs. */
   private tilt = 0;
   private tiltVel = 0;
@@ -273,7 +275,16 @@ export class TankScene {
   /** The decal stuck to the back glass; nothing when the back is left clear. */
   private drawBackdrop(buf: PixelBuffer, state: GameState): void {
     const decal = state.decal && DECALS.find((d) => d.id === state.decal);
-    if (!decal) return;
+    if (!decal) {
+      // No decal but a desktop capture: paint it behind the glass so the water can bend it.
+      if (this.desktop) {
+        const w = WATER.x1 - WATER.x0;
+        for (let y = GLASS_TOP; y < WATER.y1; y++) {
+          buf.px.set(this.desktop.subarray((y - GLASS_TOP) * w, (y - GLASS_TOP + 1) * w), y * buf.w + WATER.x0);
+        }
+      }
+      return;
+    }
     const top = rgba(decal.top);
     const bottom = rgba(decal.bottom);
     const h = WATER.y1 - GLASS_TOP;

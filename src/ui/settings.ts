@@ -32,6 +32,8 @@ export class SettingsPanel {
         this.onLanguage();
       }, (v) => (v === "auto" ? t("System") : LANGS[v as Lang]))),
       this.row(t("See-through pet window"), this.checkbox(s.transparent, (v) => (s.transparent = v))),
+      this.row(t("Refract the desktop behind the tank"), this.checkbox(s.refractDesktop, (v) => (s.refractDesktop = v))),
+      el("div.muted", {}, t("Windows and macOS only. Captures the screen behind a see-through tank with no decal; macOS asks for Screen Recording permission.")),
       this.row(t("Sound"), this.checkbox(!s.muted, (v) => (s.muted = !v))),
       this.row(t("Ambient hum"), this.checkbox(s.ambient, (v) => (s.ambient = v))),
       this.row(t("Volume"), this.range(s.volume, (v) => (s.volume = v))),

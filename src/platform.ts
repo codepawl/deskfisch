@@ -92,6 +92,28 @@ export async function onWindowMoved(cb: (vx: number, vy: number) => void): Promi
   });
 }
 
+/**
+ * Grab the desktop behind a screen rectangle (CSS px, window-relative) as RGBA
+ * scaled to outW×outH. Rejects with "unsupported" where the OS cannot exclude
+ * our own window from the capture.
+ */
+export async function captureBehind(rect: DOMRect, outW: number, outH: number): Promise<Uint8Array> {
+  if (!isTauri) throw new Error("unsupported");
+  const { getCurrentWindow } = await import("@tauri-apps/api/window");
+  const { invoke } = await import("@tauri-apps/api/core");
+  const win = getCurrentWindow();
+  const [pos, scale] = await Promise.all([win.innerPosition(), win.scaleFactor()]);
+  const buf = await invoke<ArrayBuffer>("capture_behind", {
+    x: Math.round(pos.x + rect.left * scale),
+    y: Math.round(pos.y + rect.top * scale),
+    w: Math.max(1, Math.round(rect.width * scale)),
+    h: Math.max(1, Math.round(rect.height * scale)),
+    outW,
+    outH,
+  });
+  return new Uint8Array(buf);
+}
+
 /** Launch on login. Returns the current state; null when unsupported (browser). */
 export async function autostart(enable?: boolean): Promise<boolean | null> {
   if (!isTauri) return null;

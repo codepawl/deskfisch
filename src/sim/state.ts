@@ -62,6 +62,8 @@ export interface Settings {
   chill: boolean;
   /** Filter hum and bubbles in the background. */
   ambient: boolean;
+  /** Capture the desktop behind a see-through tank and refract it (Windows, macOS). */
+  refractDesktop: boolean;
   /** UI language; "auto" follows the system. */
   lang: "auto" | "en" | "vi";
   /** Real time locks sim speed to 1× and lights the room by the real sun; simulated uses game time. */
@@ -161,6 +163,6 @@ export function newGame(now = Date.now()): GameState {
     guideSeen: false,
     mode: "window",
     pinned: true,
-    settings: { transparent: true, volume: 0.5, muted: false, simSpeed: 1, quality: "high", maxFps: 30, chill: false, ambient: true, lang: "auto", clock: "real", sunrise: "06:00", sunset: "18:00" },
+    settings: { transparent: true, volume: 0.5, muted: false, simSpeed: 1, quality: "high", maxFps: 30, chill: false, ambient: true, lang: "auto", refractDesktop: false, clock: "real", sunrise: "06:00", sunset: "18:00" },
   };
 }
