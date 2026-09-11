@@ -391,3 +391,5 @@ input.rename {
   font-size: calc(7px * var(--s));
   line-height: 1;
 }
+
+.toast-ask { pointer-events: auto; display: flex; align-items: center; gap: calc(3px * var(--s)); }

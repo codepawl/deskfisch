@@ -16,6 +16,7 @@ import { CarePanel } from "./ui/care";
 import { Toasts } from "./ui/toast";
 import { SettingsPanel } from "./ui/settings";
 import { GuidePanel } from "./ui/guide";
+import { checkForUpdate } from "./updater";
 import { setLabel } from "./ui/dom";
 import { isCycled } from "./sim/tank";
 import { Sfx } from "./engine/audio";
@@ -66,7 +67,15 @@ function run(state: GameState): void {
     sfx.setVolume(st.volume, st.muted);
     void applyMode(state.mode, state.pinned, st.transparent);
   };
-  const settings = new SettingsPanel(overlay, state, applySettings);
+  const offerUpdate = (version: string, install: () => Promise<void>) =>
+    toasts.ask(`Deskfisch ${version} is available.`, "Update and restart", () => {
+      persist();
+      toasts.show("Downloading update…", 60000);
+      install().catch((e) => toasts.show(`Update failed: ${String(e)}`, 8000));
+    });
+  const settings = new SettingsPanel(overlay, state, applySettings, offerUpdate);
+  // Quiet startup check; a failed or offline check is simply silent.
+  setTimeout(() => void checkForUpdate().then((u) => u && offerUpdate(u.version, u.install)), 15000);
   const guide = new GuidePanel(overlay, state);
   hud.addButton("Change water", () => care.toggle(), "water");
   hud.addButton("Test water", () => stats.toggle(), "test");

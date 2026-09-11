@@ -41,9 +41,50 @@ jobs:
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
       - run: pnpm install --frozen-lockfile
       - run: pnpm test
+      # Code signing is optional: each block only exports its variables when the
+      # matching secrets exist, so unsigned builds keep working until certificates
+      # are set up (see docs/signing.md).
+      - name: Apple signing env
+        if: matrix.platform == 'macos-latest'
+        shell: bash
+        run: |
+          if [ -n "${{ secrets.APPLE_SIGNING_IDENTITY }}" ]; then
+            {
+              echo "APPLE_CERTIFICATE=${{ secrets.APPLE_CERTIFICATE }}"
+              echo "APPLE_CERTIFICATE_PASSWORD=${{ secrets.APPLE_CERTIFICATE_PASSWORD }}"
+              echo "APPLE_SIGNING_IDENTITY=${{ secrets.APPLE_SIGNING_IDENTITY }}"
+              echo "APPLE_ID=${{ secrets.APPLE_ID }}"
+              echo "APPLE_PASSWORD=${{ secrets.APPLE_PASSWORD }}"
+              echo "APPLE_TEAM_ID=${{ secrets.APPLE_TEAM_ID }}"
+            } >> "$GITHUB_ENV"
+            echo "Apple signing: on"
+          else
+            echo "Apple signing: off (no APPLE_SIGNING_IDENTITY secret)"
+          fi
+      - name: Windows signing env
+        if: matrix.platform == 'windows-latest'
+        shell: bash
+        run: |
+          if [ -n "${{ secrets.AZURE_CLIENT_ID }}" ]; then
+            {
+              echo "AZURE_CLIENT_ID=${{ secrets.AZURE_CLIENT_ID }}"
+              echo "AZURE_CLIENT_SECRET=${{ secrets.AZURE_CLIENT_SECRET }}"
+              echo "AZURE_TENANT_ID=${{ secrets.AZURE_TENANT_ID }}"
+              echo "TAURI_WINDOWS_SIGN=1"
+            } >> "$GITHUB_ENV"
+            echo "Windows signing: on"
+          else
+            echo "Windows signing: off (no AZURE_CLIENT_ID secret)"
+          fi
+      - name: Install Trusted Signing tools
+        if: matrix.platform == 'windows-latest' && env.TAURI_WINDOWS_SIGN == '1'
+        shell: pwsh
+        run: dotnet tool install --global --version 1.0.60 sign
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ""
         with:
           tagName: ${{ github.ref_name }}
           releaseName: "Deskfisch ${{ github.ref_name }}"

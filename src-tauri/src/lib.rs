@@ -12,6 +12,8 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_autostart::init(tauri_plugin_autostart::MacosLauncher::LaunchAgent, None))
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_process::init())
         .setup(|app| {
             let show = MenuItem::with_id(app, "show", "Show tank", true, None::<&str>)?;
             let window = MenuItem::with_id(app, "mode:window", "Window mode", true, None::<&str>)?;

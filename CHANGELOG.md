@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.0 — 2026-09-11
+
+- Auto-update: the app checks GitHub Releases for signed builds and offers to install them. Installs from 0.3.0 on update themselves; 0.2.x needs one manual download.
+- Release workflow signs update artifacts and is wired for Apple notarization and Azure Trusted Signing once certificates are added (see docs/signing.md).
+- Leaving Chill mode is discoverable: hint, clearer corner button, double-click.
+
 ## 0.2.2 — 2026-09-11
 
 - Renamed again, to **Deskfisch**: reads in English, keeps the Fisch, and is its own search term. Numbers now use a pixel mono face so 5 no longer looks like S.

@@ -1,5 +1,6 @@
 import type { GameState, Quality } from "../sim/state";
-import { autostart } from "../platform";
+import { autostart, isTauri } from "../platform";
+import { checkForUpdate } from "../updater";
 import { button, el } from "./dom";
 
 /** User preferences. `onChange` lets the app re-apply audio, window and render settings. */
@@ -7,7 +8,12 @@ export class SettingsPanel {
   readonly root: HTMLElement;
   private readonly speedWarn = el("div.shop-note");
 
-  constructor(overlay: HTMLElement, private readonly state: GameState, private readonly onChange: () => void) {
+  constructor(
+    overlay: HTMLElement,
+    private readonly state: GameState,
+    private readonly onChange: () => void,
+    private readonly offerUpdate: (version: string, install: () => Promise<void>) => void,
+  ) {
     const s = state.settings;
     const rows = el("div.settings-rows");
     rows.append(
@@ -28,6 +34,16 @@ export class SettingsPanel {
       if (on === null) return;
       rows.append(this.row("Start with the system", this.checkbox(on, (v) => void autostart(v))));
     });
+    if (isTauri) {
+      const status = el("span.muted", {}, "");
+      const btn = button("tool", "Check for updates", async () => {
+        status.textContent = "Checking…";
+        const u = await checkForUpdate();
+        status.textContent = u ? `${u.version} available` : "Up to date";
+        if (u) this.offerUpdate(u.version, u.install);
+      });
+      rows.append(this.row("Updates", el("span.panel-actions", {}, status, btn)));
+    }
     this.root = el(
       "div.panel.panel-settings",
       { hidden: true },
