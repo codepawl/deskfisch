@@ -169,3 +169,4 @@ button.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
 .shop-row button.tool { min-width: calc(24px * var(--s)); }
 .shop-note { color: #ef7d57; min-height: 1.2em; }
 .panel-actions { display: flex; gap: calc(2px * var(--s)); margin-top: calc(2px * var(--s)); }
+.panel-care { bottom: calc(32px * var(--s)); right: calc(8px * var(--s)); max-width: calc(120px * var(--s)); }

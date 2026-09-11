@@ -9,7 +9,9 @@ import { dropPellets, updatePellets } from "./sim/food";
 import { newGame, type GameState } from "./sim/state";
 import { advance } from "./sim/tick";
 import { loadGame, saveGame } from "./save/store";
-import { BAG_H, BAG_W, BAG_Y, SCREEN_H, SCREEN_W, TankScene, WATER, type DragBag } from "./scenes/tank";
+import { BAG_H, BAG_W, BAG_Y, SAND_Y, SCREEN_H, SCREEN_W, TankScene, WATER, type DragBag } from "./scenes/tank";
+import { scrubGlass, vacuumGravel } from "./sim/tank";
+import { CarePanel } from "./ui/care";
 import { releaseBag, type Bag } from "./sim/bag";
 import { BagPanel } from "./ui/bag";
 import { Hud } from "./ui/hud";
@@ -18,6 +20,9 @@ import { InspectPanel } from "./ui/inspect";
 import { ShopPanel } from "./ui/shop";
 
 const PELLETS_PER_PINCH = 6;
+/** Percentage points of algae/dirt removed per second of dragging. */
+const SCRUB_RATE = 40;
+const VACUUM_RATE = 30;
 
 const screen = document.getElementById("screen") as HTMLCanvasElement;
 const overlay = document.getElementById("overlay") as HTMLElement;
@@ -37,7 +42,9 @@ function run(state: GameState): void {
   const inspect = new InspectPanel(overlay, state, () => hud.refresh());
   const shop = new ShopPanel(overlay, state, WATER, () => hud.refresh());
   const bagPanel = new BagPanel(overlay, state);
-  hud.addButton("Water", () => stats.toggle());
+  const care = new CarePanel(overlay, state, () => hud.refresh());
+  hud.addButton("Change water", () => care.toggle());
+  hud.addButton("Test water", () => stats.toggle());
   hud.addButton("Shop", () => shop.toggle());
   (window as unknown as { fischUi: unknown }).fischUi = { hud, stats, inspect, shop, bagPanel };
 
@@ -97,6 +104,7 @@ function run(state: GameState): void {
     inspect.refresh();
     shop.refresh();
     bagPanel.refresh();
+    care.refresh();
     if (++sinceSave >= AUTOSAVE_SECONDS) persist();
   };
   tick();
@@ -111,12 +119,17 @@ function run(state: GameState): void {
         drag.y = input.y - BAG_H / 2;
       }
       if (input.released) handleRelease();
+      if (input.down && !drag && inWater(input.x, input.y)) {
+        if (hud.tool === "scrub") scrubGlass(state, SCRUB_RATE * dt);
+        if (hud.tool === "vacuum" && input.y >= SAND_Y) vacuumGravel(state, VACUUM_RATE * dt);
+      }
       scene.update(dt);
       updatePellets(state, WATER, dt);
       for (const f of state.fish) moveFish(f, SPECIES[f.speciesId], WATER, dt, state);
     },
     render() {
-      scene.render(buf, state, drag);
+      const cursor = hud.tool && hud.tool !== "feed" ? { tool: hud.tool, x: input.x, y: input.y } : null;
+      scene.render(buf, state, drag, cursor);
       const scale = buf.present(screen);
       overlay.style.setProperty("--s", String(scale));
       overlay.style.width = `${screen.width}px`;

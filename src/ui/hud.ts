@@ -1,7 +1,7 @@
 import type { GameState } from "../sim/state";
 import { button, el } from "./dom";
 
-export type Tool = "feed" | null;
+export type Tool = "feed" | "scrub" | "vacuum" | null;
 
 /** Coins, clock and the bottom toolbar. Panels register their toggle buttons here. */
 export class Hud {
@@ -19,7 +19,12 @@ export class Hud {
       state.equipment.lightOn = !state.equipment.lightOn;
       this.refresh();
     });
-    this.bar.append(this.feedBtn, this.lightBtn);
+    this.bar.append(
+      this.feedBtn,
+      button("tool", "Scrub", () => this.toggleTool("scrub")),
+      button("tool", "Vacuum", () => this.toggleTool("vacuum")),
+      this.lightBtn,
+    );
     this.root = el("div.hud", {}, el("div.hud-top", {}, this.coins, this.clock), this.bar);
     overlay.append(this.root);
     this.refresh();
@@ -47,8 +52,10 @@ export class Hud {
     const flakes = s.inventory.flakes ?? 0;
     this.feedBtn.textContent = `Feed ×${flakes}`;
     this.feedBtn.disabled = flakes <= 0;
-    this.feedBtn.classList.toggle("active", this.tool === "feed");
     if (this.tool === "feed" && flakes <= 0) this.tool = null;
+    for (const b of this.bar.querySelectorAll("button")) {
+      b.classList.toggle("active", this.tool !== null && b.textContent!.toLowerCase().startsWith(this.tool));
+    }
     this.lightBtn.hidden = s.equipment.light === 0;
     this.lightBtn.textContent = s.equipment.lightOn ? "Light: on" : "Light: off";
   }

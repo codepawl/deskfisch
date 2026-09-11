@@ -126,3 +126,26 @@ describe("advance", () => {
     expect(g.simTime).toBe(3600 * 1000);
   });
 });
+
+describe("care tools", () => {
+  it("water change spends a conditioner dose when available", async () => {
+    const { doWaterChange } = await import("../src/sim/tank");
+    const g = newGame(0);
+    g.inventory.conditioner = 1;
+    expect(doWaterChange(g, 0.3).conditioned).toBe(true);
+    expect(g.tank.chlorine).toBe(0);
+    expect(doWaterChange(g, 0.3).conditioned).toBe(false);
+    expect(g.tank.chlorine).toBeGreaterThan(0);
+  });
+
+  it("scrubbing and vacuuming clamp at zero", async () => {
+    const { scrubGlass, vacuumGravel } = await import("../src/sim/tank");
+    const g = newGame(0);
+    g.tank.algae = 30;
+    g.tank.dirt = 10;
+    scrubGlass(g, 50);
+    vacuumGravel(g, 50);
+    expect(g.tank.algae).toBe(0);
+    expect(g.tank.dirt).toBe(0);
+  });
+});

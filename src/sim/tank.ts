@@ -83,6 +83,28 @@ export function waterChange(state: GameState, fraction: number, conditioned: boo
 }
 
 /**
+ * Water change that spends a conditioner dose when one is available. Without it
+ * the tap water's chlorine goes straight into the tank.
+ */
+export function doWaterChange(state: GameState, fraction: number): { conditioned: boolean } {
+  const doses = state.inventory.conditioner ?? 0;
+  const conditioned = doses > 0;
+  if (conditioned) state.inventory.conditioner = doses - 1;
+  waterChange(state, fraction, conditioned);
+  return { conditioned };
+}
+
+/** Scrubbing removes algae film; `amount` is percentage points. */
+export function scrubGlass(state: GameState, amount: number): void {
+  state.tank.algae = Math.max(0, state.tank.algae - amount);
+}
+
+/** Gravel vacuuming lifts settled waste; `amount` is percentage points. */
+export function vacuumGravel(state: GameState, amount: number): void {
+  state.tank.dirt = Math.max(0, state.tank.dirt - amount);
+}
+
+/**
  * A tank counts as cycled once both populations are well past the seed level and
  * are keeping ammonia and nitrite down. Populations settle at whatever the
  * bioload supports, so an absolute threshold near capacity would never be met.

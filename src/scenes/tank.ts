@@ -13,7 +13,26 @@ export const SCREEN_H = 240;
 
 /** Inner water area. Glass frame sits just outside it; the toolbar lives below. */
 export const WATER: Bounds = { x0: 8, y0: 18, x1: 376, y1: 208 };
-const SAND_Y = 194;
+/** Pointer tool sprites drawn at the cursor. */
+const SPONGE = sprite([
+  ".yyyyyy.",
+  "yyySyyyy",
+  "yySyyyyy",
+  "yyyyyySy",
+  ".yyyyyy.",
+]);
+const SIPHON = sprite([
+  "..DD",
+  "..DD",
+  "..DD",
+  ".DDD",
+  "DLLD",
+  "DLLD",
+  "DDDD",
+]);
+export const TOOL_SPRITES: Record<string, Sprite> = { scrub: SPONGE, vacuum: SIPHON };
+/** Sand starts at this row; the vacuum only works here. */
+export const SAND_Y = 194;
 
 /** A bag being dragged by the pointer, drawn at the pointer instead of the surface. */
 export interface DragBag { bag: Bag; x: number; y: number }
@@ -102,7 +121,7 @@ export class TankScene {
     this.bubbles = this.bubbles.filter((b) => b.y > WATER.y0);
   }
 
-  render(buf: PixelBuffer, state: GameState, drag: DragBag | null = null): void {
+  render(buf: PixelBuffer, state: GameState, drag: DragBag | null = null, cursor: { tool: string; x: number; y: number } | null = null): void {
     buf.clear(COLOR.K);
     this.drawWater(buf);
     this.drawSand(buf);
@@ -124,6 +143,8 @@ export class TankScene {
       buf.tintRect(WATER.x0, WATER.y0, WATER.x1 - WATER.x0, WATER.y1 - WATER.y0, COLOR.g, state.tank.algae / 250);
     }
     this.drawGlass(buf);
+    const toolSprite = cursor && TOOL_SPRITES[cursor.tool];
+    if (toolSprite && cursor) buf.blit(toolSprite, cursor.x - toolSprite.w / 2, cursor.y - toolSprite.h / 2);
   }
 
   private drawWater(buf: PixelBuffer): void {
