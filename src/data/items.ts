@@ -42,6 +42,7 @@ export const BASE_AERATION = 0.25;
 /** Everything else the shop sells. `apply` mutates the game state on purchase. */
 export interface Consumable { id: string; name: string; price: number; blurb: string }
 export const SUPPLIES: Consumable[] = [
+  { id: "sand", name: "Bag of sand", price: 20, blurb: "Pours a layer of sand across the bottom. Pour twice for a deeper bed." },
   { id: "flakes", name: "Flake food ×10", price: 10, blurb: "Ten pinches. Feed once or twice a day." },
   { id: "conditioner", name: "Water conditioner ×5", price: 15, blurb: "Neutralises chlorine in tap water." },
   { id: "bacteria", name: "Bottled bacteria", price: 40, blurb: "Kick-starts the nitrogen cycle." },

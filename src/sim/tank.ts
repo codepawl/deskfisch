@@ -15,6 +15,8 @@ export function o2Saturation(temp: number): number {
 /** Advance water chemistry by `hours`. Callers keep steps small (≤ 1 minute) for stability. */
 export function stepTank(state: GameState, hours: number, wasteLoad: number): void {
   const t = state.tank;
+  // An empty or nearly empty tank has no water chemistry to speak of.
+  if (t.fill < 0.3) return;
   const eq = state.equipment;
   const filter = FILTERS[eq.filter];
   const volumeScale = REFERENCE_VOLUME / t.volumeL;
@@ -99,6 +101,24 @@ export function doWaterChange(state: GameState, fraction: number): { conditioned
   const conditioned = doses > 0;
   if (conditioned) state.inventory.conditioner = doses - 1;
   waterChange(state, fraction, conditioned);
+  return { conditioned };
+}
+
+/**
+ * Fill the tank up to its target with tap water. An empty tank simply takes on
+ * tap water; a partly full one is treated as a partial water change.
+ */
+export function fillWater(state: GameState): { conditioned: boolean } {
+  const t = state.tank;
+  const doses = state.inventory.conditioner ?? 0;
+  const conditioned = doses > 0;
+  if (conditioned) state.inventory.conditioner = doses - 1;
+  if (t.fill < 0.05) {
+    Object.assign(t, { temp: TAP.temp, pH: TAP.pH, nh3: 0, no2: 0, no3: TAP.no3, chlorine: conditioned ? 0 : TAP.chlorine, o2: o2Saturation(TAP.temp) });
+    t.fill = t.fillTarget;
+  } else {
+    waterChange(state, Math.max(0, 1 - t.fill / t.fillTarget), conditioned);
+  }
   return { conditioned };
 }
 

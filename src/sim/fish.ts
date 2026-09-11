@@ -44,6 +44,13 @@ export interface Bounds {
   y0: number;
   x1: number;
   y1: number;
+  /** Top of the substrate at a column; defaults to y1 when absent. */
+  floor?: (x: number) => number;
+}
+
+/** Lowest y an object of height `h` may occupy at column x. */
+export function floorAt(b: Bounds, x: number, h = 0): number {
+  return (b.floor ? b.floor(x) : b.y1) - h;
 }
 
 export function spawnFish(sp: Species, name: string, water: Bounds, id: number): Fish {
@@ -56,9 +63,9 @@ export function spawnFish(sp: Species, name: string, water: Bounds, id: number):
   };
 }
 
-function depthY(sp: Species, w: Bounds): number {
-  const h = w.y1 - w.y0;
-  return w.y0 + h * rand(sp.depth[0], sp.depth[1]);
+function depthY(sp: Species, w: Bounds, x = (w.x0 + w.x1) / 2): number {
+  const h = floorAt(w, x, sp.frames[0].h) - w.y0;
+  return w.y0 + Math.max(0, h) * rand(sp.depth[0], sp.depth[1]);
 }
 
 /** The pointer holding food; hungry fish gather under it. */
@@ -93,7 +100,7 @@ export function moveFish(f: Fish, sp: Species, water: Bounds, dt: number, state?
       f.hunger = Math.max(0, f.hunger - HUNGER_PER_PELLET);
     }
     f.tx = clamp(food.x - mouth.x, water.x0, water.x1 - w);
-    f.ty = clamp(food.y - mouth.y, water.y0, water.y1 - h);
+    f.ty = clamp(food.y - mouth.y, water.y0, floorAt(water, food.x, h));
     f.retarget = 0.5;
     f.pace = 1.6;
   } else if (f.retarget <= 0 || Math.hypot(f.tx - f.x, f.ty - f.y) < 4) {
@@ -112,7 +119,7 @@ export function moveFish(f: Fish, sp: Species, water: Bounds, dt: number, state?
   f.vy += ((dy / dist) * speed * vertical - f.vy) * ease;
   if (state && sp.minGroup >= 4) separate(f, state, dt);
   f.x = clamp(f.x + f.vx * dt, water.x0, water.x1 - w);
-  f.y = clamp(f.y + f.vy * dt, water.y0, water.y1 - h);
+  f.y = clamp(f.y + f.vy * dt, water.y0, floorAt(water, f.x + w / 2, h));
   if (!food && Math.abs(f.vx) > 2) f.facing = f.vx > 0 ? 1 : -1;
   f.phase += dt * (2 + (Math.abs(f.vx) / sp.speed) * 4);
 }
@@ -133,7 +140,7 @@ function chooseTarget(f: Fish, sp: Species, water: Bounds, state: GameState | un
   if (state && f.stress > 60 && state.decor.length) {
     const spot = state.decor.reduce((a, b) => (Math.abs(a.x - f.x) < Math.abs(b.x - f.x) ? a : b));
     f.tx = clamp(spot.x + off.x / 3, water.x0, water.x1 - w);
-    f.ty = water.y1 - h - Math.abs(off.y);
+    f.ty = floorAt(water, f.tx + w / 2, h) - Math.abs(off.y);
     f.retarget = rand(3, 6);
     f.pace = 1.2;
     return;
@@ -154,7 +161,7 @@ function chooseTarget(f: Fish, sp: Species, water: Bounds, state: GameState | un
     if (leader !== f) {
       // Follow the leader's destination, not its body, so the school moves as one.
       f.tx = clamp(leader.tx + off.x, water.x0, water.x1 - w);
-      f.ty = clamp(leader.ty + off.y, water.y0, water.y1 - h);
+      f.ty = clamp(leader.ty + off.y, water.y0, floorAt(water, f.tx + w / 2, h));
       f.retarget = rand(1, 2);
       return;
     }
@@ -167,14 +174,14 @@ function chooseTarget(f: Fish, sp: Species, water: Bounds, state: GameState | un
       f.retarget = rand(1, 3);
     } else {
       f.tx = clamp(f.x + rand(-40, 40), water.x0, water.x1 - w);
-      f.ty = depthY(sp, water);
+      f.ty = depthY(sp, water, f.tx + w / 2);
       f.retarget = rand(2, 4);
       f.pace = 0.7;
     }
     return;
   }
   f.tx = rand(water.x0 + w, water.x1 - w);
-  f.ty = depthY(sp, water);
+  f.ty = depthY(sp, water, f.tx + w / 2);
   f.retarget = rand(2, 6);
 }
 

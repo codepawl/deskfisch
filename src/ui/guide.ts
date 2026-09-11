@@ -1,6 +1,7 @@
 import type { GameState } from "../sim/state";
 import { isCycled } from "../sim/tank";
 import { BACTERIA } from "../data/constants";
+import { hasSand } from "../sim/sand";
 import { ACHIEVEMENTS } from "../sim/achievements";
 import { button, el } from "./dom";
 import { t } from "../i18n";
@@ -13,6 +14,9 @@ interface Step {
 
 /** The path from an empty tank to a healthy first fish, in order. */
 const STEPS: Step[] = [
+  { title: "Pour in some sand", tip: "Shop → Supplies → Bag of sand. Fish and plants need a bed to live on.", done: (s) => hasSand(s) },
+  { title: "Plant something", tip: "Shop → Decor. Plants soak up nitrate and give shy fish a place to hide. Drag to place.", done: (s) => s.decor.length > 0 || s.tank.fill >= 0.7 },
+  { title: "Fill it with water", tip: "Change water → Fill with tap water. Use conditioner so no chlorine goes in.", done: (s) => s.tank.fill >= 0.7 },
   { title: "Buy a filter", tip: "Shop → Gear. The filter is where the good bacteria live.", done: (s) => s.equipment.filter > 0 },
   { title: "Buy a heater", tip: "Shop → Gear. Most tropical fish want 24–27 °C.", done: (s) => s.equipment.heater > 0 },
   { title: "Drop a pinch of food", tip: "Feed the empty tank. Rotting food makes ammonia, which feeds the bacteria.", done: (s) => s.tank.nh3 > 0.02 || s.tank.bactA > BACTERIA.seed * 1.5 || s.fish.length > 0 },

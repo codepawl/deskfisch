@@ -1,4 +1,4 @@
-import { doWaterChange, MAX_FILL, MIN_FILL } from "../sim/tank";
+import { doWaterChange, fillWater, MAX_FILL, MIN_FILL } from "../sim/tank";
 import type { GameState } from "../sim/state";
 import { button, el } from "./dom";
 import { t } from "../i18n";
@@ -14,6 +14,7 @@ export class CarePanel {
   private readonly heaterRow = el("div.settings-row");
   private readonly heaterValue = el("span.heater-value");
   private readonly fillValue = el("span.heater-value");
+  private readonly fillBtn: HTMLButtonElement;
 
   constructor(overlay: HTMLElement, private readonly state: GameState, private readonly onChange: () => void) {
     const row = el("div.panel-actions");
@@ -33,21 +34,28 @@ export class CarePanel {
     const nudgeFill = (delta: number) => {
       const tank = this.state.tank;
       tank.fillTarget = Math.round(Math.max(MIN_FILL, Math.min(MAX_FILL, tank.fillTarget + delta)) * 100) / 100;
-      // Raising the target tops the tank up right away; lowering waits for evaporation.
-      tank.fill = Math.min(tank.fillTarget, Math.max(tank.fill, tank.fillTarget));
+      // Lowering the target waits for evaporation; raising it is done with the fill button.
       this.onChange();
       this.refresh();
     };
+    this.fillBtn = button("tool", t("Fill with tap water"), () => {
+      const { conditioned } = fillWater(this.state);
+      this.note.textContent = conditioned ? "" : t("No conditioner: chlorine went in. Buy some at the shop.");
+      this.onChange();
+      this.refresh();
+    });
     const fillRow = el("div.settings-row", {},
       el("span", {}, t("Water level")),
       el("span.panel-actions", {}, button("tool", "−", () => nudgeFill(-0.05)), this.fillValue, button("tool", "+", () => nudgeFill(0.05))),
     );
+    const fillAction = el("div.panel-actions", {}, this.fillBtn);
     this.root = el(
       "div.panel.panel-care",
       { hidden: true },
       el("h2", {}, t("Care")),
       this.heaterRow,
       fillRow,
+      fillAction,
       el("h2", {}, t("Water change")),
       el("div.muted", {}, t("Swaps old water for tap water. Dilutes nitrate, resets temperature.")),
       this.doses,
@@ -79,5 +87,6 @@ export class CarePanel {
     this.heaterValue.textContent = `${this.state.equipment.heaterTarget} °C`;
     const tank = this.state.tank;
     this.fillValue.textContent = tank.fill < tank.fillTarget - 0.01 ? `${Math.round(tank.fill * 100)} → ${Math.round(tank.fillTarget * 100)}%` : `${Math.round(tank.fillTarget * 100)}%`;
+    this.fillBtn.hidden = tank.fill >= tank.fillTarget - 0.01;
   }
 }

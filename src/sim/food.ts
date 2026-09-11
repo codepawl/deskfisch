@@ -1,5 +1,5 @@
 import { rand } from "../engine/rng";
-import type { Bounds, Fish } from "./fish";
+import { floorAt, type Bounds, type Fish } from "./fish";
 import type { GameState } from "./state";
 
 export interface Pellet {
@@ -28,11 +28,11 @@ export function dropPellets(state: GameState, x: number, count: number, water: B
 
 /** Per-frame: pellets sink and settle on the substrate. */
 export function updatePellets(state: GameState, water: Bounds, dt: number): void {
-  const floor = water.y1 - 2;
   for (const p of state.pellets) {
     if (p.vy === 0) continue;
     p.y += p.vy * dt;
     p.x += Math.sin(p.y * 0.3) * 4 * dt;
+    const floor = floorAt(water, p.x, 1);
     if (p.y >= floor) {
       p.y = floor;
       p.vy = 0;

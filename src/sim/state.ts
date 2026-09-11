@@ -2,6 +2,7 @@ import { BACTERIA, TAP } from "../data/constants";
 import type { Fish } from "./fish";
 import type { Pellet } from "./food";
 import type { Bag } from "./bag";
+import { newSand } from "./sand";
 
 export interface TankState {
   volumeL: number;
@@ -18,10 +19,12 @@ export interface TankState {
   dirt: number;
   /** 0..100 film on the glass */
   algae: number;
-  /** Water level as a fraction of the glass height; evaporation lowers it, water changes refill it. */
+  /** Water level as a fraction of the glass height; 0 is an empty tank. Evaporation lowers it, filling and water changes raise it. */
   fill: number;
   /** Level the player fills to. */
   fillTarget: number;
+  /** Sand heightmap, one entry per column. See sim/sand.ts. */
+  sand: number[];
   /** Nitrifying bacteria as a fraction of the filter's capacity (can exceed 1 briefly after a downgrade). */
   bactA: number;
   bactB: number;
@@ -119,6 +122,8 @@ export interface GameState {
 export function demoGame(now = Date.now()): GameState {
   const g = newGame(now);
   g.coins = 120;
+  g.tank.fill = 0.9;
+  g.tank.sand = newSand(14);
   g.tank.bactA = g.tank.bactB = 1;
   g.tank.temp = 25;
   g.tank.no3 = 12;
@@ -145,8 +150,9 @@ export function newGame(now = Date.now()): GameState {
       chlorine: 0,
       dirt: 0,
       algae: 0,
-      fill: 0.9,
+      fill: 0,
       fillTarget: 0.9,
+      sand: newSand(0),
       bactA: BACTERIA.seed,
       bactB: BACTERIA.seed,
     },

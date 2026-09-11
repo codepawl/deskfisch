@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { newGame } from "../src/sim/state";
+import { tankGame } from "./helpers";
 import { spawnFish } from "../src/sim/fish";
 import { stepDisease, treat } from "../src/sim/disease";
 import { upgradeGear } from "../src/sim/shop";
@@ -12,7 +12,7 @@ afterEach(() => vi.restoreAllMocks());
 describe("disease", () => {
   it("stressed fish catch ich and medicine clears it", () => {
     vi.spyOn(Math, "random").mockReturnValue(0);
-    const g = newGame(0);
+    const g = tankGame(0);
     const f = spawnFish(SPECIES.neon, "n", WATER, 1);
     f.stress = 70;
     g.fish.push(f);
@@ -25,7 +25,7 @@ describe("disease", () => {
 
   it("calm fish in clean water stay healthy", () => {
     vi.spyOn(Math, "random").mockReturnValue(0);
-    const g = newGame(0);
+    const g = tankGame(0);
     const f = spawnFish(SPECIES.neon, "n", WATER, 1);
     f.stress = 10;
     g.tank.temp = 25;
@@ -36,7 +36,7 @@ describe("disease", () => {
 
 describe("tank upgrade", () => {
   it("raises volume and mixes in tap water", () => {
-    const g = newGame(0);
+    const g = tankGame(0);
     g.coins = 1000;
     g.tank.no3 = 80;
     expect(upgradeGear(g, "tank")).toBeNull();

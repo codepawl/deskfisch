@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { newGame } from "../src/sim/state";
+import { tankGame } from "./helpers";
 import { spawnFish } from "../src/sim/fish";
 import { canBreed, GESTATION_HOURS, stepBreeding } from "../src/sim/breeding";
 import { SPECIES } from "../src/data/species";
@@ -7,7 +7,7 @@ import { SPECIES } from "../src/data/species";
 const WATER = { x0: 0, y0: 0, x1: 300, y1: 200 };
 
 function pair() {
-  const g = newGame(0);
+  const g = tankGame(0);
   g.tank.bactA = g.tank.bactB = 1;
   const f = spawnFish(SPECIES.guppy, "f", WATER, 1);
   const m = spawnFish(SPECIES.guppy, "m", WATER, 2);
@@ -48,7 +48,7 @@ describe("breeding", () => {
   });
 
   it("non-livebearers do not breed", () => {
-    const g = newGame(0);
+    const g = tankGame(0);
     const f = spawnFish(SPECIES.neon, "n", WATER, 1);
     f.sex = "f";
     expect(canBreed(g, f)).toBe(false);
@@ -58,7 +58,7 @@ describe("breeding", () => {
 describe("decals", () => {
   it("are bought once and then switched for free", async () => {
     const { buyDecal, ownsDecal } = await import("../src/sim/shop");
-    const g = newGame(0);
+    const g = tankGame(0);
     g.coins = 100;
     expect(buyDecal(g, "sunset")).toBeNull();
     expect(g.coins).toBe(70);

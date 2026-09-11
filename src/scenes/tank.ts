@@ -1,5 +1,6 @@
 import { COLOR, rgba } from "../engine/palette";
 import { DECALS } from "../data/items";
+import { relaxSand, sandAt, shiftSand } from "../sim/sand";
 import { PixelBuffer, type Overlay } from "../engine/pixelbuffer";
 import { sprite, type Sprite } from "../engine/sprite";
 import { rand } from "../engine/rng";
@@ -48,8 +49,17 @@ const SIPHON = sprite([
   "DDDD",
 ]);
 export const TOOL_SPRITES: Record<string, Sprite> = { scrub: SPONGE, vacuum: SIPHON };
-/** Sand starts at this row; the vacuum only works here. */
-export const SAND_Y = 194;
+/** Sand top at a column, from the state's heightmap. Columns outside the water fall back to the glass bottom. */
+export function sandTop(sand: number[], x: number): number {
+  return WATER.y1 - sandAt(sand, x - WATER.x0);
+}
+
+/** Highest sand row in the tank (smallest y), for band effects that stop at the bed. */
+export function sandCrest(sand: number[]): number {
+  let max = 0;
+  for (const h of sand) if (h > max) max = h;
+  return WATER.y1 - max;
+}
 
 /** Surface velocity gained per px/s of window velocity change. A quick flick of ~600 px/s tilts the surface about half way. */
 const IMPULSE = 0.006;
@@ -133,13 +143,12 @@ export class TankScene {
   private heaveVel = 0;
   private pushX = 0;
   private pushY = 0;
-  private sandSpeckles: [number, number][] = [];
 
-  constructor() {
-    for (let i = 0; i < 90; i++) {
-      this.sandSpeckles.push([rand(WATER.x0, WATER.x1), rand(SAND_Y + 1, WATER.y1 - 1)]);
-    }
-  }
+  /** Window jolts waiting to shove the sand: signed grains per column, applied in order. */
+  private shoves: number[] = [];
+  private settleTimer = 0;
+  /** Top of the sand this frame, cached for the band effects. */
+  private crest = WATER.y1;
 
   /**
    * The window's velocity changed (px/s). Water only reacts to acceleration:
@@ -153,6 +162,21 @@ export class TankScene {
     this.pushY = vy;
     this.tiltVel -= dvx * IMPULSE;
     this.heaveVel -= dvy * IMPULSE;
+    // Friction drags the top grains against the shove; a hard yank piles the bed up one side.
+    const grains = Math.min(4, Math.floor(Math.abs(dvx) / 300));
+    if (grains > 0) this.shoves.push(dvx > 0 ? -grains : grains);
+  }
+
+  /** Apply pending shoves and let slopes slump. Cheap: one pass over 368 columns. */
+  stepSand(sand: number[], dt: number): void {
+    for (const s of this.shoves.splice(0)) {
+      shiftSand(sand, Math.abs(s), s > 0 ? 1 : -1);
+      this.settleTimer = 2;
+    }
+    if (this.settleTimer > 0) {
+      this.settleTimer -= dt;
+      if (!relaxSand(sand)) this.settleTimer = 0;
+    }
   }
 
   private stepSlosh(dt: number): void {
@@ -240,11 +264,12 @@ export class TankScene {
     quality: Quality = "high",
   ): void {
     buf.clear(transparentBackdrop ? 0 : COLOR.K);
+    this.crest = sandCrest(state.tank.sand);
     const lit = state.equipment.light > 0 && state.equipment.lightOn;
     this.drawBackdrop(buf, state);
     // Only a transparent window has anything behind the glass to see through.
-    this.drawWater(buf, quality, lit, state.decal === null && transparentBackdrop);
-    this.drawSand(buf);
+    this.drawWater(buf, quality, lit, state.decal === null && transparentBackdrop, this.crest);
+    this.drawSand(buf, state.tank.sand);
     this.drawDecor(buf, state);
     for (const p of state.pellets) {
       buf.set(p.x, p.y, COLOR.t);
@@ -294,7 +319,7 @@ export class TankScene {
     const cx = (WATER.x0 + WATER.x1) / 2;
     const half = (WATER.x1 - WATER.x0) / 2;
     const t = this.time;
-    buf.shearColumns(WATER.x0, WATER.x1, WATER.y0 - 6, SAND_Y, (x) => {
+    buf.shearColumns(WATER.x0, WATER.x1, WATER.y0 - 6, this.crest, (x) => {
       const lean = (-this.tilt * (x - cx)) / half * 6;
       const ripple = Math.sin((x - WATER.x0) * 0.08 + t * 9) * Math.abs(this.tiltVel) * 0.8;
       return Math.round(lean + this.heave * 4 + ripple);
@@ -304,11 +329,12 @@ export class TankScene {
   /** Water bends what is behind it: a slow sideways ripple plus a 1 px offset below the surface. */
   private refract(buf: PixelBuffer): void {
     const t = this.time;
-    buf.shearRows(WATER.x0, WATER.x1, WATER.y0 + 2, SAND_Y, (y) => 1 + Math.round(Math.sin(y * 0.11 + t * 1.3) * 0.9));
+    buf.shearRows(WATER.x0, WATER.x1, WATER.y0 + 2, this.crest, (y) => 1 + Math.round(Math.sin(y * 0.11 + t * 1.3) * 0.9));
   }
 
-  private drawWater(buf: PixelBuffer, quality: Quality, lit: boolean, seeThrough: boolean): void {
+  private drawWater(buf: PixelBuffer, quality: Quality, lit: boolean, seeThrough: boolean, crest: number): void {
     const h = WATER.y1 - WATER.y0;
+    if (h <= 0) return;
     // With no decal the water is only partly opaque, so a transparent window
     // shows the desktop through the tank, murkier with depth. Over a decal (or
     // the app's own backdrop) each row is one flat colour, so blend it once
@@ -333,9 +359,9 @@ export class TankScene {
     // Light shafts from the tank light: sparse dithered pale bands drifting slowly, fading with depth.
     for (let i = 0; i < (quality === "high" && lit ? 3 : 0); i++) {
       const cx = WATER.x0 + 70 + i * 110 + Math.sin(this.time * 0.3 + i) * 10;
-      for (let y = WATER.y0 + 1; y < SAND_Y; y++) {
+      for (let y = WATER.y0 + 1; y < crest; y++) {
         const w = 5 + (y - WATER.y0) * 0.1;
-        const fade = 1 - (y - WATER.y0) / (SAND_Y - WATER.y0);
+        const fade = 1 - (y - WATER.y0) / Math.max(1, crest - WATER.y0);
         for (let x = (cx - w) | 0; x < cx + w; x++) {
           if ((x + y * 2) % 5 === 0) buf.blendPixel(x, y, COLOR.c, 0.18 * fade);
         }
@@ -348,10 +374,19 @@ export class TankScene {
     }
   }
 
-  private drawSand(buf: PixelBuffer): void {
-    buf.fillRect(WATER.x0, SAND_Y, WATER.x1 - WATER.x0, WATER.y1 - SAND_Y, COLOR.s);
-    buf.fillRect(WATER.x0, SAND_Y, WATER.x1 - WATER.x0, 1, COLOR.S);
-    for (const [x, y] of this.sandSpeckles) buf.set(x, y, ((x | 0) & 1) ? COLOR.t : COLOR.S);
+  private drawSand(buf: PixelBuffer, sand: number[]): void {
+    for (let i = 0; i < sand.length; i++) {
+      const h = sand[i];
+      if (h <= 0) continue;
+      const x = WATER.x0 + i;
+      const top = WATER.y1 - h;
+      buf.fillRect(x, top, 1, h, COLOR.s);
+      buf.set(x, top, COLOR.S);
+      // Grain speckles: fixed per column and depth so they do not shimmer.
+      for (let y = top + 2; y < WATER.y1; y += 3) {
+        if (((x * 7 + y * 13) & 7) === 0) buf.set(x, y, ((x + y) & 1) ? COLOR.t : COLOR.S);
+      }
+    }
   }
 
   private drawDecor(buf: PixelBuffer, state: GameState): void {
@@ -360,7 +395,9 @@ export class TankScene {
       if (!s) continue;
       const plant = d.kind.startsWith("plant");
       const sway = plant ? Math.round(Math.sin(this.time * 1.5 + d.x)) : 0;
-      buf.blit(s, d.x + sway, SAND_Y - s.h + 1, sway < 0);
+      // Plants are rooted a couple of pixels into the bed; hardscape rests on top of it.
+      const top = sandTop(state.tank.sand, d.x + (s.w >> 1)) - s.h + (plant ? 2 : 0);
+      buf.blit(s, d.x + sway, top, sway < 0);
     }
   }
 

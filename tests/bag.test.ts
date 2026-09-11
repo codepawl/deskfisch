@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { newGame } from "../src/sim/state";
+import { tankGame } from "./helpers";
 import { addTankWater, newBag, releaseBag, releaseShock, stepBags, ADDS_NEEDED } from "../src/sim/bag";
 import { buyFish } from "../src/sim/shop";
 
@@ -8,14 +8,14 @@ const MIN = 60_000;
 
 describe("acclimation", () => {
   it("buying a fish floats a bag instead of adding a fish", () => {
-    const g = newGame(0);
+    const g = tankGame(0);
     expect(buyFish(g, "neon", WATER)).toBeNull();
     expect(g.bags).toHaveLength(1);
     expect(g.fish).toHaveLength(0);
   });
 
   it("a floated bag reaches tank temperature in about ten minutes", () => {
-    const g = newGame(0);
+    const g = tankGame(0);
     g.tank.temp = 26;
     const b = newBag(g, "neon", "n", WATER, 0);
     g.bags.push(b);
@@ -24,7 +24,7 @@ describe("acclimation", () => {
   });
 
   it("adds are spaced out and blend the bag toward tank pH", () => {
-    const g = newGame(0);
+    const g = tankGame(0);
     g.tank.pH = 8;
     const b = newBag(g, "neon", "n", WATER, 0);
     g.bags.push(b);
@@ -35,7 +35,7 @@ describe("acclimation", () => {
   });
 
   it("releasing early shocks the fish; a patient release does not", () => {
-    const g = newGame(0);
+    const g = tankGame(0);
     g.tank.temp = 28;
     g.tank.pH = 7.8;
     const rushed = newBag(g, "neon", "a", WATER, 0);

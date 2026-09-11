@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ambientFor, parseClock, solarTimes } from "../src/sim/daylight";
-import { newGame } from "../src/sim/state";
+import { tankGame } from "./helpers";
 import { simSpeed, tankHour } from "../src/sim/clock";
 
 describe("daylight", () => {
@@ -22,7 +22,7 @@ describe("daylight", () => {
   });
 
   it("real-time clock pins sim speed and follows the wall clock", () => {
-    const g = newGame(0);
+    const g = tankGame(0);
     g.settings.simSpeed = 10;
     expect(simSpeed(g)).toBe(1);
     g.settings.clock = "sim";

@@ -1,5 +1,6 @@
 import { newGame, type GameState } from "../sim/state";
 import { backupRaw } from "./backup";
+import { newSand } from "../sim/sand";
 
 /** The website hero embeds the app in an iframe; it keeps its own tank so it never touches the player's. */
 const KEY = window.self !== window.top ? "fisch-demo" : "fisch-save";
@@ -48,7 +49,8 @@ export function normalise(raw: unknown): GameState | null {
   return {
     ...fresh,
     ...saved,
-    tank: { ...fresh.tank, ...saved.tank },
+    // Saves from before the empty-tank start had water and sand without saying so.
+    tank: { ...fresh.tank, fill: 0.9, sand: newSand(14), ...saved.tank },
     equipment: { ...fresh.equipment, ...saved.equipment },
     inventory: { ...fresh.inventory, ...saved.inventory },
     settings: { ...fresh.settings, ...saved.settings },

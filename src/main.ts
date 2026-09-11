@@ -10,7 +10,7 @@ import { demoGame, newGame, type GameState } from "./sim/state";
 import { spawnFish } from "./sim/fish";
 import { advance, SIM_WATER } from "./sim/tick";
 import { loadGame, saveGame } from "./save/store";
-import { BAG_H, BAG_W, bagY, SAND_Y, SCREEN_H, SCREEN_W, setFillLevel, TankScene, WATER, type DragBag } from "./scenes/tank";
+import { BAG_H, BAG_W, bagY, sandTop, SCREEN_H, SCREEN_W, setFillLevel, TankScene, WATER, type DragBag } from "./scenes/tank";
 import { scrubGlass, vacuumGravel } from "./sim/tank";
 import { CarePanel } from "./ui/care";
 import { Toasts } from "./ui/toast";
@@ -70,6 +70,7 @@ async function boot(): Promise<void> {
 
 function run(state: GameState): void {
   setFillLevel(state.tank.fill);
+  WATER.floor = (x) => sandTop(state.tank.sand, x);
   Object.assign(SIM_WATER, WATER);
   // Debug handle: inspect or poke the live state from the devtools console.
   (window as unknown as { fisch: GameState }).fisch = state;
@@ -175,8 +176,8 @@ function run(state: GameState): void {
       return;
     }
     if (!inWater(x, y)) return;
-    if (!hud.tool && y >= SAND_Y - 14) {
-      const item = decorAt(state.decor, x, y);
+    if (!hud.tool && y >= sandTop(state.tank.sand, x) - 14) {
+      const item = decorAt(state.decor, x, y, state.tank.sand);
       if (item) {
         decorDrag = { item, grabX: x - item.x };
         return;
@@ -246,6 +247,7 @@ function run(state: GameState): void {
     maxFps: () => (document.hasFocus() ? state.settings.maxFps : Math.min(state.settings.maxFps, IDLE_FPS)),
     frame(dt) {
       setFillLevel(state.tank.fill);
+      scene.stepSand(state.tank.sand, dt);
       input.beginFrame();
       if (input.pressed) handleClick();
       if (drag) {
@@ -272,7 +274,7 @@ function run(state: GameState): void {
       const vacuuming = working && hud.tool === "vacuum";
       if (vacuuming) {
         scene.suck(input.x, input.y + 3);
-        if (input.y >= SAND_Y - VACUUM_REACH) {
+        if (input.y >= sandTop(state.tank.sand, input.x) - VACUUM_REACH) {
           vacuumGravel(state, VACUUM_RATE * dt);
         } else if (!vacuumHintShown) {
           vacuumHintShown = true;
@@ -302,10 +304,10 @@ function run(state: GameState): void {
   });
 }
 
-function decorAt(decor: Decor[], x: number, y: number): Decor | null {
+function decorAt(decor: Decor[], x: number, y: number, sand: number[]): Decor | null {
   for (const d of decor) {
     const s = DECOR_SPRITES[d.kind];
-    if (s && x >= d.x && x < d.x + s.w && y >= SAND_Y + 1 - s.h) return d;
+    if (s && x >= d.x && x < d.x + s.w && y >= sandTop(sand, d.x + (s.w >> 1)) - s.h) return d;
   }
   return null;
 }

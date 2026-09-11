@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { newGame } from "../src/sim/state";
+import { tankGame } from "./helpers";
 import { simulate, catchUp } from "../src/sim/tick";
 import { isCycled, waterChange } from "../src/sim/tank";
 import { spawnFish } from "../src/sim/fish";
@@ -8,14 +8,14 @@ import { MAX_CATCHUP_HOURS } from "../src/data/constants";
 
 const WATER = { x0: 0, y0: 0, x1: 300, y1: 200 };
 
-function runHours(state: ReturnType<typeof newGame>, hours: number) {
+function runHours(state: ReturnType<typeof tankGame>, hours: number) {
   const died: string[] = [];
   for (let s = 0; s < hours * 60; s++) died.push(...simulate(state, 60).died);
   return died;
 }
 
 function stocked(count = 6) {
-  const g = newGame(0);
+  const g = tankGame(0);
   g.equipment.filter = 1;
   g.equipment.heater = 1;
   for (let i = 0; i < count; i++) g.fish.push(spawnFish(SPECIES.neon, `n${i}`, WATER, i + 1));
@@ -54,12 +54,12 @@ describe("nitrogen cycle", () => {
   });
 
   it("water change dilutes nitrate and adds chlorine unless conditioned", () => {
-    const g = newGame(0);
+    const g = tankGame(0);
     g.tank.no3 = 80;
     waterChange(g, 0.5, false);
     expect(g.tank.no3).toBeCloseTo(42.5);
     expect(g.tank.chlorine).toBeGreaterThan(0);
-    const h = newGame(0);
+    const h = tankGame(0);
     waterChange(h, 0.5, true);
     expect(h.tank.chlorine).toBe(0);
   });
@@ -67,7 +67,7 @@ describe("nitrogen cycle", () => {
 
 describe("temperature", () => {
   it("heater brings the tank to target and holds it", () => {
-    const g = newGame(0);
+    const g = tankGame(0);
     g.equipment.heater = 2;
     g.equipment.heaterTarget = 26;
     runHours(g, 6);
@@ -106,7 +106,7 @@ describe("offline catch-up", () => {
   });
 
   it("ignores tiny gaps", () => {
-    const g = newGame(0);
+    const g = tankGame(0);
     expect(catchUp(g, 2000)).toBeNull();
     expect(g.simTime).toBe(2000);
   });
@@ -115,7 +115,7 @@ describe("offline catch-up", () => {
 describe("advance", () => {
   it("steps whole seconds and leaves the remainder", async () => {
     const { advance } = await import("../src/sim/tick");
-    const g = newGame(0);
+    const g = tankGame(0);
     advance(g, 2500);
     expect(g.simTime).toBe(2000);
     expect(g.ageHours).toBeCloseTo(2 / 3600, 8);
@@ -123,7 +123,7 @@ describe("advance", () => {
 
   it("sim speed multiplies game time per real second", async () => {
     const { advance } = await import("../src/sim/tick");
-    const g = newGame(0);
+    const g = tankGame(0);
     g.settings.clock = "sim";
     g.settings.simSpeed = 10;
     advance(g, 3000);
@@ -133,7 +133,7 @@ describe("advance", () => {
 
   it("replays long gaps coarsely", async () => {
     const { advance } = await import("../src/sim/tick");
-    const g = newGame(0);
+    const g = tankGame(0);
     const r = advance(g, 3600 * 1000);
     expect(r.away?.hours).toBe(1);
     expect(g.simTime).toBe(3600 * 1000);
@@ -143,7 +143,7 @@ describe("advance", () => {
 describe("care tools", () => {
   it("water change spends a conditioner dose when available", async () => {
     const { doWaterChange } = await import("../src/sim/tank");
-    const g = newGame(0);
+    const g = tankGame(0);
     g.inventory.conditioner = 1;
     expect(doWaterChange(g, 0.3).conditioned).toBe(true);
     expect(g.tank.chlorine).toBe(0);
@@ -153,7 +153,7 @@ describe("care tools", () => {
 
   it("scrubbing and vacuuming clamp at zero", async () => {
     const { scrubGlass, vacuumGravel } = await import("../src/sim/tank");
-    const g = newGame(0);
+    const g = tankGame(0);
     g.tank.algae = 30;
     g.tank.dirt = 10;
     scrubGlass(g, 50);

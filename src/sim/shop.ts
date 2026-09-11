@@ -1,6 +1,8 @@
 import { FISH_NAMES, SUPPLIES, DECOR, DECALS, FILTERS, HEATERS, AIR_PUMPS, LIGHTS, TANKS } from "../data/items";
 import { doWaterChange } from "./tank";
 import { treat } from "./disease";
+import { pourSand } from "./sand";
+import { MIN_FILL } from "./tank";
 import { SPECIES } from "../data/species";
 import { pick, rand } from "../engine/rng";
 import type { Bounds } from "./fish";
@@ -16,6 +18,7 @@ function pay(state: GameState, price: number): string | null {
 }
 
 export function buyFish(state: GameState, speciesId: string, water: Bounds): string | null {
+  if (state.tank.fill < MIN_FILL) return "Fill the tank with water first.";
   const sp = SPECIES[speciesId];
   const err = pay(state, sp.price);
   if (err) return err;
@@ -33,6 +36,9 @@ export function buySupply(state: GameState, id: string): string | null {
   const err = pay(state, item.price);
   if (err) return err;
   switch (id) {
+    case "sand":
+      pourSand(state);
+      break;
     case "flakes":
       state.inventory.flakes = (state.inventory.flakes ?? 0) + 10;
       break;
