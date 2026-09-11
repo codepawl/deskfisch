@@ -6,6 +6,8 @@ export type Tool = "feed" | "scrub" | "vacuum" | null;
 /** Coins, clock and the bottom toolbar. Panels register their toggle buttons here. */
 export class Hud {
   readonly root: HTMLElement;
+  /** The top strip; in pet mode it doubles as the window drag handle. */
+  readonly dragHandle: HTMLElement;
   tool: Tool = null;
   private readonly coins = el("span.hud-coins");
   private readonly clock = el("span.hud-clock");
@@ -25,7 +27,8 @@ export class Hud {
       button("tool", "Vacuum", () => this.toggleTool("vacuum")),
       this.lightBtn,
     );
-    this.root = el("div.hud", {}, el("div.hud-top", {}, this.coins, this.clock), this.bar);
+    this.dragHandle = el("div.hud-top", {}, this.coins, this.clock);
+    this.root = el("div.hud", {}, this.dragHandle, this.bar);
     overlay.append(this.root);
     this.refresh();
   }

@@ -170,3 +170,28 @@ button.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
 .shop-note { color: #ef7d57; min-height: 1.2em; }
 .panel-actions { display: flex; gap: calc(2px * var(--s)); margin-top: calc(2px * var(--s)); }
 .panel-care { bottom: calc(32px * var(--s)); right: calc(8px * var(--s)); max-width: calc(120px * var(--s)); }
+
+/* --- Toasts --------------------------------------------------------- */
+
+.toasts {
+  position: absolute;
+  bottom: calc(34px * var(--s));
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: calc(1px * var(--s));
+  align-items: center;
+  pointer-events: none;
+}
+.toast {
+  background: var(--panel);
+  border: calc(1px * var(--s)) solid var(--accent);
+  padding: calc(1px * var(--s)) calc(3px * var(--s));
+  white-space: nowrap;
+}
+
+/* --- Pet mode: see-through window, top strip drags it ---------------- */
+
+body[data-mode="pet"] { background: transparent; }
+body[data-mode="pet"] .hud-top { pointer-events: auto; cursor: move; }

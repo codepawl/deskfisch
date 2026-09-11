@@ -12,7 +12,10 @@ import { loadGame, saveGame } from "./save/store";
 import { BAG_H, BAG_W, BAG_Y, SAND_Y, SCREEN_H, SCREEN_W, TankScene, WATER, type DragBag } from "./scenes/tank";
 import { scrubGlass, vacuumGravel } from "./sim/tank";
 import { CarePanel } from "./ui/care";
-import { releaseBag, type Bag } from "./sim/bag";
+import { Toasts } from "./ui/toast";
+import { checkAchievements } from "./sim/achievements";
+import { applyMode, onModeRequest, startWindowDrag, type Mode } from "./platform";
+import { releaseBag, releaseShock, type Bag } from "./sim/bag";
 import { BagPanel } from "./ui/bag";
 import { Hud } from "./ui/hud";
 import { StatsPanel } from "./ui/stats";
@@ -43,9 +46,23 @@ function run(state: GameState): void {
   const shop = new ShopPanel(overlay, state, WATER, () => hud.refresh());
   const bagPanel = new BagPanel(overlay, state);
   const care = new CarePanel(overlay, state, () => hud.refresh());
+  const toasts = new Toasts(overlay);
   hud.addButton("Change water", () => care.toggle());
   hud.addButton("Test water", () => stats.toggle());
   hud.addButton("Shop", () => shop.toggle());
+
+  const MODES: Mode[] = ["window", "pet", "fullscreen"];
+  const modeBtn = hud.addButton("", () => setMode(MODES[(MODES.indexOf(state.mode) + 1) % MODES.length]));
+  const setMode = (mode: Mode) => {
+    state.mode = mode;
+    modeBtn.textContent = `Mode: ${mode}`;
+    void applyMode(mode);
+  };
+  setMode(state.mode);
+  void onModeRequest(setMode);
+  hud.dragHandle.addEventListener("pointerdown", () => {
+    if (state.mode === "pet") void startWindowDrag();
+  });
   (window as unknown as { fischUi: unknown }).fischUi = { hud, stats, inspect, shop, bagPanel };
 
   let sinceSave = 0;
@@ -87,7 +104,9 @@ function run(state: GameState): void {
     if (!drag) return;
     // Let go well below the surface to release the fish; otherwise the bag floats back.
     if (drag.y + BAG_H / 2 > WATER.y0 + 24) {
-      releaseBag(state, drag.bag, drag.x + BAG_W / 2, drag.y + BAG_H / 2, WATER);
+      const shock = releaseShock(state, drag.bag);
+      const f = releaseBag(state, drag.bag, drag.x + BAG_W / 2, drag.y + BAG_H / 2, WATER);
+      toasts.show(shock > 15 ? `${f.name} is shocked. Float longer and mix more water next time.` : `${f.name} settled in nicely.`);
       bagPanel.show(null);
       hud.refresh();
     }
@@ -97,8 +116,13 @@ function run(state: GameState): void {
   // Simulation clock: wall-clock driven so hiding the window or sleeping the
   // machine never loses time; long gaps are replayed coarsely.
   const tick = () => {
-    const { away } = advance(state);
-    if (away) console.info("catch-up", away);
+    const { away, died } = advance(state);
+    if (away) {
+      const h = away.hours >= 1 ? `${away.hours.toFixed(1)} h` : `${Math.round(away.hours * 60)} min`;
+      toasts.show(`Away ${h}${away.capped ? " (capped)" : ""}: +$ ${Math.floor(away.coinsEarned)}`, 8000);
+    }
+    for (const name of died) toasts.show(`${name} died. Scoop it out before it fouls the water.`, 8000);
+    for (const a of checkAchievements(state)) toasts.show(`${a.title}: +$ ${a.reward}`, 8000);
     hud.refresh();
     stats.refresh();
     inspect.refresh();
@@ -129,7 +153,7 @@ function run(state: GameState): void {
     },
     render() {
       const cursor = hud.tool && hud.tool !== "feed" ? { tool: hud.tool, x: input.x, y: input.y } : null;
-      scene.render(buf, state, drag, cursor);
+      scene.render(buf, state, drag, cursor, state.mode === "pet");
       const scale = buf.present(screen);
       overlay.style.setProperty("--s", String(scale));
       overlay.style.width = `${screen.width}px`;

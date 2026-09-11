@@ -57,6 +57,9 @@ export interface GameState {
   inventory: Record<string, number>;
   /** Total hours the tank has been running, for achievements and cycle detection. */
   ageHours: number;
+  achievements: string[];
+  /** How the desktop window is presented; ignored in the browser build. */
+  mode: "window" | "pet" | "fullscreen";
 }
 
 export function newGame(now = Date.now()): GameState {
@@ -95,5 +98,7 @@ export function newGame(now = Date.now()): GameState {
     nextFishId: 1,
     inventory: { flakes: 20, conditioner: 2 },
     ageHours: 0,
+    achievements: [],
+    mode: "window",
   };
 }

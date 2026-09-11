@@ -121,8 +121,14 @@ export class TankScene {
     this.bubbles = this.bubbles.filter((b) => b.y > WATER.y0);
   }
 
-  render(buf: PixelBuffer, state: GameState, drag: DragBag | null = null, cursor: { tool: string; x: number; y: number } | null = null): void {
-    buf.clear(COLOR.K);
+  render(
+    buf: PixelBuffer,
+    state: GameState,
+    drag: DragBag | null = null,
+    cursor: { tool: string; x: number; y: number } | null = null,
+    transparentBackdrop = false,
+  ): void {
+    buf.clear(transparentBackdrop ? 0 : COLOR.K);
     this.drawWater(buf);
     this.drawSand(buf);
     this.drawDecor(buf, state);
@@ -136,9 +142,12 @@ export class TankScene {
       if (drag?.bag === b) this.drawBag(buf, b, drag.x, drag.y);
       else this.drawBag(buf, b, b.x, BAG_Y + Math.round(Math.sin(this.time * 1.2 + b.x) * 1));
     }
-    if (state.equipment.light === 0 || !state.equipment.lightOn) {
-      buf.tintRect(WATER.x0, WATER.y0, WATER.x1 - WATER.x0, WATER.y1 - WATER.y0, COLOR.n, 0.35);
-    }
+    // Room light follows the real clock; the tank light overrides it.
+    const lit = state.equipment.light > 0 && state.equipment.lightOn;
+    const hour = new Date().getHours();
+    const night = hour >= 21 || hour < 6 ? 0.55 : hour >= 18 || hour < 8 ? 0.3 : 0;
+    const dark = lit ? 0 : Math.max(0.2, night);
+    if (dark > 0) buf.tintRect(WATER.x0, WATER.y0, WATER.x1 - WATER.x0, WATER.y1 - WATER.y0, COLOR.n, dark);
     if (state.tank.algae > 10) {
       buf.tintRect(WATER.x0, WATER.y0, WATER.x1 - WATER.x0, WATER.y1 - WATER.y0, COLOR.g, state.tank.algae / 250);
     }
