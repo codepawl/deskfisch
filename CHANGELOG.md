@@ -9,6 +9,9 @@
 - Backdrop decals, adjustable water level with evaporation, and a see-through tank that gets murkier with depth.
 - Every sound effect varies slightly in pitch and length; levels stay fixed.
 - Website: six languages with pixel faces for Vietnamese, Japanese, Chinese and Korean; platform icons; live stocked demo in the hero.
+- First run asks how you want to play: Zen (nothing dies or gets sick), Normal, Hardcore (illness twice as likely, stress hurts more, higher prices, fewer coins) or Sandbox (unlimited coins, no risk). Change it any time in Settings.
+- Panels never outgrow the tank: long ones scroll with their buttons pinned at the foot, text stops shrinking below 1.25×, Esc closes them.
+- Shop rows show the item: fish and decor as their in-game sprites, gear and supplies as new pixel pictures.
 
 ## 0.3.2 — 2026-09-11
 
