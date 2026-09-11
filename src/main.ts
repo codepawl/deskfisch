@@ -101,7 +101,9 @@ function run(state: GameState): void {
   const setChill = (on: boolean) => {
     state.settings.chill = on;
     document.documentElement.dataset.chill = String(on);
+    if (on) toasts.show("Chill mode. Double-click the tank, press Esc, or tap the corner button to bring the controls back.", 6000);
   };
+  screen.addEventListener("dblclick", () => setChill(false));
   hud.addButton("Chill", () => setChill(true), "chill");
   hud.restore.onclick = () => setChill(false);
   window.addEventListener("keydown", (e) => {

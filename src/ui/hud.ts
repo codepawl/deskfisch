@@ -48,7 +48,7 @@ export class Hud {
     // Once a button is chosen the label has done its job.
     this.bar.addEventListener("click", clearHover);
     this.dragHandle = el("div.hud-top", {}, this.coins, el("span.grip", {}, "⋮⋮ drag ⋮⋮"), this.clock);
-    this.restore = button("hud-restore", "⋯", () => {});
+    this.restore = button("hud-restore", "Show controls", () => {}, "settings");
     this.root = el("div.hud", {}, this.dragHandle, this.bar);
     overlay.append(this.root, this.resizeHandle, this.restore);
     this.refresh();
