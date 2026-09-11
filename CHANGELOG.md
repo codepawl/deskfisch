@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.4.0 — 2026-09-11
+
+- Start from nothing: a new tank is empty glass. Pour sand, plant and decorate, fill with tap water, then cycle it. Older saves keep their full tank.
+- Sand is terrain: a heightmap poured from bags, shoved by window jolts, slumping to its angle of repose. Fish, food and hardscape sit on the sand surface; plants root into it.
+- Knock on the glass to startle nearby fish; curious fish drift over to a pointer resting on the glass and nip at it.
+- The water sloshes when the window is dragged, reacting to acceleration and ringing down; the surface is a wandering mix of waves instead of a loop.
+- Backdrop decals, adjustable water level with evaporation, and a see-through tank that gets murkier with depth.
+- Every sound effect varies slightly in pitch and length; levels stay fixed.
+- Website: six languages with pixel faces for Vietnamese, Japanese, Chinese and Korean; platform icons; live stocked demo in the hero.
+
 ## 0.3.2 — 2026-09-11
 
 - Vietnamese UI (Settings → Language, follows the system by default). Vietnamese text uses VT323 because Pixelify Sans has no Vietnamese glyphs.
