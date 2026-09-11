@@ -255,7 +255,8 @@ export class TankScene {
 
   private drawFish(buf: PixelBuffer, f: Fish): void {
     const sp = SPECIES[f.speciesId];
-    const frame = sp.frames[Math.floor(f.phase) % sp.frames.length];
+    let frame = sp.frames[Math.floor(f.phase) % sp.frames.length];
+    if (f.size < 0.5) frame = halfSize(frame);
     if (!f.alive) {
       // Belly up at the surface.
       buf.blit(frame, f.x, f.y, f.facing < 0);
@@ -295,6 +296,21 @@ export class TankScene {
     buf.fillRect(WATER.x0 - t, WATER.y0 - t, t, WATER.y1 - WATER.y0 + t * 2, GLASS);
     buf.fillRect(WATER.x1, WATER.y0 - t, t, WATER.y1 - WATER.y0 + t * 2, GLASS);
   }
+}
+
+const halfCache = new Map<Sprite, Sprite>();
+
+/** Fry are drawn at half resolution: every other pixel, so shapes stay readable. */
+function halfSize(s: Sprite): Sprite {
+  let small = halfCache.get(s);
+  if (small) return small;
+  const w = Math.ceil(s.w / 2);
+  const h = Math.ceil(s.h / 2);
+  const px = new Uint32Array(w * h);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) px[y * w + x] = s.px[y * 2 * s.w + x * 2];
+  small = { w, h, px };
+  halfCache.set(s, small);
+  return small;
 }
 
 function mix(a: number, b: number, t: number): number {

@@ -17,6 +17,8 @@ export interface Species {
   bioload: number;
   price: number;
   lifespanDays: number;
+  /** Livebearers that breed in the tank when conditions are right. */
+  breeds?: boolean;
 }
 
 export const SPECIES: Record<string, Species> = {
@@ -63,6 +65,7 @@ export const SPECIES: Record<string, Species> = {
     bioload: 0.8,
     price: 10,
     lifespanDays: 365 * 2,
+    breeds: true,
     frames: frames(
       [
         "....yy...........",
@@ -127,6 +130,7 @@ export const SPECIES: Record<string, Species> = {
     bioload: 1.2,
     price: 12,
     lifespanDays: 365 * 4,
+    breeds: true,
     frames: frames(
       [
         ".....yRRRRR.....",

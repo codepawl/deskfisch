@@ -1,6 +1,7 @@
 import { SPECIES } from "../data/species";
 import { happiness, type Fish } from "../sim/fish";
 import { removeFish, sellPrice } from "../sim/shop";
+import { GESTATION_HOURS } from "../sim/breeding";
 import type { GameState } from "../sim/state";
 import { button, el } from "./dom";
 
@@ -46,7 +47,10 @@ export class InspectPanel {
     const sp = SPECIES[f.speciesId];
     this.title.textContent = f.name;
     const days = Math.floor(f.ageHours / 24);
-    this.sub.textContent = f.alive ? `${sp.name} · ${days}d old` : `${sp.name} · dead`;
+    const sex = f.sex === "f" ? "♀" : "♂";
+    const stage = f.size < 0.5 ? "fry" : f.size < 0.8 ? "juvenile" : "adult";
+    const gravid = f.gravidHours ? ` · carrying fry ${Math.round((f.gravidHours / GESTATION_HOURS) * 100)}%` : "";
+    this.sub.textContent = f.alive ? `${sex} ${sp.name} · ${stage} · ${days}d${gravid}` : `${sp.name} · dead`;
     setBar(this.bars.hunger, f.hunger, true);
     setBar(this.bars.stress, f.stress, true);
     setBar(this.bars.health, f.health, false);

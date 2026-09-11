@@ -22,6 +22,11 @@ export interface Fish {
   phase: number;
   /** Speed multiplier for the current intent (chasing, hiding...). */
   pace?: number;
+  sex: "m" | "f";
+  /** Hours a female has carried fry; 0 or absent when not gravid. */
+  gravidHours?: number;
+  /** Hours until she can carry again. */
+  breedCooldown?: number;
   ageHours: number;
   /** 0 = just born .. 1 = full adult size. */
   size: number;
@@ -45,6 +50,7 @@ export function spawnFish(sp: Species, name: string, water: Bounds, id: number):
   return {
     id, speciesId: sp.id, name, x, y, vx: 0, vy: 0, facing: 1, retarget: 0, tx: x, ty: y, phase: rand(0, 6),
     ageHours: 0, size: 0.5, hunger: 30, stress: 20, health: 100, alive: true,
+    sex: Math.random() < 0.5 ? "m" : "f",
   };
 }
 

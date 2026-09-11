@@ -7,7 +7,7 @@ import { AUTOSAVE_SECONDS } from "./data/constants";
 import { moveFish, type Fish } from "./sim/fish";
 import { dropPellets, updatePellets } from "./sim/food";
 import { newGame, type GameState } from "./sim/state";
-import { advance } from "./sim/tick";
+import { advance, SIM_WATER } from "./sim/tick";
 import { loadGame, saveGame } from "./save/store";
 import { BAG_H, BAG_W, BAG_Y, SAND_Y, SCREEN_H, SCREEN_W, TankScene, WATER, type DragBag } from "./scenes/tank";
 import { scrubGlass, vacuumGravel } from "./sim/tank";
@@ -45,6 +45,7 @@ async function boot(): Promise<void> {
 }
 
 function run(state: GameState): void {
+  Object.assign(SIM_WATER, WATER);
   // Debug handle: inspect or poke the live state from the devtools console.
   (window as unknown as { fisch: GameState }).fisch = state;
   const hud = new Hud(overlay, state);
@@ -166,12 +167,13 @@ function run(state: GameState): void {
   // Simulation clock: wall-clock driven so hiding the window or sleeping the
   // machine never loses time; long gaps are replayed coarsely.
   const tick = () => {
-    const { away, died } = advance(state);
+    const { away, died, born } = advance(state);
     if (away) {
       const h = away.hours >= 1 ? `${away.hours.toFixed(1)} h` : `${Math.round(away.hours * 60)} min`;
       toasts.show(`Away ${h}${away.capped ? " (capped)" : ""}: +$ ${Math.floor(away.coinsEarned)}`, 8000);
     }
     for (const name of died) toasts.show(`${name} died. Scoop it out before it fouls the water.`, 8000);
+    for (const msg of born) toasts.show(msg, 8000);
     for (const a of checkAchievements(state)) toasts.show(`${a.title}: +$ ${a.reward}`, 8000);
     hud.refresh();
     stats.refresh();

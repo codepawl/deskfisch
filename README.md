@@ -32,6 +32,8 @@ ignores always-on-top for native GTK apps; run with `GDK_BACKEND=x11` to get it.
   from surface exchange, the filter and an air pump.
 - Water changes dilute nitrate but bring chlorine unless you have conditioner.
 - Readings are hidden until you buy a thermometer and a test kit.
+- Guppies and mollies breed: an adult pair that is fed, calm and in a
+  cycled, uncrowded tank produces fry after a day. Fry grow up over weeks.
 - New fish arrive in a bag. Float it ten minutes, add tank water three times,
   then drag the bag under the surface to release.
 

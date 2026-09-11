@@ -10,7 +10,7 @@ const WATER = { x0: 0, y0: 0, x1: 300, y1: 200 };
 
 function runHours(state: ReturnType<typeof newGame>, hours: number) {
   const died: string[] = [];
-  for (let s = 0; s < hours * 60; s++) died.push(...simulate(state, 60));
+  for (let s = 0; s < hours * 60; s++) died.push(...simulate(state, 60).died);
   return died;
 }
 

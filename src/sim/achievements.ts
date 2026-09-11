@@ -15,6 +15,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   { id: "school", title: "A proper school", reward: 50, done: (s) => Object.values(SPECIES).some((sp) => sp.minGroup >= 5 && s.fish.filter((f) => f.alive && f.speciesId === sp.id).length >= sp.minGroup) },
   { id: "week", title: "One week old fish", reward: 100, done: (s) => s.fish.some((f) => f.alive && f.ageHours >= 24 * 7) },
   { id: "fullKit", title: "Fully equipped", reward: 60, done: (s) => s.equipment.filter > 0 && s.equipment.heater > 0 && s.equipment.light > 0 && s.equipment.testKit },
+  { id: "fry", title: "First fry born", reward: 50, done: (s) => s.fish.some((f) => f.breedCooldown !== undefined && f.breedCooldown > 0) },
   { id: "spotless", title: "Spotless", reward: 30, done: (s) => s.tank.algae < 1 && s.tank.dirt < 1 && s.ageHours > 48 },
 ];
 
