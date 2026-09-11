@@ -1,7 +1,8 @@
 import { newGame, type GameState } from "../sim/state";
 import { backupRaw } from "./backup";
 
-const KEY = "fisch-save";
+/** The website hero embeds the app in an iframe; it keeps its own tank so it never touches the player's. */
+const KEY = window.self !== window.top ? "fisch-demo" : "fisch-save";
 
 interface Backend {
   get(): Promise<unknown>;
