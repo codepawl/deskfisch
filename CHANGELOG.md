@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.1 — unreleased
+
+- Background music: five slow chiptune tracks made for the tank, a daytime set and a night set that follows the room light, shuffled and crossfaded. Off by default; Settings → Music.
+- About in Settings: version, license and links to the site, changelog, bug reports.
+- Panels never outgrow the tank; Esc closes them. Shop rows show item pictures.
+
 ## 0.4.0 — 2026-09-11
 
 - Start from nothing: a new tank is empty glass. Pour sand, plant and decorate, fill with tap water, then cycle it. Older saves keep their full tank.

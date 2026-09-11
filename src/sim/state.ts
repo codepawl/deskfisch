@@ -66,6 +66,8 @@ export interface Settings {
   chill: boolean;
   /** Filter hum and bubbles in the background. */
   ambient: boolean;
+  /** Background music (slow chiptune, day and night sets). Off by default. */
+  music: boolean;
   /** UI language; "auto" follows the system. */
   lang: "auto" | "en" | "vi";
   /** Real time locks sim speed to 1× and lights the room by the real sun; simulated uses game time. */
@@ -189,6 +191,6 @@ export function newGame(now = Date.now()): GameState {
     pinned: true,
     playstyle: "normal",
     onboarded: false,
-    settings: { transparent: true, volume: 0.5, muted: false, simSpeed: 1, quality: "high", maxFps: 30, chill: false, ambient: true, lang: "auto", clock: "real", sunrise: "06:00", sunset: "18:00" },
+    settings: { transparent: true, volume: 0.5, muted: false, simSpeed: 1, quality: "high", maxFps: 30, chill: false, ambient: true, music: false, lang: "auto", clock: "real", sunrise: "06:00", sunset: "18:00" },
   };
 }

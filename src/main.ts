@@ -23,6 +23,8 @@ import { detectLang, setLang, t } from "./i18n";
 import { setLabel } from "./ui/dom";
 import { isCycled } from "./sim/tank";
 import { Sfx } from "./engine/audio";
+import { Music } from "./engine/music";
+import { ambientNow } from "./sim/clock";
 import { checkAchievements } from "./sim/achievements";
 import { applyMode, isTauri, onModeRequest, setPinned, startWindowDrag, startWindowResize, windowVelocity, type Mode } from "./platform";
 import { releaseBag, releaseShock, type Bag } from "./sim/bag";
@@ -47,6 +49,7 @@ const buf = new PixelBuffer(SCREEN_W, SCREEN_H);
 const input = new Input(screen, SCREEN_W, SCREEN_H);
 const scene = new TankScene();
 const sfx = new Sfx();
+const music = new Music();
 /** Seconds between scrub sounds while the sponge is held. */
 const SCRUB_SOUND_INTERVAL = 0.12;
 
@@ -89,6 +92,7 @@ function run(state: GameState): void {
   const applySettings = () => {
     const st = state.settings;
     sfx.setVolume(st.volume, st.muted);
+    music.setVolume(st.volume, st.muted);
     void applyMode(state.mode, state.pinned, st.transparent);
   };
   const offerUpdate = (version: string, install: () => Promise<void>) =>
@@ -121,6 +125,7 @@ function run(state: GameState): void {
     void applyMode(mode, state.pinned, state.settings.transparent);
   };
   sfx.setVolume(state.settings.volume, state.settings.muted);
+  music.setVolume(state.settings.volume, state.settings.muted);
   setMode(state.mode);
   void onModeRequest(setMode);
   if (isTauri) {
@@ -312,6 +317,7 @@ const UI_MIN_SCALE = 1.25;
       sfx.vacuum(vacuuming);
       const eq = state.equipment;
       sfx.ambient(state.settings.ambient && !state.settings.muted && (eq.filter > 0 || eq.airPump > 0), eq.airPump > 0);
+      music.update(state.settings.music && !state.settings.muted && window.self === window.top, ambientNow(state).phase === "night");
       updatePellets(state, WATER, dt);
       const lure = hud.tool === "feed" && input.inside && inWater(input.x, input.y) ? { x: input.x } : null;
       if (Math.hypot(input.x - hoverX, input.y - hoverY) > 2 || !input.inside || hud.tool || drag || !inWater(input.x, input.y)) {

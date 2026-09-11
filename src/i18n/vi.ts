@@ -190,6 +190,7 @@ export const vi: Record<string, string> = {
   "See-through pet window": "Cửa sổ pet trong suốt",
   "Sound": "Âm thanh",
   "Ambient hum": "Tiếng lọc nền",
+  "Music": "Nhạc nền",
   "Volume": "Âm lượng",
   "Sim speed": "Tốc độ mô phỏng",
   "Visuals": "Đồ hoạ",

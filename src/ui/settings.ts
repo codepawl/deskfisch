@@ -37,6 +37,7 @@ export class SettingsPanel {
       this.row(t("See-through pet window"), this.checkbox(s.transparent, (v) => (s.transparent = v))),
       this.row(t("Sound"), this.checkbox(!s.muted, (v) => (s.muted = !v))),
       this.row(t("Ambient hum"), this.checkbox(s.ambient, (v) => (s.ambient = v))),
+      this.row(t("Music"), this.checkbox(s.music, (v) => (s.music = v))),
       this.row(t("Volume"), this.range(s.volume, (v) => (s.volume = v))),
       this.row(t("Clock"), this.select(["real", "sim"], s.clock, (v) => {
         s.clock = v as typeof s.clock;
