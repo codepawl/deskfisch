@@ -1,6 +1,6 @@
 [package]
 name = "fisch"
-version = "0.3.1"
+version = "0.3.2"
 description = "Deskfisch: a cozy pixel aquarium for your desktop"
 authors = ["Nguyen Xuan An"]
 edition = "2021"
