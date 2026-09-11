@@ -148,6 +148,21 @@ button.tool:disabled { opacity: 0.4; cursor: default; }
   box-shadow: calc(2px * var(--s)) calc(2px * var(--s)) 0 #000;
   padding: calc(3px * var(--s)) calc(4px * var(--s));
   min-width: calc(80px * var(--s));
+  max-width: calc(100% - 8px * var(--s));
+  /* Room for the top offset and the toolbar below. */
+  max-height: calc(100% - 58px * var(--s));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+/* Buttons at the foot of a scrolling panel stay in view; the row carries the
+   panel's bottom padding so it sits flush against the border. */
+.panel:has(> .panel-actions) { padding-bottom: 0; }
+.panel > .panel-actions {
+  position: sticky;
+  bottom: 0;
+  padding-top: calc(2px * var(--s));
+  padding-bottom: calc(3px * var(--s));
+  background: var(--panel);
 }
 .panel h2 {
   margin: 0 0 calc(2px * var(--s));
@@ -215,8 +230,16 @@ button.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
 .shop-row button.tool { min-width: calc(24px * var(--s)); }
 .shop-note { color: #ef7d57; min-height: 1.2em; }
 .shop-heading { color: var(--accent); margin-top: calc(3px * var(--s)); }
-.swatch-row { display: flex; align-items: center; gap: calc(3px * var(--s)); }
-.swatch { width: calc(8px * var(--s)); height: calc(8px * var(--s)); border: calc(1px * var(--s)) solid var(--panel-edge); flex: none; }
+.shop-text { flex: 1; min-width: 0; }
+.shop-icon {
+  width: calc(18px * var(--s));
+  height: calc(14px * var(--s));
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.shop-icon > * { image-rendering: pixelated; shape-rendering: crispEdges; }
+.swatch { width: calc(12px * var(--s)); height: calc(12px * var(--s)); border: calc(1px * var(--s)) solid var(--panel-edge); }
 .panel-actions { display: flex; gap: calc(2px * var(--s)); margin-top: calc(2px * var(--s)); }
 .panel-care { bottom: calc(32px * var(--s)); right: calc(8px * var(--s)); max-width: calc(130px * var(--s)); }
 .panel-care .panel-actions { align-items: center; margin-top: 0; }
@@ -257,8 +280,6 @@ html[data-mode="pet"][data-pinned="true"] .grip { opacity: 0.35; }
   left: 50%;
   transform: translateX(-50%);
   width: calc(190px * var(--s));
-  max-height: calc(200px * var(--s));
-  overflow-y: auto;
 }
 .settings-rows { display: flex; flex-direction: column; gap: calc(2px * var(--s)); }
 .settings-row {

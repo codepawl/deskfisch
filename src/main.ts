@@ -145,7 +145,9 @@ function run(state: GameState): void {
   hud.addButton(t("Chill"), () => setChill(true), "chill");
   hud.restore.onclick = () => setChill(false);
   window.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") setChill(false);
+    if (e.key !== "Escape") return;
+    setChill(false);
+    for (const p of overlay.querySelectorAll<HTMLElement>(".panel:not(.panel-welcome)")) p.hidden = true;
   });
   setChill(state.settings.chill);
   // Pinned means fixed to the screen: on top of other windows and not movable.
@@ -261,6 +263,8 @@ function run(state: GameState): void {
   // Every painted frame costs WebKit about 6 ms of CPU regardless of the JS
   // work, so an unfocused tank (pet mode beside your work) idles at 15 fps.
   const IDLE_FPS = 15;
+/** Below this the VT323 text is unreadable, so the UI stops shrinking with the tank. */
+const UI_MIN_SCALE = 1.25;
   startLoop({
     maxFps: () => (document.hasFocus() ? state.settings.maxFps : Math.min(state.settings.maxFps, IDLE_FPS)),
     frame(dt) {
@@ -335,7 +339,8 @@ function run(state: GameState): void {
       const cursor = showCursor ? { tool: hud.tool!, x: input.x, y: input.y } : null;
       scene.render(buf, state, drag, cursor, state.mode === "pet" && state.settings.transparent, state.settings.quality);
       const scale = buf.present(screen, scene.overlays);
-      overlay.style.setProperty("--s", String(scale));
+      // Text keeps a readable size in tiny windows; panels then scroll inside the tank.
+      overlay.style.setProperty("--s", String(Math.max(scale, UI_MIN_SCALE)));
       overlay.style.width = screen.style.width;
       overlay.style.height = screen.style.height;
     },

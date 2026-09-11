@@ -127,7 +127,11 @@ const ICONS: Record<string, string[]> = {
 export type IconName = keyof typeof ICONS;
 
 export function icon(name: IconName): SVGSVGElement {
-  const rows = ICONS[name];
+  return pixelSvg(ICONS[name]);
+}
+
+/** Palette-character rows → crisp SVG of unit rects. */
+export function pixelSvg(rows: string[]): SVGSVGElement {
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.setAttribute("viewBox", `0 0 ${rows[0].length} ${rows.length}`);
   svg.setAttribute("class", "icon");
