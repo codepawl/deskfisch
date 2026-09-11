@@ -16,9 +16,10 @@ export async function setPinned(pinned: boolean): Promise<void> {
 }
 
 /** Configure the native window (or the browser) for a display mode. */
-export async function applyMode(mode: Mode, pinned: boolean): Promise<void> {
+export async function applyMode(mode: Mode, pinned: boolean, transparent: boolean): Promise<void> {
   // On <html>, not <body>: both carry a background and pet mode must clear both.
   document.documentElement.dataset.mode = mode;
+  document.documentElement.dataset.transparent = String(mode === "pet" && transparent);
   if (!isTauri) {
     if (mode === "fullscreen") await document.documentElement.requestFullscreen?.().catch(() => undefined);
     else if (document.fullscreenElement) await document.exitFullscreen();

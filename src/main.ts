@@ -13,6 +13,8 @@ import { BAG_H, BAG_W, BAG_Y, SAND_Y, SCREEN_H, SCREEN_W, TankScene, WATER, type
 import { scrubGlass, vacuumGravel } from "./sim/tank";
 import { CarePanel } from "./ui/care";
 import { Toasts } from "./ui/toast";
+import { SettingsPanel } from "./ui/settings";
+import { Sfx } from "./engine/audio";
 import { checkAchievements } from "./sim/achievements";
 import { applyMode, isTauri, onModeRequest, setPinned, startWindowDrag, type Mode } from "./platform";
 import { releaseBag, releaseShock, type Bag } from "./sim/bag";
@@ -32,6 +34,9 @@ const overlay = document.getElementById("overlay") as HTMLElement;
 const buf = new PixelBuffer(SCREEN_W, SCREEN_H);
 const input = new Input(screen, SCREEN_W, SCREEN_H);
 const scene = new TankScene();
+const sfx = new Sfx();
+/** Seconds between scrub sounds while the sponge is held. */
+const SCRUB_SOUND_INTERVAL = 0.12;
 
 async function boot(): Promise<void> {
   run((await loadGame()) ?? newGame());
@@ -47,6 +52,12 @@ function run(state: GameState): void {
   const bagPanel = new BagPanel(overlay, state);
   const care = new CarePanel(overlay, state, () => hud.refresh());
   const toasts = new Toasts(overlay);
+  const applySettings = () => {
+    const st = state.settings;
+    sfx.setVolume(st.volume, st.muted);
+    void applyMode(state.mode, state.pinned, st.transparent);
+  };
+  const settings = new SettingsPanel(overlay, state, applySettings);
   hud.addButton("Change water", () => care.toggle());
   hud.addButton("Test water", () => stats.toggle());
   hud.addButton("Shop", () => shop.toggle());
@@ -56,8 +67,9 @@ function run(state: GameState): void {
   const setMode = (mode: Mode) => {
     state.mode = mode;
     modeBtn.textContent = `Mode: ${mode}`;
-    void applyMode(mode, state.pinned);
+    void applyMode(mode, state.pinned, state.settings.transparent);
   };
+  sfx.setVolume(state.settings.volume, state.settings.muted);
   setMode(state.mode);
   void onModeRequest(setMode);
   if (isTauri) {
@@ -68,6 +80,7 @@ function run(state: GameState): void {
     });
     pinBtn.textContent = state.pinned ? "Unpin" : "Pin";
   }
+  hud.addButton("Settings", () => settings.toggle());
   hud.dragHandle.addEventListener("pointerdown", () => {
     if (state.mode === "pet") void startWindowDrag();
   });
@@ -101,6 +114,7 @@ function run(state: GameState): void {
       state.inventory.flakes = flakes - 1;
       dropPellets(state, x, PELLETS_PER_PINCH, WATER);
       scene.splash(x);
+      sfx.splash();
       hud.refresh();
       return;
     }
@@ -144,7 +158,9 @@ function run(state: GameState): void {
   tick();
   setInterval(tick, 1000);
 
+  let scrubSoundIn = 0;
   startLoop({
+    maxFps: () => state.settings.maxFps,
     frame(dt) {
       input.beginFrame();
       if (input.pressed) handleClick();
@@ -153,24 +169,30 @@ function run(state: GameState): void {
         drag.y = input.y - BAG_H / 2;
       }
       if (input.released) handleRelease();
-      scene.update(dt);
-      if (input.down && !drag && inWater(input.x, input.y)) {
-        if (hud.tool === "scrub") {
-          scrubGlass(state, SCRUB_RATE * dt);
-          scene.foam(input.x, input.y);
-        }
-        if (hud.tool === "vacuum" && input.y >= SAND_Y) {
-          vacuumGravel(state, VACUUM_RATE * dt);
-          scene.suck(input.x, input.y + 3);
+      scene.update(dt, state.settings.quality);
+      const working = input.down && !drag && inWater(input.x, input.y);
+      if (working && hud.tool === "scrub") {
+        scrubGlass(state, SCRUB_RATE * dt);
+        scene.foam(input.x, input.y);
+        scrubSoundIn -= dt;
+        if (scrubSoundIn <= 0) {
+          sfx.scrub();
+          scrubSoundIn = SCRUB_SOUND_INTERVAL;
         }
       }
+      const vacuuming = working && hud.tool === "vacuum" && input.y >= SAND_Y;
+      if (vacuuming) {
+        vacuumGravel(state, VACUUM_RATE * dt);
+        scene.suck(input.x, input.y + 3);
+      }
+      sfx.vacuum(vacuuming);
       updatePellets(state, WATER, dt);
       for (const f of state.fish) moveFish(f, SPECIES[f.speciesId], WATER, dt, state);
     },
     render() {
       const showCursor = hud.tool && hud.tool !== "feed" && input.inside && inWater(input.x, input.y);
       const cursor = showCursor ? { tool: hud.tool!, x: input.x, y: input.y } : null;
-      scene.render(buf, state, drag, cursor, state.mode === "pet");
+      scene.render(buf, state, drag, cursor, state.mode === "pet" && state.settings.transparent, state.settings.quality);
       const scale = buf.present(screen);
       overlay.style.setProperty("--s", String(scale));
       overlay.style.width = `${screen.width}px`;

@@ -40,6 +40,20 @@ export interface Decor {
   x: number;
 }
 
+export type Quality = "high" | "medium" | "low";
+
+export interface Settings {
+  /** See-through window in pet mode. */
+  transparent: boolean;
+  /** 0..1 */
+  volume: number;
+  muted: boolean;
+  /** Game seconds per real second. */
+  simSpeed: number;
+  quality: Quality;
+  maxFps: number;
+}
+
 export interface GameState {
   version: 1;
   /** Epoch ms of the last simulated instant. */
@@ -62,6 +76,7 @@ export interface GameState {
   mode: "window" | "pet" | "fullscreen";
   /** Keep the window above other apps (window and pet modes). */
   pinned: boolean;
+  settings: Settings;
 }
 
 export function newGame(now = Date.now()): GameState {
@@ -103,5 +118,6 @@ export function newGame(now = Date.now()): GameState {
     achievements: [],
     mode: "window",
     pinned: true,
+    settings: { transparent: true, volume: 0.5, muted: false, simSpeed: 1, quality: "high", maxFps: 60 },
   };
 }

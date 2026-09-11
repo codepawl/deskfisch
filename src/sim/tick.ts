@@ -9,7 +9,11 @@ import { stepBags } from "./bag";
 /** Coins per hour from a fully happy fish, as a fraction of its shop price. */
 const INCOME_RATE = 0.02;
 
-/** Advance the whole simulation by `seconds` of game time. Returns names of fish that died. */
+/**
+ * Advance the whole simulation by `seconds` of game time. Returns names of fish
+ * that died. Callers own `simTime`, the wall-clock anchor, since game time can
+ * run faster than real time.
+ */
 export function simulate(state: GameState, seconds: number): string[] {
   const hours = seconds / 3600;
   stepTank(state, hours, wasteLoad(state));
@@ -20,7 +24,6 @@ export function simulate(state: GameState, seconds: number): string[] {
     state.coins += (happiness(f) / 100) * SPECIES[f.speciesId].price * INCOME_RATE * hours;
   }
   state.ageHours += hours;
-  state.simTime += seconds * 1000;
   return died;
 }
 
@@ -47,7 +50,10 @@ export function advance(state: GameState, now = Date.now()): { died: string[]; a
     return { died: away?.died ?? [], away };
   }
   const died: string[] = [];
-  while (now - state.simTime >= 1000) died.push(...simulate(state, 1));
+  while (now - state.simTime >= 1000) {
+    died.push(...simulate(state, state.settings.simSpeed));
+    state.simTime += 1000;
+  }
   return { died, away: null };
 }
 
@@ -62,6 +68,8 @@ export function catchUp(state: GameState, now = Date.now()): CatchUp | null {
   let remaining = Math.min(elapsed, MAX_CATCHUP_HOURS * 3600);
   const coinsBefore = state.coins;
   const died: string[] = [];
+  // Offline time is replayed at normal speed; a sped-up sim would otherwise
+  // burn through days of chemistry while the app was closed.
   while (remaining > 0) {
     const step = Math.min(CATCHUP_STEP_SECONDS, remaining);
     died.push(...simulate(state, step));

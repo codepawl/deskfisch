@@ -42,6 +42,7 @@ export async function loadGame(): Promise<GameState | null> {
     tank: { ...fresh.tank, ...saved.tank },
     equipment: { ...fresh.equipment, ...saved.equipment },
     inventory: { ...fresh.inventory, ...saved.inventory },
+    settings: { ...fresh.settings, ...saved.settings },
   };
 }
 

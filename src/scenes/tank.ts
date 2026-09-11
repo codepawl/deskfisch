@@ -4,7 +4,7 @@ import { sprite, type Sprite } from "../engine/sprite";
 import { rand } from "../engine/rng";
 import { SPECIES } from "../data/species";
 import type { Bounds, Fish } from "../sim/fish";
-import type { GameState } from "../sim/state";
+import type { GameState, Quality } from "../sim/state";
 import type { Bag } from "../sim/bag";
 
 
@@ -115,9 +115,9 @@ export class TankScene {
     }
   }
 
-  update(dt: number): void {
+  update(dt: number, quality: Quality = "high"): void {
     this.time += dt;
-    if (Math.random() < dt * 1.2) {
+    if (quality !== "low" && Math.random() < dt * 1.2) {
       this.bubbles.push({ x: rand(WATER.x0 + 30, WATER.x0 + 40), y: WATER.y1 - 6, speed: rand(18, 30), wobble: rand(0, 6) });
     }
     for (const b of this.bubbles) {
@@ -175,9 +175,10 @@ export class TankScene {
     drag: DragBag | null = null,
     cursor: { tool: string; x: number; y: number } | null = null,
     transparentBackdrop = false,
+    quality: Quality = "high",
   ): void {
     buf.clear(transparentBackdrop ? 0 : COLOR.K);
-    this.drawWater(buf);
+    this.drawWater(buf, quality);
     this.drawSand(buf);
     this.drawDecor(buf, state);
     for (const p of state.pellets) {
@@ -186,7 +187,7 @@ export class TankScene {
     }
     for (const f of state.fish) this.drawFish(buf, f);
     this.drawBubbles(buf);
-    for (const p of this.particles) buf.set(p.x, p.y, p.color);
+    if (quality !== "low") for (const p of this.particles) buf.set(p.x, p.y, p.color);
     for (const b of state.bags) {
       if (drag?.bag === b) this.drawBag(buf, b, drag.x, drag.y);
       else this.drawBag(buf, b, b.x, BAG_Y + Math.round(Math.sin(this.time * 1.2 + b.x) * 1));
@@ -208,15 +209,19 @@ export class TankScene {
     }
   }
 
-  private drawWater(buf: PixelBuffer): void {
+  private drawWater(buf: PixelBuffer, quality: Quality): void {
     const h = WATER.y1 - WATER.y0;
-    for (let y = WATER.y0; y < WATER.y1; y++) {
-      const t = (y - WATER.y0) / h;
-      const c = t < 0.5 ? mix(WATER_TOP, WATER_MID, t * 2) : mix(WATER_MID, WATER_DEEP, (t - 0.5) * 2);
-      buf.fillRect(WATER.x0, y, WATER.x1 - WATER.x0, 1, c);
+    if (quality === "low") {
+      buf.fillRect(WATER.x0, WATER.y0, WATER.x1 - WATER.x0, h, WATER_MID);
+    } else {
+      for (let y = WATER.y0; y < WATER.y1; y++) {
+        const t = (y - WATER.y0) / h;
+        const c = t < 0.5 ? mix(WATER_TOP, WATER_MID, t * 2) : mix(WATER_MID, WATER_DEEP, (t - 0.5) * 2);
+        buf.fillRect(WATER.x0, y, WATER.x1 - WATER.x0, 1, c);
+      }
     }
     // Light shafts: sparse dithered pale bands drifting slowly, fading with depth.
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < (quality === "high" ? 3 : 0); i++) {
       const cx = WATER.x0 + 70 + i * 110 + Math.sin(this.time * 0.3 + i) * 10;
       for (let y = WATER.y0 + 1; y < SAND_Y; y++) {
         const w = 5 + (y - WATER.y0) * 0.1;

@@ -2,6 +2,8 @@ export interface LoopHooks {
   /** Per-frame animation update, dt in seconds (clamped). */
   frame(dt: number): void;
   render(): void;
+  /** Frame-rate cap, read every frame so settings apply live. */
+  maxFps(): number;
 }
 
 /**
@@ -11,11 +13,13 @@ export interface LoopHooks {
 export function startLoop(hooks: LoopHooks): void {
   let last = performance.now();
   const step = (now: number) => {
-    const dt = Math.min(0.1, (now - last) / 1000);
-    last = now;
-    hooks.frame(dt);
-    hooks.render();
     requestAnimationFrame(step);
+    const elapsed = (now - last) / 1000;
+    // Skip frames above the cap; a small tolerance keeps 60 Hz displays at 60.
+    if (elapsed < 1 / hooks.maxFps() - 0.002) return;
+    last = now;
+    hooks.frame(Math.min(0.1, elapsed));
+    hooks.render();
   };
   requestAnimationFrame(step);
 }

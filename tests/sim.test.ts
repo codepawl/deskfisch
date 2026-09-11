@@ -118,6 +118,15 @@ describe("advance", () => {
     expect(g.ageHours).toBeCloseTo(2 / 3600, 8);
   });
 
+  it("sim speed multiplies game time per real second", async () => {
+    const { advance } = await import("../src/sim/tick");
+    const g = newGame(0);
+    g.settings.simSpeed = 10;
+    advance(g, 3000);
+    expect(g.simTime).toBe(3000);
+    expect(g.ageHours).toBeCloseTo(30 / 3600, 8);
+  });
+
   it("replays long gaps coarsely", async () => {
     const { advance } = await import("../src/sim/tick");
     const g = newGame(0);
