@@ -98,9 +98,15 @@ const DECOR_SPRITES: Record<string, Sprite> = { plant: PLANT, plantTall: PLANT_T
 
 interface Bubble { x: number; y: number; speed: number; wobble: number }
 
+/** Short-lived effect pixel. `pull` particles home in on a point instead of drifting. */
+interface Particle { x: number; y: number; vx: number; vy: number; life: number; color: number; pull?: { x: number; y: number } }
+
 export class TankScene {
   private bubbles: Bubble[] = [];
+  private particles: Particle[] = [];
   private time = 0;
+  /** True while a tool is being applied this frame; wiggles the tool sprite. */
+  private working = false;
   private sandSpeckles: [number, number][] = [];
 
   constructor() {
@@ -119,6 +125,48 @@ export class TankScene {
       b.wobble += dt * 4;
     }
     this.bubbles = this.bubbles.filter((b) => b.y > WATER.y0);
+    for (const p of this.particles) {
+      if (p.pull) {
+        const dx = p.pull.x - p.x;
+        const dy = p.pull.y - p.y;
+        const d = Math.max(1, Math.hypot(dx, dy));
+        p.vx = (dx / d) * 40;
+        p.vy = (dy / d) * 40;
+        if (d < 2) p.life = 0;
+      }
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.life -= dt;
+    }
+    this.particles = this.particles.filter((p) => p.life > 0 && p.y > WATER.y0 - 2);
+    this.working = false;
+  }
+
+  /** Foam from scrubbing: pale bubbles that rise and pop. */
+  foam(x: number, y: number): void {
+    this.working = true;
+    for (let i = 0; i < 2; i++) {
+      this.particles.push({ x: x + rand(-4, 4), y: y + rand(-3, 3), vx: rand(-6, 6), vy: rand(-25, -12), life: rand(0.3, 0.7), color: Math.random() < 0.5 ? COLOR.W : COLOR.c });
+    }
+  }
+
+  /** Suction: grains around the siphon mouth get pulled in and vanish. */
+  suck(x: number, y: number): void {
+    this.working = true;
+    for (let i = 0; i < 2; i++) {
+      const a = rand(0, Math.PI * 2);
+      const r = rand(5, 11);
+      this.particles.push({ x: x + Math.cos(a) * r, y: y + Math.sin(a) * r * 0.5, vx: 0, vy: 0, life: 0.6, color: Math.random() < 0.3 ? COLOR.t : COLOR.s, pull: { x, y } });
+    }
+    // A puff of water up the tube.
+    this.particles.push({ x: x + rand(-1, 1), y: y - 4, vx: 0, vy: -30, life: 0.25, color: COLOR.c });
+  }
+
+  /** Ripple where food hits the surface. */
+  splash(x: number): void {
+    for (let i = 0; i < 6; i++) {
+      this.particles.push({ x, y: WATER.y0 + 1, vx: rand(-20, 20), vy: rand(-14, -4), life: rand(0.2, 0.4), color: i % 2 ? COLOR.W : COLOR.c });
+    }
   }
 
   render(
@@ -138,6 +186,7 @@ export class TankScene {
     }
     for (const f of state.fish) this.drawFish(buf, f);
     this.drawBubbles(buf);
+    for (const p of this.particles) buf.set(p.x, p.y, p.color);
     for (const b of state.bags) {
       if (drag?.bag === b) this.drawBag(buf, b, drag.x, drag.y);
       else this.drawBag(buf, b, b.x, BAG_Y + Math.round(Math.sin(this.time * 1.2 + b.x) * 1));
@@ -153,7 +202,10 @@ export class TankScene {
     }
     this.drawGlass(buf);
     const toolSprite = cursor && TOOL_SPRITES[cursor.tool];
-    if (toolSprite && cursor) buf.blit(toolSprite, cursor.x - toolSprite.w / 2, cursor.y - toolSprite.h / 2);
+    if (toolSprite && cursor) {
+      const wiggle = this.working ? Math.round(Math.sin(this.time * 40)) : 0;
+      buf.blit(toolSprite, cursor.x - toolSprite.w / 2 + wiggle, cursor.y - toolSprite.h / 2);
+    }
   }
 
   private drawWater(buf: PixelBuffer): void {

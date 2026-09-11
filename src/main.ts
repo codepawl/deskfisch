@@ -100,9 +100,12 @@ function run(state: GameState): void {
       if (flakes <= 0) return;
       state.inventory.flakes = flakes - 1;
       dropPellets(state, x, PELLETS_PER_PINCH, WATER);
+      scene.splash(x);
       hud.refresh();
       return;
     }
+    // Scrub and vacuum act while held; a press must not open a fish card.
+    if (hud.tool) return;
     inspect.show(fishAt(state.fish, x, y));
     bagPanel.show(null);
   };
@@ -150,11 +153,17 @@ function run(state: GameState): void {
         drag.y = input.y - BAG_H / 2;
       }
       if (input.released) handleRelease();
-      if (input.down && !drag && inWater(input.x, input.y)) {
-        if (hud.tool === "scrub") scrubGlass(state, SCRUB_RATE * dt);
-        if (hud.tool === "vacuum" && input.y >= SAND_Y) vacuumGravel(state, VACUUM_RATE * dt);
-      }
       scene.update(dt);
+      if (input.down && !drag && inWater(input.x, input.y)) {
+        if (hud.tool === "scrub") {
+          scrubGlass(state, SCRUB_RATE * dt);
+          scene.foam(input.x, input.y);
+        }
+        if (hud.tool === "vacuum" && input.y >= SAND_Y) {
+          vacuumGravel(state, VACUUM_RATE * dt);
+          scene.suck(input.x, input.y + 3);
+        }
+      }
       updatePellets(state, WATER, dt);
       for (const f of state.fish) moveFish(f, SPECIES[f.speciesId], WATER, dt, state);
     },
