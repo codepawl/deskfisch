@@ -48,6 +48,15 @@ export class Hud {
     this.bar.addEventListener("pointerleave", clearHover);
     // Once a button is chosen the label has done its job.
     this.bar.addEventListener("click", clearHover);
+    // pointerleave is skipped when the cursor flies out of a small window, so
+    // also clear whenever the pointer is seen anywhere else or the window loses it.
+    document.addEventListener("pointermove", (e) => {
+      if (!(e.target as HTMLElement).closest?.(".toolbar")) clearHover();
+    });
+    document.addEventListener("pointerout", (e) => {
+      if (e.relatedTarget === null) clearHover();
+    });
+    window.addEventListener("blur", clearHover);
     this.dragHandle = el("div.hud-top", {}, this.coins, el("span.grip", {}, t("⋮⋮ drag ⋮⋮")), this.clock);
     this.restore = button("hud-restore", t("Show controls"), () => {}, "settings");
     this.root = el("div.hud", {}, this.dragHandle, this.bar);
