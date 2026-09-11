@@ -74,6 +74,8 @@ export interface GameState {
   /** Total hours the tank has been running, for achievements and cycle detection. */
   ageHours: number;
   achievements: string[];
+  /** The getting-started checklist has been dismissed once. */
+  guideSeen: boolean;
   /** How the desktop window is presented; ignored in the browser build. */
   mode: "window" | "pet" | "fullscreen";
   /** Keep the window above other apps (window and pet modes). */
@@ -118,6 +120,7 @@ export function newGame(now = Date.now()): GameState {
     inventory: { flakes: 20, conditioner: 2 },
     ageHours: 0,
     achievements: [],
+    guideSeen: false,
     mode: "window",
     pinned: true,
     settings: { transparent: true, volume: 0.5, muted: false, simSpeed: 1, quality: "high", maxFps: 60, chill: false },

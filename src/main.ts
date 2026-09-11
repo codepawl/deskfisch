@@ -14,6 +14,8 @@ import { scrubGlass, vacuumGravel } from "./sim/tank";
 import { CarePanel } from "./ui/care";
 import { Toasts } from "./ui/toast";
 import { SettingsPanel } from "./ui/settings";
+import { GuidePanel } from "./ui/guide";
+import { isCycled } from "./sim/tank";
 import { Sfx } from "./engine/audio";
 import { checkAchievements } from "./sim/achievements";
 import { applyMode, isTauri, onModeRequest, setPinned, startWindowDrag, startWindowResize, type Mode } from "./platform";
@@ -58,6 +60,7 @@ function run(state: GameState): void {
     void applyMode(state.mode, state.pinned, st.transparent);
   };
   const settings = new SettingsPanel(overlay, state, applySettings);
+  const guide = new GuidePanel(overlay, state);
   hud.addButton("Change water", () => care.toggle());
   hud.addButton("Test water", () => stats.toggle());
   hud.addButton("Shop", () => shop.toggle());
@@ -81,6 +84,7 @@ function run(state: GameState): void {
     });
     pinBtn.textContent = state.pinned ? "Unpin" : "Pin";
   }
+  hud.addButton("Guide", () => guide.toggle());
   hud.addButton("Settings", () => settings.toggle());
   hud.resizeHandle.addEventListener("pointerdown", () => {
     if (state.mode === "pet" && !state.pinned) void startWindowResize();
@@ -152,6 +156,7 @@ function run(state: GameState): void {
       const shock = releaseShock(state, drag.bag);
       const f = releaseBag(state, drag.bag, drag.x + BAG_W / 2, drag.y + BAG_H / 2, WATER);
       toasts.show(shock > 15 ? `${f.name} is shocked. Float longer and mix more water next time.` : `${f.name} settled in nicely.`);
+      if (!isCycled(state)) toasts.show("The tank is not cycled yet. Watch ammonia and change water if it climbs.", 8000);
       bagPanel.show(null);
       hud.refresh();
     }
@@ -174,6 +179,7 @@ function run(state: GameState): void {
     shop.refresh();
     bagPanel.refresh();
     care.refresh();
+    guide.refresh();
     if (++sinceSave >= AUTOSAVE_SECONDS) persist();
   };
   tick();
@@ -208,7 +214,8 @@ function run(state: GameState): void {
       }
       sfx.vacuum(vacuuming);
       updatePellets(state, WATER, dt);
-      for (const f of state.fish) moveFish(f, SPECIES[f.speciesId], WATER, dt, state);
+      const lure = hud.tool === "feed" && input.inside && inWater(input.x, input.y) ? { x: input.x } : null;
+      for (const f of state.fish) moveFish(f, SPECIES[f.speciesId], WATER, dt, state, lure);
     },
     render() {
       const showCursor = hud.tool && hud.tool !== "feed" && input.inside && inWater(input.x, input.y);

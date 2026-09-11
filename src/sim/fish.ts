@@ -20,6 +20,8 @@ export interface Fish {
   ty: number;
   /** Animation phase for tail flap and bobbing. */
   phase: number;
+  /** Speed multiplier for the current intent (chasing, hiding...). */
+  pace?: number;
   ageHours: number;
   /** 0 = just born .. 1 = full adult size. */
   size: number;
@@ -51,8 +53,18 @@ function depthY(sp: Species, w: Bounds): number {
   return w.y0 + h * rand(sp.depth[0], sp.depth[1]);
 }
 
+/** The pointer holding food; hungry fish gather under it. */
+export interface Lure {
+  x: number;
+}
+
+/** Per-fish position inside its school, stable across sessions. */
+function schoolOffset(f: Fish): { x: number; y: number } {
+  return { x: ((f.id * 37) % 25) - 12, y: ((f.id * 53) % 15) - 7 };
+}
+
 /** Wander: drift toward a target, pick a new one when reached or on a timer. Dead fish float up. */
-export function moveFish(f: Fish, sp: Species, water: Bounds, dt: number, state?: GameState): void {
+export function moveFish(f: Fish, sp: Species, water: Bounds, dt: number, state?: GameState, lure: Lure | null = null): void {
   const w = sp.frames[0].w;
   const h = sp.frames[0].h;
   if (!f.alive) {
@@ -75,25 +87,101 @@ export function moveFish(f: Fish, sp: Species, water: Bounds, dt: number, state?
     f.tx = clamp(food.x - mouth.x, water.x0, water.x1 - w);
     f.ty = clamp(food.y - mouth.y, water.y0, water.y1 - h);
     f.retarget = 0.5;
+    f.pace = 1.6;
+  } else if (f.retarget <= 0 || Math.hypot(f.tx - f.x, f.ty - f.y) < 4) {
+    chooseTarget(f, sp, water, state, lure);
   }
   const dx = f.tx - f.x;
   const dy = f.ty - f.y;
-  if (!food && (f.retarget <= 0 || Math.hypot(dx, dy) < 4)) {
-    f.tx = rand(water.x0 + w, water.x1 - w);
-    f.ty = depthY(sp, water);
-    f.retarget = rand(2, 6);
-  }
   // Stressed fish are sluggish; fish are slow to turn so velocity eases toward the target.
   const dist = Math.max(1, Math.hypot(dx, dy));
   // Slow down on approach so the fish settles on the target instead of overshooting.
-  const speed = Math.min(sp.speed * (1 - f.stress / 200) * (food ? 1.6 : 1), dist * 3);
+  const speed = Math.min(sp.speed * (1 - f.stress / 200) * (f.pace ?? 1), dist * 3);
   const ease = 1 - Math.exp(-dt * 1.5);
   f.vx += ((dx / dist) * speed - f.vx) * ease;
-  f.vy += ((dy / dist) * speed * (food ? 1 : 0.5) - f.vy) * ease;
+  // Idle cruising is mostly horizontal; anything urgent (food, lure, hiding) climbs freely.
+  const vertical = food || (f.pace ?? 1) !== 1 ? 1 : 0.5;
+  f.vy += ((dy / dist) * speed * vertical - f.vy) * ease;
+  if (state && sp.minGroup >= 4) separate(f, state, dt);
   f.x = clamp(f.x + f.vx * dt, water.x0, water.x1 - w);
   f.y = clamp(f.y + f.vy * dt, water.y0, water.y1 - h);
   if (!food && Math.abs(f.vx) > 2) f.facing = f.vx > 0 ? 1 : -1;
   f.phase += dt * (2 + (Math.abs(f.vx) / sp.speed) * 4);
+}
+
+/** Pick the next place to swim, by priority: food lure, hiding, rivalry, school, foraging, wander. */
+function chooseTarget(f: Fish, sp: Species, water: Bounds, state: GameState | undefined, lure: Lure | null): void {
+  const w = sp.frames[0].w;
+  const h = sp.frames[0].h;
+  const off = schoolOffset(f);
+  f.pace = 1;
+  if (lure && f.hunger > 25) {
+    f.tx = clamp(lure.x + off.x, water.x0, water.x1 - w);
+    f.ty = water.y0 + 3 + Math.abs(off.y);
+    f.retarget = 0.6;
+    f.pace = 1.3;
+    return;
+  }
+  if (state && f.stress > 60 && state.decor.length) {
+    const spot = state.decor.reduce((a, b) => (Math.abs(a.x - f.x) < Math.abs(b.x - f.x) ? a : b));
+    f.tx = clamp(spot.x + off.x / 3, water.x0, water.x1 - w);
+    f.ty = water.y1 - h - Math.abs(off.y);
+    f.retarget = rand(3, 6);
+    f.pace = 1.2;
+    return;
+  }
+  if (sp.id === "betta" && state) {
+    const rival = state.fish.find((o) => o !== f && o.alive && o.speciesId === "betta");
+    if (rival) {
+      f.tx = clamp(rival.x + (f.x < rival.x ? -w - 4 : w + 4), water.x0, water.x1 - w);
+      f.ty = rival.y;
+      f.retarget = 1;
+      f.pace = 1.3;
+      return;
+    }
+  }
+  if (sp.minGroup >= 4 && state) {
+    const kin = state.fish.filter((o) => o.alive && o.speciesId === sp.id);
+    const leader = kin.reduce((a, b) => (a.id < b.id ? a : b));
+    if (leader !== f) {
+      // Follow the leader's destination, not its body, so the school moves as one.
+      f.tx = clamp(leader.tx + off.x, water.x0, water.x1 - w);
+      f.ty = clamp(leader.ty + off.y, water.y0, water.y1 - h);
+      f.retarget = rand(1, 2);
+      return;
+    }
+  }
+  if (sp.depth[0] >= 0.8) {
+    // Bottom dwellers forage: short hops along the substrate with pauses.
+    if (Math.random() < 0.4) {
+      f.tx = f.x;
+      f.ty = f.y;
+      f.retarget = rand(1, 3);
+    } else {
+      f.tx = clamp(f.x + rand(-40, 40), water.x0, water.x1 - w);
+      f.ty = depthY(sp, water);
+      f.retarget = rand(2, 4);
+      f.pace = 0.7;
+    }
+    return;
+  }
+  f.tx = rand(water.x0 + w, water.x1 - w);
+  f.ty = depthY(sp, water);
+  f.retarget = rand(2, 6);
+}
+
+/** Nudge schooling fish apart so they do not stack on one pixel. */
+function separate(f: Fish, state: GameState, dt: number): void {
+  for (const o of state.fish) {
+    if (o === f || !o.alive || o.speciesId !== f.speciesId) continue;
+    const dx = f.x - o.x;
+    const dy = f.y - o.y;
+    const d = Math.hypot(dx, dy);
+    if (d > 0 && d < 10) {
+      f.vx += (dx / d) * 30 * dt;
+      f.vy += (dy / d) * 30 * dt;
+    }
+  }
 }
 
 function mouthOffset(sp: Species, facing: 1 | -1): { x: number; y: number } {
@@ -135,6 +223,8 @@ export function stressTarget(state: GameState, f: Fish): number {
     const kin = state.fish.filter((o) => o.alive && o.speciesId === sp.id).length;
     if (kin < sp.minGroup) s += 15;
   }
+  // Bettas fight; two in one tank keep each other on edge.
+  if (sp.id === "betta" && state.fish.some((o) => o !== f && o.alive && o.speciesId === "betta")) s += 25;
   const crowding = wasteLoad(state) - t.volumeL / 10;
   if (crowding > 0) s += crowding * 10;
   s -= Math.min(state.decor.length, MAX_DECOR_COMFORT) * DECOR_COMFORT;

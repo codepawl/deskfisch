@@ -168,7 +168,8 @@ button.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
 .shop-row button.tool { min-width: calc(24px * var(--s)); }
 .shop-note { color: #ef7d57; min-height: 1.2em; }
 .panel-actions { display: flex; gap: calc(2px * var(--s)); margin-top: calc(2px * var(--s)); }
-.panel-care { bottom: calc(32px * var(--s)); right: calc(8px * var(--s)); max-width: calc(120px * var(--s)); }
+.panel-care { bottom: calc(32px * var(--s)); right: calc(8px * var(--s)); max-width: calc(130px * var(--s)); }
+.panel-care .panel-actions { align-items: center; margin-top: 0; }
 
 /* --- Toasts --------------------------------------------------------- */
 
@@ -286,3 +287,16 @@ html[data-mode="pet"][data-pinned="false"] .resize-grip { display: block; }
 .hud-restore:hover { opacity: 1; }
 html[data-chill="true"] .hud-restore { display: block; }
 html[data-chill="true"] .hud, html[data-chill="true"] .panel, html[data-chill="true"] .resize-grip { display: none; }
+
+/* --- Guide ---------------------------------------------------------- */
+
+.panel-guide {
+  top: calc(20px * var(--s));
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(190px * var(--s));
+}
+.guide-list { display: flex; flex-direction: column; gap: calc(1px * var(--s)); }
+.guide-step.done { color: #94b0c2; }
+.guide-step.current { color: var(--accent); }
+.guide-step.current .muted { color: var(--ink); }
