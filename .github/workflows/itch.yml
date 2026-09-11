@@ -1,5 +1,7 @@
 # Pushes a published GitHub release to itch.io with butler.
 # Runs on every published release, or by hand with a tag. Needs BUTLER_API_KEY.
+# The browser build is uploaded by hand as a zip: itch cannot find index.html in a
+# butler-pushed directory, so the html5 channel is not used.
 name: itch.io
 
 on:
@@ -36,16 +38,6 @@ jobs:
           gh release download "${{ steps.tag.outputs.tag }}" --dir dl \
             --pattern '*x64-setup.exe' --pattern '*universal.dmg' --pattern '*amd64.AppImage'
           ls -la dl
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 11
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - name: Build browser version
-        run: pnpm exec tsc && pnpm exec vite build --base=./ --outDir html5 --emptyOutDir
       # butler is itch.io's official upload tool: https://itch.io/docs/butler/
       - name: Install butler
         run: |
@@ -59,4 +51,3 @@ jobs:
           ./butler/butler push dl/*x64-setup.exe  "$TARGET:windows" --userversion "$v"
           ./butler/butler push dl/*universal.dmg  "$TARGET:mac"     --userversion "$v"
           ./butler/butler push dl/*amd64.AppImage "$TARGET:linux"   --userversion "$v"
-          ./butler/butler push html5              "$TARGET:html5"   --userversion "$v"
