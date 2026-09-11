@@ -178,7 +178,7 @@ export class TankScene {
     this.heaveVel -= dvy * IMPULSE;
     // Friction drags the top grains against the shove; a hard yank piles the bed up one side.
     const grains = Math.min(4, Math.floor(Math.abs(dvx) / 300));
-    if (grains > 0) this.shoves.push(dvx > 0 ? -grains : grains);
+    if (grains > 0 && this.shoves.length < 8) this.shoves.push(dvx > 0 ? -grains : grains);
   }
 
   /** Apply pending shoves and let slopes slump. Cheap: one pass over 368 columns. */

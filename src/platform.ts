@@ -75,39 +75,30 @@ export async function startWindowDrag(): Promise<void> {
 }
 
 /**
- * Report the window's velocity (screen px/s) while it is being moved, by
- * polling its position: X11 does not reliably deliver move events for a
- * window the window manager is dragging. No-op in the browser.
+ * Window velocity (screen px/s) sampled from `window.screenX/Y`, which the
+ * webview updates itself: no IPC, so nothing can block while the window
+ * manager is dragging the window. Call once per frame; returns null when still.
  */
-export async function onWindowMoved(cb: (vx: number, vy: number) => void, hz = 30): Promise<void> {
-  if (!isTauri) return;
-  const { getCurrentWindow } = await import("@tauri-apps/api/window");
-  const win = getCurrentWindow();
-  let last: { x: number; y: number; t: number } | null = null;
-  let wasMoving = false;
-  let busy = false;
-  setInterval(async () => {
-    if (busy || document.hidden) return;
-    busy = true;
-    try {
-      const p = await win.outerPosition();
-      const now = performance.now();
-      if (last) {
-        const dt = Math.max(0.01, (now - last.t) / 1000);
-        const moved = p.x !== last.x || p.y !== last.y;
-        // Report every sample while moving, and one zero once it stops, so the
-        // listener sees the deceleration that actually sloshes the water.
-        if (moved || wasMoving) cb(moved ? (p.x - last.x) / dt : 0, moved ? (p.y - last.y) / dt : 0);
-        wasMoving = moved;
-      }
-      last = { x: p.x, y: p.y, t: now };
-    } catch {
-      // Window gone or API unavailable; stop quietly.
-    } finally {
-      busy = false;
-    }
-  }, 1000 / hz);
+export function windowVelocity(dt: number): { vx: number; vy: number } | null {
+  const x = window.screenX;
+  const y = window.screenY;
+  if (lastPos === null) {
+    lastPos = { x, y };
+    return null;
+  }
+  const dx = x - lastPos.x;
+  const dy = y - lastPos.y;
+  lastPos = { x, y };
+  if (dx === 0 && dy === 0) {
+    if (!wasMoving) return null;
+    wasMoving = false;
+    return { vx: 0, vy: 0 };
+  }
+  wasMoving = true;
+  return { vx: dx / Math.max(0.004, dt), vy: dy / Math.max(0.004, dt) };
 }
+let lastPos: { x: number; y: number } | null = null;
+let wasMoving = false;
 
 /** Launch on login. Returns the current state; null when unsupported (browser). */
 export async function autostart(enable?: boolean): Promise<boolean | null> {

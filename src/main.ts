@@ -22,7 +22,7 @@ import { setLabel } from "./ui/dom";
 import { isCycled } from "./sim/tank";
 import { Sfx } from "./engine/audio";
 import { checkAchievements } from "./sim/achievements";
-import { applyMode, isTauri, onModeRequest, onWindowMoved, setPinned, startWindowDrag, startWindowResize, type Mode } from "./platform";
+import { applyMode, isTauri, onModeRequest, setPinned, startWindowDrag, startWindowResize, windowVelocity, type Mode } from "./platform";
 import { releaseBag, releaseShock, type Bag } from "./sim/bag";
 import type { Decor } from "./sim/state";
 import { DECOR_SPRITES } from "./scenes/tank";
@@ -113,7 +113,6 @@ function run(state: GameState): void {
   sfx.setVolume(state.settings.volume, state.settings.muted);
   setMode(state.mode);
   void onModeRequest(setMode);
-  void onWindowMoved((vx, vy) => scene.push(vx, vy));
   if (isTauri) {
     const pinBtn = hud.addButton("", () => {
       state.pinned = !state.pinned;
@@ -259,6 +258,8 @@ function run(state: GameState): void {
     maxFps: () => (document.hasFocus() ? state.settings.maxFps : Math.min(state.settings.maxFps, IDLE_FPS)),
     frame(dt) {
       setFillLevel(state.tank.fill);
+      const v = windowVelocity(dt);
+      if (v) scene.push(v.vx, v.vy);
       scene.stepSand(state.tank.sand, dt);
       input.beginFrame();
       if (input.pressed) handleClick();

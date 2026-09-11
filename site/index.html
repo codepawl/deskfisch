@@ -12,7 +12,7 @@
   <meta property="og:image" content="https://deskfisch.codepawl.com/og.png">
   <link rel="icon" href="favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=VT323&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=VT323&family=DotGothic16&display=swap">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -22,79 +22,81 @@
       <span>Deskfisch</span>
     </a>
     <nav>
-      <a href="#download">Download</a>
-      <a href="#how">How it works</a>
-      <a href="https://github.com/codepawl/deskfisch">Source</a>
-      <a href="https://codepawl.com">codepawl</a>
+      <a href="#download"><span class="ico" data-icon="dl"></span><span data-i18n="nav.download">Download</span></a>
+      <a href="#how"><span class="ico" data-icon="guide"></span><span data-i18n="nav.how">How it works</span></a>
+      <a href="https://github.com/codepawl/deskfisch"><span class="ico" data-icon="code"></span><span data-i18n="nav.source">Source</span></a>
+      <a href="https://codepawl.com"><span class="ico" data-icon="paw"></span><span>codepawl</span></a>
+      <select id="lang" aria-label="Language"></select>
     </nav>
   </header>
 
   <main>
     <section class="hero">
       <div class="hero-text">
-        <h1>A little fish tank that lives on your desk.</h1>
-        <p class="lede">Pixel fish with real needs. The water runs a real nitrogen cycle, new fish have to be acclimated, and pet mode floats the tank over whatever you are working on.</p>
+        <h1 data-i18n="hero.title">A little fish tank that lives on your desk.</h1>
+        <p class="lede" data-i18n="hero.lede">Pixel fish with real needs. The water runs a real nitrogen cycle, new fish have to be acclimated, and pet mode floats the tank over whatever you are working on.</p>
         <div class="cta">
-          <a class="btn primary" id="cta-download" href="#download">Download</a>
-          <a class="btn" href="play/">Play in the browser</a>
+          <a class="btn primary" id="cta-download" href="#download" data-i18n="hero.download">Download</a>
+          <a class="btn" href="play/" data-i18n="hero.play">Play in the browser</a>
         </div>
-        <p class="fine" id="cta-note">Free · version <span id="ver">…</span> · Linux, macOS, Windows, browser · no account, no ads, no tracking.</p>
+        <p class="fine" id="cta-note"><span data-i18n="hero.free">Free</span> · <span data-i18n="hero.version">version</span> <span id="ver">…</span> · Linux, macOS, Windows, <span data-i18n="hero.browser">browser</span> · <span data-i18n="hero.noads">no account, no ads, no tracking.</span></p>
       </div>
       <div class="hero-demo">
         <div class="frame">
           <iframe src="play/" title="Deskfisch running live" loading="lazy"></iframe>
         </div>
-        <p class="caption">This is the real app running in your browser. Feed it.</p>
+        <p class="caption" data-i18n="hero.caption">This is the real app running in your browser. Feed it.</p>
       </div>
     </section>
 
     <section class="features" id="features">
-      <h2>What makes it different</h2>
+      <h2 data-i18n="features.title">What makes it different</h2>
       <div class="grid">
-        <article><div class="ico" data-icon="test"></div><h3>A real nitrogen cycle</h3><p>Ammonia becomes nitrite becomes nitrate. A fresh tank takes days to cycle, and fish added too early get stressed. Buy a test kit to see it happen.</p></article>
-        <article><div class="ico" data-icon="mode"></div><h3>Pet mode</h3><p>A borderless, see-through window that floats above your apps. Pin it in place or drag it anywhere. Chill mode hides every control.</p></article>
-        <article><div class="ico" data-icon="water"></div><h3>Acclimation that matters</h3><p>New fish arrive in a bag. Float it, mix in tank water, then drag it under the surface. Rush it and the fish is shocked.</p></article>
-        <article><div class="ico" data-icon="feed"></div><h3>Care, not clicking</h3><p>Feed by hand, scrub algae, vacuum the gravel, change water with conditioner. Skip it and you will see ich and fin rot.</p></article>
-        <article><div class="ico" data-icon="coin"></div><h3>Breeding and a shop</h3><p>Happy guppies and mollies drop fry that grow into sellable adults. Coins buy filters, heaters, lights, bigger tanks and decor.</p></article>
-        <article><div class="ico" data-icon="chill"></div><h3>Follows the sun</h3><p>Without a tank light the room goes dark at night and rose-gold at dawn and dusk, on your real clock or the tank's own simulated day.</p></article>
+        <article><div class="ico" data-icon="test"></div><h3 data-i18n="f1.t">A real nitrogen cycle</h3><p data-i18n="f1.p">Ammonia becomes nitrite becomes nitrate. A fresh tank takes days to cycle, and fish added too early get stressed. Buy a test kit to see it happen.</p></article>
+        <article><div class="ico" data-icon="mode"></div><h3 data-i18n="f2.t">Pet mode</h3><p data-i18n="f2.p">A borderless, see-through window that floats above your apps. Pin it in place or drag it anywhere. Chill mode hides every control.</p></article>
+        <article><div class="ico" data-icon="water"></div><h3 data-i18n="f3.t">Acclimation that matters</h3><p data-i18n="f3.p">New fish arrive in a bag. Float it, mix in tank water, then drag it under the surface. Rush it and the fish is shocked.</p></article>
+        <article><div class="ico" data-icon="feed"></div><h3 data-i18n="f4.t">Care, not clicking</h3><p data-i18n="f4.p">Feed by hand, scrub algae, vacuum the gravel, change water with conditioner. Skip it and you will see ich and fin rot.</p></article>
+        <article><div class="ico" data-icon="coin"></div><h3 data-i18n="f5.t">Breeding and a shop</h3><p data-i18n="f5.p">Happy guppies and mollies drop fry that grow into sellable adults. Coins buy filters, heaters, lights, bigger tanks and decor.</p></article>
+        <article><div class="ico" data-icon="chill"></div><h3 data-i18n="f6.t">Follows the sun</h3><p data-i18n="f6.p">Without a tank light the room goes dark at night and rose-gold at dawn and dusk, on your real clock or the tank's own simulated day.</p></article>
       </div>
     </section>
 
     <section class="download" id="download">
-      <h2>Download</h2>
-      <p class="muted">Latest release from GitHub. Installers are not code-signed yet, so Windows and macOS will warn on first launch.</p>
+      <h2 data-i18n="dl.title">Download</h2>
+      <p class="muted" data-i18n="dl.note">Latest release from GitHub. Installers are not code-signed yet, so Windows and macOS will warn on first launch.</p>
       <div class="dl-grid" id="dl-grid">
         <div class="dl" data-os="linux"><h3><span class="ico" data-icon="linux"></span>Linux</h3><div class="links"></div></div>
         <div class="dl" data-os="mac"><h3><span class="ico" data-icon="mac"></span>macOS</h3><div class="links"></div></div>
         <div class="dl" data-os="win"><h3><span class="ico" data-icon="win"></span>Windows</h3><div class="links"></div></div>
-        <div class="dl" data-os="web"><h3><span class="ico" data-icon="web"></span>Browser</h3><div class="links"><a class="btn" href="play/">Play now</a><p class="fine">Saves in this browser only.</p></div></div>
+        <div class="dl" data-os="web"><h3><span class="ico" data-icon="web"></span><span data-i18n="dl.browser">Browser</span></h3><div class="links"><a class="btn" href="play/" data-i18n="dl.playnow">Play now</a><p class="fine" data-i18n="dl.browsernote">Saves in this browser only.</p></div></div>
       </div>
-      <p class="fine">Steam: coming soon. <a href="https://github.com/codepawl/deskfisch/releases">All releases</a></p>
+      <p class="fine"><span data-i18n="dl.steam">Steam: coming soon.</span> <a href="https://github.com/codepawl/deskfisch/releases" data-i18n="dl.all">All releases</a></p>
     </section>
 
     <section class="how" id="how">
-      <h2>How a tank starts</h2>
+      <h2 data-i18n="how.title">How a tank starts</h2>
       <ol class="steps">
-        <li><b>Buy a filter and a heater</b><span>The filter is where the good bacteria live.</span></li>
-        <li><b>Drop a pinch of food into the empty tank</b><span>It rots into ammonia, which feeds the bacteria.</span></li>
-        <li><b>Watch the cycle</b><span>Ammonia spikes, then nitrite, then both fall. A few real days.</span></li>
-        <li><b>Buy your first fish</b><span>Schooling species need a group of their own kind.</span></li>
-        <li><b>Acclimate and release</b><span>Float the bag ten minutes, add tank water three times, drag it under.</span></li>
-        <li><b>Feed once or twice a day, change some water weekly</b><span>That is the whole hobby.</span></li>
+        <li><b data-i18n="h1.t">Pour in some sand</b><span data-i18n="h1.p">Fish and plants need a bed to live on. Plant something while it is dry.</span></li>
+        <li><b data-i18n="h2.t">Fill it with tap water, then add a filter and a heater</b><span data-i18n="h2.p">Conditioner keeps the chlorine out. The filter is where the good bacteria live.</span></li>
+        <li><b data-i18n="h3.t">Drop a pinch of food and watch the cycle</b><span data-i18n="h3.p">It rots into ammonia, which feeds the bacteria. Ammonia spikes, then nitrite, then both fall. A few real days.</span></li>
+        <li><b data-i18n="h4.t">Buy your first fish</b><span data-i18n="h4.p">Schooling species need a group of their own kind.</span></li>
+        <li><b data-i18n="h5.t">Acclimate and release</b><span data-i18n="h5.p">Float the bag ten minutes, add tank water three times, drag it under.</span></li>
+        <li><b data-i18n="h6.t">Feed once or twice a day, change some water weekly</b><span data-i18n="h6.p">That is the whole hobby.</span></li>
       </ol>
     </section>
 
     <section class="source">
-      <h2>Source and credits</h2>
-      <p>Built with Tauri, TypeScript and a 384×240 framebuffer. Every fish is a grid of palette characters. <a href="https://github.com/codepawl/deskfisch">Read the source on GitHub.</a></p>
-      <p class="muted">Source-available under <a href="https://polyformproject.org/licenses/noncommercial/1.0.0">PolyForm Noncommercial</a>: read it, run it, change it, share it, just not for sale. Font: VT323 (OFL). Made by <a href="https://codepawl.com">codepawl</a>.</p>
+      <h2 data-i18n="src.title">Source and credits</h2>
+      <p><span data-i18n="src.p1">Built with Tauri, TypeScript and a 384×240 framebuffer. Every fish is a grid of palette characters.</span> <a href="https://github.com/codepawl/deskfisch" data-i18n="src.link">Read the source on GitHub.</a></p>
+      <p class="muted"><span data-i18n="src.lic">Source-available under PolyForm Noncommercial: read it, run it, change it, share it, just not for sale.</span> <a href="https://polyformproject.org/licenses/noncommercial/1.0.0">PolyForm</a> · VT323 (OFL) · <a href="https://codepawl.com">codepawl</a></p>
     </section>
   </main>
 
   <footer>
     <span>© codepawl</span>
-    <span><a href="https://github.com/codepawl/deskfisch/issues">Report a bug</a></span>
+    <span><a href="https://github.com/codepawl/deskfisch/issues" data-i18n="foot.bug">Report a bug</a></span>
   </footer>
+  <script src="i18n.js"></script>
   <script src="main.js"></script>
 </body>
 </html>

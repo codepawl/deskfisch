@@ -10,6 +10,22 @@
   --sand: #d9a066;
   --u: 4px; /* pixel unit */
 }
+/* Korean pixel face, OFL, served from jsDelivr (Google Fonts has no pixel Hangul). */
+@font-face {
+  font-family: "Galmuri11";
+  src: url("https://cdn.jsdelivr.net/npm/galmuri@latest/dist/Galmuri11.woff2") format("woff2");
+  font-display: swap;
+}
+/* Scripts without Latin pixel glyphs fall back to a pixel face of their own; Latin keeps VT323/Silkscreen. */
+html[lang="ja"], html[lang="zh"] { --cjk: "DotGothic16"; }
+html[lang="ko"] { --cjk: "Galmuri11"; }
+html[lang="ja"] body, html[lang="zh"] body, html[lang="ko"] body { font-family: "VT323", var(--cjk), monospace; font-size: 21px; }
+html[lang="ja"] h1, html[lang="zh"] h1, html[lang="ko"] h1,
+html[lang="ja"] h2, html[lang="zh"] h2, html[lang="ko"] h2,
+html[lang="ja"] h3, html[lang="zh"] h3, html[lang="ko"] h3,
+html[lang="ja"] .steps b, html[lang="zh"] .steps b, html[lang="ko"] .steps b { font-family: var(--cjk), "Silkscreen", monospace; letter-spacing: 0; }
+html[lang="vi"] h1, html[lang="vi"] h2, html[lang="vi"] h3, html[lang="es"] h1, html[lang="es"] h2, html[lang="es"] h3 { font-family: "VT323", monospace; text-transform: none; font-size: 1.35em; }
+
 * { box-sizing: border-box; }
 html { background: var(--bg); color: var(--ink); font-family: "VT323", monospace; font-size: 22px; line-height: 1.25; }
 body { margin: 0; }
@@ -29,9 +45,11 @@ p { margin: 0; }
 }
 .brand { display: inline-flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; font-size: 18px; }
 .brand img { image-rendering: pixelated; }
-.top nav { display: flex; gap: 20px; }
-.top nav a { color: var(--muted); text-decoration: none; }
+.top nav { display: flex; gap: 32px; align-items: center; }
+.top nav a { color: var(--muted); text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+.top nav .ico { width: 18px; height: 18px; margin: 0; }
 .top nav a:hover { color: var(--accent); }
+#lang { font: inherit; color: var(--ink); background: var(--panel); border: calc(1 * var(--u)) solid var(--edge); padding: 4px 8px; }
 
 main { max-width: 1080px; margin: 0 auto; padding: 0 24px 80px; display: flex; flex-direction: column; gap: 96px; }
 
