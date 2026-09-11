@@ -1,4 +1,5 @@
 import type { GameState, Quality } from "../sim/state";
+import { autostart } from "../platform";
 import { button, el } from "./dom";
 
 /** User preferences. `onChange` lets the app re-apply audio, window and render settings. */
@@ -21,6 +22,11 @@ export class SettingsPanel {
       this.row("Visuals", this.select(["high", "medium", "low"], s.quality, (v) => (s.quality = v as Quality))),
       this.row("Max FPS", this.select(["60", "30", "15"], String(s.maxFps), (v) => (s.maxFps = Number(v)))),
     );
+    // Desktop only: the OS owns this flag, so read it rather than the save.
+    void autostart().then((on) => {
+      if (on === null) return;
+      rows.append(this.row("Start with the system", this.checkbox(on, (v) => void autostart(v))));
+    });
     this.root = el(
       "div.panel.panel-settings",
       { hidden: true },

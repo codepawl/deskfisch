@@ -73,3 +73,12 @@ export async function startWindowDrag(): Promise<void> {
   const { getCurrentWindow } = await import("@tauri-apps/api/window");
   await getCurrentWindow().startDragging();
 }
+
+/** Launch on login. Returns the current state; null when unsupported (browser). */
+export async function autostart(enable?: boolean): Promise<boolean | null> {
+  if (!isTauri) return null;
+  const a = await import("@tauri-apps/plugin-autostart");
+  if (enable === true) await a.enable();
+  if (enable === false) await a.disable();
+  return a.isEnabled();
+}
