@@ -25,3 +25,6 @@ dist-ssr
 
 # built browser demo for the site
 site/play
+
+# raw screen recordings (large)
+press/raw/
