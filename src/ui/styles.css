@@ -400,3 +400,21 @@ input.rename {
 
 .toast-ask { pointer-events: auto; display: flex; align-items: center; gap: calc(3px * var(--s)); }
 
+
+/* First-run play style picker */
+.panel-welcome { width: calc(300px * var(--s)); }
+.welcome-lead { text-align: center; margin-bottom: calc(4px * var(--s)); }
+.playstyles { display: grid; grid-template-columns: 1fr 1fr; gap: calc(3px * var(--s)); }
+.playstyles.compact { display: flex; flex-wrap: wrap; gap: calc(2px * var(--s)); }
+button.playstyle {
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  background: var(--panel);
+  border: calc(1px * var(--s)) solid var(--panel-edge);
+  padding: calc(3px * var(--s)) calc(4px * var(--s));
+  cursor: pointer;
+  line-height: 1.35;
+}
+button.playstyle:hover { border-color: var(--accent); }
+.playstyle-title { color: var(--accent); font-size: calc(9px * var(--s)); margin-bottom: calc(1px * var(--s)); }

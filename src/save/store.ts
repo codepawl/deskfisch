@@ -48,6 +48,7 @@ export function normalise(raw: unknown): GameState | null {
   const saved = raw as Partial<GameState>;
   return {
     ...fresh,
+    onboarded: true,
     ...saved,
     // Saves from before the empty-tank start had water and sand without saying so.
     tank: { ...fresh.tank, fill: 0.9, sand: newSand(14), ...saved.tank },

@@ -3,6 +3,7 @@ import type { Fish } from "./fish";
 import type { Pellet } from "./food";
 import type { Bag } from "./bag";
 import { newSand } from "./sand";
+import type { Playstyle } from "./rules";
 
 export interface TankState {
   volumeL: number;
@@ -115,6 +116,10 @@ export interface GameState {
   mode: "window" | "pet" | "fullscreen";
   /** Keep the window above other apps (window and pet modes). */
   pinned: boolean;
+  /** Zen, normal, hardcore or sandbox. See sim/rules.ts. */
+  playstyle: Playstyle;
+  /** The first-run welcome has been answered. */
+  onboarded: boolean;
   settings: Settings;
 }
 
@@ -130,6 +135,7 @@ export function demoGame(now = Date.now()): GameState {
   g.equipment = { ...g.equipment, filter: 2, heater: 2, light: 1, lightOn: true, airPump: 1, thermometer: true, testKit: true };
   g.decor = [{ kind: "plantTall", x: 40 }, { kind: "plant", x: 70 }, { kind: "rock", x: 180 }, { kind: "plant", x: 300 }, { kind: "wood", x: 330 }];
   g.guideSeen = true;
+  g.onboarded = true;
   g.ageHours = 24 * 9;
   return g;
 }
@@ -181,6 +187,8 @@ export function newGame(now = Date.now()): GameState {
     guideSeen: false,
     mode: "window",
     pinned: true,
+    playstyle: "normal",
+    onboarded: false,
     settings: { transparent: true, volume: 0.5, muted: false, simSpeed: 1, quality: "high", maxFps: 30, chill: false, ambient: true, lang: "auto", clock: "real", sunrise: "06:00", sunset: "18:00" },
   };
 }

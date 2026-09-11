@@ -2,6 +2,7 @@ import { BACTERIA, ROOM_TEMP, TAP, WASTE_PER_HOUR, REFERENCE_VOLUME } from "../d
 import { AIR_PUMPS, BASE_AERATION, DECOR, FILTERS, HEATERS, LIGHTS } from "../data/items";
 import { clamp } from "../engine/rng";
 import type { GameState } from "./state";
+import { rulesFor } from "./rules";
 
 /** Below this the tank counts as needing a top-up; the UI will not let it be set lower. */
 export const MIN_FILL = 0.7;
@@ -22,9 +23,10 @@ export function stepTank(state: GameState, hours: number, wasteLoad: number): vo
   const volumeScale = REFERENCE_VOLUME / t.volumeL;
 
   // Waste from fish (and decaying food, folded into wasteLoad by the caller).
+  const upkeep = rulesFor(state).upkeep;
   const nh3In = wasteLoad * WASTE_PER_HOUR * volumeScale * hours;
   t.nh3 += nh3In;
-  t.dirt = Math.min(100, t.dirt + nh3In * 10);
+  t.dirt = Math.min(100, t.dirt + nh3In * 10 * upkeep);
 
   // Nitrogen cycle: Monod uptake by two bacteria populations growing logistically
   // toward the filter's capacity and starving when their substrate runs out.
@@ -64,7 +66,7 @@ export function stepTank(state: GameState, hours: number, wasteLoad: number): vo
   t.dirt = Math.max(0, t.dirt - filter.dirtRemovalPerHour * hours);
   t.chlorine = Math.max(0, t.chlorine - 0.15 * hours);
   // Evaporation: about a percent of the glass height per day, more when warm.
-  t.fill = Math.max(MIN_FILL, t.fill - (0.0004 + Math.max(0, t.temp - 24) * 0.00005) * hours);
+  t.fill = Math.max(MIN_FILL, t.fill - (0.0004 + Math.max(0, t.temp - 24) * 0.00005) * hours * upkeep);
   const light = eq.lightOn ? LIGHTS[eq.light].intensity : 0;
   t.algae = clamp(t.algae + (light * (0.4 + t.no3 * 0.01) - 0.05) * hours, 0, 100);
 }

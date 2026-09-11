@@ -262,4 +262,16 @@ export const vi: Record<string, string> = {
   "Fully equipped": "Đủ đồ nghề",
   "First fry born": "Lứa cá con đầu tiên",
   "Spotless": "Sạch bong",
+  // Play style
+  "Welcome to Deskfisch": "Chào mừng đến Deskfisch",
+  "How do you want to keep fish? You can change this later in Settings.": "Bạn muốn nuôi cá kiểu nào? Đổi lại được trong Cài đặt.",
+  "Play style": "Kiểu chơi",
+  "Zen": "Zen",
+  "Normal": "Thường",
+  "Hardcore": "Hardcore",
+  "Sandbox": "Sandbox",
+  "Nothing dies, nothing gets sick. Fish still get grumpy when neglected. Just vibes.": "Không chết, không bệnh. Bỏ bê thì cá vẫn cáu. Chill là chính.",
+  "Real fishkeeping. Cycle the tank, watch the water, fish can fall ill and die.": "Nuôi cá thật. Cycle hồ, canh nước, cá có thể bệnh và chết.",
+  "Illness twice as likely, stress hurts more, prices up, fewer coins to start.": "Bệnh gấp đôi, stress hại hơn, giá cao hơn, ít xu khởi đầu.",
+  "Unlimited coins, no risk. Build the tank you want and watch it.": "Xu vô hạn, không rủi ro. Xây hồ bạn thích rồi ngắm.",
 };

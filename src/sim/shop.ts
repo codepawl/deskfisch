@@ -2,6 +2,14 @@ import { FISH_NAMES, SUPPLIES, DECOR, DECALS, FILTERS, HEATERS, AIR_PUMPS, LIGHT
 import { doWaterChange } from "./tank";
 import { treat } from "./disease";
 import { pourSand } from "./sand";
+import { rulesFor, RULES, type Playstyle } from "./rules";
+
+/** Switch play style; starting coins only apply when the tank is still new. */
+export function setPlaystyle(state: GameState, style: Playstyle): void {
+  state.playstyle = style;
+  if (state.ageHours < 1 && state.fish.length === 0) state.coins = RULES[style].coins;
+  if (style === "sandbox") state.coins = Math.max(state.coins, RULES.sandbox.coins);
+}
 import { MIN_FILL } from "./tank";
 import { SPECIES } from "../data/species";
 import { pick, rand } from "../engine/rng";
@@ -12,8 +20,9 @@ import type { GameState } from "./state";
 /** Purchase rules for every shop item. Each returns an error message or null on success. */
 
 function pay(state: GameState, price: number): string | null {
-  if (state.coins < price) return "Not enough coins.";
-  state.coins -= price;
+  const cost = Math.round(price * rulesFor(state).prices);
+  if (state.coins < cost) return "Not enough coins.";
+  state.coins -= cost;
   return null;
 }
 

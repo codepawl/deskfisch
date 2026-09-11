@@ -3,6 +3,7 @@ import { HOURS_TO_STARVE, STRESS_EASE_PER_HOUR } from "../data/constants";
 import { SPECIES, type Species } from "../data/species";
 import { DECOR_COMFORT, MAX_DECOR_COMFORT } from "../data/items";
 import { HEALTH_LOSS } from "./disease";
+import { rulesFor } from "./rules";
 import type { GameState } from "./state";
 import { EAT_RADIUS, HUNGER_PER_PELLET, nearestPellet } from "./food";
 
@@ -295,22 +296,24 @@ function outside(v: number, [lo, hi]: readonly [number, number]): number {
 /** Advance hunger, stress, health and age by `hours`. Returns names of fish that died. */
 export function stepFish(state: GameState, hours: number): string[] {
   const died: string[] = [];
+  const rules = rulesFor(state);
   for (const f of state.fish) {
     if (!f.alive) continue;
     const sp = SPECIES[f.speciesId];
     f.hunger = clamp(f.hunger + (100 / HOURS_TO_STARVE) * hours, 0, 100);
     f.stress += (stressTarget(state, f) - f.stress) * Math.min(1, STRESS_EASE_PER_HOUR * hours);
     if (f.stress > 60) {
-      f.health -= ((f.stress - 60) / 40) * 4 * hours;
+      f.health -= ((f.stress - 60) / 40) * 4 * hours * rules.harm;
     } else if (f.stress < 30 && f.hunger < 70) {
       f.health += 1 * hours;
     }
-    if (f.hunger >= 100) f.health -= 2 * hours;
-    if (f.sick) f.health -= HEALTH_LOSS[f.sick] * hours;
+    if (f.hunger >= 100) f.health -= 2 * hours * rules.harm;
+    if (f.sick) f.health -= HEALTH_LOSS[f.sick] * hours * rules.harm;
     f.ageHours += hours;
     f.size = Math.min(1, f.size + hours / (30 * 24));
     if (f.ageHours > sp.lifespanDays * 24) f.health -= 0.5 * hours;
-    f.health = clamp(f.health, 0, 100);
+    // Zen and sandbox fish get miserable, never dead.
+    f.health = clamp(f.health, rules.immortal ? 5 : 0, 100);
     if (f.health <= 0) {
       f.alive = false;
       died.push(f.name);

@@ -1,6 +1,7 @@
 import { SPECIES } from "../data/species";
 import type { Fish } from "./fish";
 import type { GameState } from "./state";
+import { rulesFor } from "./rules";
 
 export type Disease = "ich" | "finrot";
 
@@ -21,6 +22,8 @@ function chance(perHour: number, hours: number): boolean {
 export interface Illness { name: string; disease: Disease }
 export function stepDisease(state: GameState, hours: number): Illness[] {
   const t = state.tank;
+  const rate = rulesFor(state).disease;
+  if (rate === 0) return [];
   const ichAround = state.fish.some((f) => f.alive && f.sick === "ich");
   const fellIll: Illness[] = [];
   for (const f of state.fish) {
@@ -32,13 +35,13 @@ export function stepDisease(state: GameState, hours: number): Illness[] {
     }
     if (f.sick) continue;
     const cold = t.temp < sp.tempRange[0] - 1;
-    const ichRisk = (f.stress > 60 || cold ? ICH_RATE : 0) + (ichAround ? ICH_CONTAGION : 0);
+    const ichRisk = ((f.stress > 60 || cold ? ICH_RATE : 0) + (ichAround ? ICH_CONTAGION : 0)) * rate;
     if (ichRisk > 0 && chance(ichRisk, hours)) {
       f.sick = "ich";
       fellIll.push({ name: f.name, disease: "ich" });
       continue;
     }
-    if (t.dirt > 60 && f.stress > 40 && chance(FINROT_RATE, hours)) {
+    if (t.dirt > 60 && f.stress > 40 && chance(FINROT_RATE * rate, hours)) {
       f.sick = "finrot";
       fellIll.push({ name: f.name, disease: "finrot" });
     }

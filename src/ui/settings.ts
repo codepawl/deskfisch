@@ -6,6 +6,7 @@ import { normalise, saveGame } from "../save/store";
 import { solarTimes } from "../sim/daylight";
 import { button, el } from "./dom";
 import { LANGS, t, type Lang } from "../i18n";
+import { playstyleButtons } from "./welcome";
 
 /** User preferences. `onChange` lets the app re-apply audio, window and render settings. */
 export class SettingsPanel {
@@ -15,6 +16,7 @@ export class SettingsPanel {
   private sunriseInput!: HTMLInputElement;
   private sunsetInput!: HTMLInputElement;
   private locNote!: HTMLElement;
+  private readonly styles: { root: HTMLElement; render: () => void };
 
   constructor(
     overlay: HTMLElement,
@@ -31,6 +33,7 @@ export class SettingsPanel {
         s.lang = v as typeof s.lang;
         this.onLanguage();
       }, (v) => (v === "auto" ? t("System") : LANGS[v as Lang]))),
+      this.row(t("Play style"), (this.styles = playstyleButtons(state, this.onChange)).root),
       this.row(t("See-through pet window"), this.checkbox(s.transparent, (v) => (s.transparent = v))),
       this.row(t("Sound"), this.checkbox(!s.muted, (v) => (s.muted = !v))),
       this.row(t("Ambient hum"), this.checkbox(s.ambient, (v) => (s.ambient = v))),
@@ -98,6 +101,7 @@ export class SettingsPanel {
 
   toggle(): void {
     this.root.hidden = !this.root.hidden;
+    if (!this.root.hidden) this.styles.render();
   }
 
   /** Ask the OS for coordinates once; sunrise and sunset are then computed daily. */

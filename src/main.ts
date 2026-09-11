@@ -16,6 +16,7 @@ import { CarePanel } from "./ui/care";
 import { Toasts } from "./ui/toast";
 import { SettingsPanel } from "./ui/settings";
 import { GuidePanel } from "./ui/guide";
+import { WelcomePanel } from "./ui/welcome";
 import { checkForUpdate } from "./updater";
 import { detectLang, setLang, t } from "./i18n";
 import { setLabel } from "./ui/dom";
@@ -63,7 +64,7 @@ async function boot(): Promise<void> {
     }
   }
   // Embedded on the website: skip the onboarding card so the hero shows the tank.
-  if (embedded) state.guideSeen = true;
+  if (embedded) state.guideSeen = state.onboarded = true;
   setLang(state.settings.lang === "auto" ? detectLang() : state.settings.lang);
   run(state);
 }
@@ -99,6 +100,12 @@ function run(state: GameState): void {
   // Quiet startup check; a failed or offline check is simply silent.
   setTimeout(() => void checkForUpdate().then((u) => u && offerUpdate(u.version, u.install)), 15000);
   const guide = new GuidePanel(overlay, state);
+  // First run: ask how they want to play, then show the checklist.
+  if (!state.onboarded) guide.root.hidden = true;
+  new WelcomePanel(overlay, state, () => {
+    hud.refresh();
+    if (!state.guideSeen) guide.toggle();
+  });
   hud.addButton(t("Change water"), () => care.toggle(), "water");
   hud.addButton(t("Test water"), () => stats.toggle(), "test");
   hud.addButton(t("Shop"), () => shop.toggle(), "coin");
