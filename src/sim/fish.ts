@@ -2,6 +2,7 @@ import { clamp, rand } from "../engine/rng";
 import { HOURS_TO_STARVE, STRESS_EASE_PER_HOUR } from "../data/constants";
 import { SPECIES, type Species } from "../data/species";
 import type { GameState } from "./state";
+import { EAT_RADIUS, HUNGER_PER_PELLET, nearestPellet } from "./food";
 
 export interface Fish {
   id: number;
@@ -50,7 +51,7 @@ function depthY(sp: Species, w: Bounds): number {
 }
 
 /** Wander: drift toward a target, pick a new one when reached or on a timer. Dead fish float up. */
-export function moveFish(f: Fish, sp: Species, water: Bounds, dt: number): void {
+export function moveFish(f: Fish, sp: Species, water: Bounds, dt: number, state?: GameState): void {
   const w = sp.frames[0].w;
   const h = sp.frames[0].h;
   if (!f.alive) {
@@ -60,23 +61,43 @@ export function moveFish(f: Fish, sp: Species, water: Bounds, dt: number): void 
     return;
   }
   f.retarget -= dt;
+  const food = state && f.hunger > 15 ? nearestPellet(state, f) : null;
+  if (food) {
+    // Face the pellet and aim the mouth, not the sprite origin, at it. Facing is
+    // pinned while seeking so the target does not flip as the fish settles.
+    f.facing = food.x >= f.x + w / 2 ? 1 : -1;
+    const mouth = mouthOffset(sp, f.facing);
+    if (Math.hypot(f.x + mouth.x - food.x, f.y + mouth.y - food.y) < EAT_RADIUS) {
+      state!.pellets.splice(state!.pellets.indexOf(food), 1);
+      f.hunger = Math.max(0, f.hunger - HUNGER_PER_PELLET);
+    }
+    f.tx = clamp(food.x - mouth.x, water.x0, water.x1 - w);
+    f.ty = clamp(food.y - mouth.y, water.y0, water.y1 - h);
+    f.retarget = 0.5;
+  }
   const dx = f.tx - f.x;
   const dy = f.ty - f.y;
-  if (f.retarget <= 0 || Math.hypot(dx, dy) < 4) {
+  if (!food && (f.retarget <= 0 || Math.hypot(dx, dy) < 4)) {
     f.tx = rand(water.x0 + w, water.x1 - w);
     f.ty = depthY(sp, water);
     f.retarget = rand(2, 6);
   }
   // Stressed fish are sluggish; fish are slow to turn so velocity eases toward the target.
-  const speed = sp.speed * (1 - f.stress / 200);
   const dist = Math.max(1, Math.hypot(dx, dy));
+  // Slow down on approach so the fish settles on the target instead of overshooting.
+  const speed = Math.min(sp.speed * (1 - f.stress / 200) * (food ? 1.6 : 1), dist * 3);
   const ease = 1 - Math.exp(-dt * 1.5);
   f.vx += ((dx / dist) * speed - f.vx) * ease;
-  f.vy += ((dy / dist) * speed * 0.5 - f.vy) * ease;
+  f.vy += ((dy / dist) * speed * (food ? 1 : 0.5) - f.vy) * ease;
   f.x = clamp(f.x + f.vx * dt, water.x0, water.x1 - w);
   f.y = clamp(f.y + f.vy * dt, water.y0, water.y1 - h);
-  if (Math.abs(f.vx) > 2) f.facing = f.vx > 0 ? 1 : -1;
+  if (!food && Math.abs(f.vx) > 2) f.facing = f.vx > 0 ? 1 : -1;
   f.phase += dt * (2 + (Math.abs(f.vx) / sp.speed) * 4);
+}
+
+function mouthOffset(sp: Species, facing: 1 | -1): { x: number; y: number } {
+  const w = sp.frames[0].w;
+  return { x: facing > 0 ? w - 3 : 2, y: 3 };
 }
 
 /** Ammonia-producing load of everything in the tank, in "standard fish" units. */

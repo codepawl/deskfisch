@@ -28,6 +28,11 @@ html, body {
   place-items: center;
 }
 
+/* Canvas and overlay share one grid cell so the overlay sits exactly on the framebuffer. */
+#screen, #overlay {
+  grid-area: 1 / 1;
+}
+
 #screen {
   image-rendering: pixelated;
   image-rendering: crisp-edges;
@@ -35,7 +40,97 @@ html, body {
 }
 
 #overlay {
+  position: relative;
+  pointer-events: none;
+}
+
+/* --- HUD ------------------------------------------------------------ */
+
+#overlay {
+  --s: 3; /* integer scale of the framebuffer, set from JS */
+  font-family: "Pixelify Sans", "Pixel", monospace;
+  font-size: calc(5px * var(--s));
+  line-height: 1.2;
+}
+
+
+.hud {
   position: absolute;
   inset: 0;
   pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: calc(3px * var(--s)) calc(8px * var(--s));
 }
+
+.hud-top {
+  display: flex;
+  justify-content: space-between;
+  color: var(--accent);
+  text-shadow: calc(1px * var(--s)) calc(1px * var(--s)) 0 #000;
+}
+
+.toolbar {
+  pointer-events: auto;
+  display: flex;
+  gap: calc(3px * var(--s));
+  pointer-events: auto;
+  height: calc(26px * var(--s));
+  align-items: center;
+}
+
+button.tool {
+  font: inherit;
+  color: var(--ink);
+  background: var(--panel);
+  border: calc(1px * var(--s)) solid var(--panel-edge);
+  box-shadow: inset 0 calc(-1px * var(--s)) 0 #000;
+  padding: calc(2px * var(--s)) calc(4px * var(--s));
+  cursor: pointer;
+}
+button.tool:hover { border-color: var(--accent); }
+button.tool.active { background: var(--accent); color: var(--panel); }
+button.tool:disabled { opacity: 0.4; cursor: default; }
+
+/* --- Panels --------------------------------------------------------- */
+
+.panel {
+  pointer-events: auto;
+  position: absolute;
+  background: var(--panel);
+  border: calc(1px * var(--s)) solid var(--panel-edge);
+  box-shadow: calc(2px * var(--s)) calc(2px * var(--s)) 0 #000;
+  padding: calc(3px * var(--s)) calc(4px * var(--s));
+  min-width: calc(80px * var(--s));
+}
+.panel h2 {
+  margin: 0 0 calc(2px * var(--s));
+  font-size: inherit;
+  color: var(--accent);
+}
+.muted { color: var(--panel-edge); color: #94b0c2; }
+
+.panel-stats { top: calc(20px * var(--s)); right: calc(8px * var(--s)); }
+.panel-inspect { top: calc(20px * var(--s)); left: calc(8px * var(--s)); }
+
+.stat-row, .bar-row {
+  display: flex;
+  justify-content: space-between;
+  gap: calc(6px * var(--s));
+  align-items: center;
+}
+.stat-label { text-transform: capitalize; }
+.stat-value.ok { color: #a7f070; }
+.stat-value.warn { color: #ffcd75; }
+.stat-value.bad { color: #ef7d57; }
+
+.bar {
+  width: calc(40px * var(--s));
+  height: calc(4px * var(--s));
+  background: #000;
+  border: calc(1px * var(--s)) solid var(--panel-edge);
+}
+.bar-fill { height: 100%; background: #a7f070; }
+.bar-fill.warn { background: #ffcd75; }
+.bar-fill.bad { background: #ef7d57; }

@@ -108,3 +108,21 @@ describe("offline catch-up", () => {
     expect(g.simTime).toBe(2000);
   });
 });
+
+describe("advance", () => {
+  it("steps whole seconds and leaves the remainder", async () => {
+    const { advance } = await import("../src/sim/tick");
+    const g = newGame(0);
+    advance(g, 2500);
+    expect(g.simTime).toBe(2000);
+    expect(g.ageHours).toBeCloseTo(2 / 3600, 8);
+  });
+
+  it("replays long gaps coarsely", async () => {
+    const { advance } = await import("../src/sim/tick");
+    const g = newGame(0);
+    const r = advance(g, 3600 * 1000);
+    expect(r.away?.hours).toBe(1);
+    expect(g.simTime).toBe(3600 * 1000);
+  });
+});

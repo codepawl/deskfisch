@@ -1,5 +1,6 @@
 import { BACTERIA, TAP } from "../data/constants";
 import type { Fish } from "./fish";
+import type { Pellet } from "./food";
 
 export interface TankState {
   volumeL: number;
@@ -40,6 +41,8 @@ export interface GameState {
   tank: TankState;
   equipment: Equipment;
   fish: Fish[];
+  pellets: Pellet[];
+  /** Item id -> count. */
   inventory: Record<string, number>;
   /** Total hours the tank has been running, for achievements and cycle detection. */
   ageHours: number;
@@ -75,7 +78,8 @@ export function newGame(now = Date.now()): GameState {
       testKit: false,
     },
     fish: [],
-    inventory: {},
+    pellets: [],
+    inventory: { flakes: 20 },
     ageHours: 0,
   };
 }

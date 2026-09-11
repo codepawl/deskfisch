@@ -1,4 +1,4 @@
-import type { GameState } from "../sim/state";
+import { newGame, type GameState } from "../sim/state";
 
 const KEY = "fisch-save";
 
@@ -32,9 +32,17 @@ async function backend(): Promise<Backend> {
 
 export async function loadGame(): Promise<GameState | null> {
   const raw = await (await backend()).get();
-  // Only the current schema exists; older saves will get a migration step here.
-  if (raw && typeof raw === "object" && (raw as GameState).version === 1) return raw as GameState;
-  return null;
+  if (!raw || typeof raw !== "object" || (raw as GameState).version !== 1) return null;
+  // Fields added since the save was written fall back to a fresh game's defaults.
+  const fresh = newGame();
+  const saved = raw as Partial<GameState>;
+  return {
+    ...fresh,
+    ...saved,
+    tank: { ...fresh.tank, ...saved.tank },
+    equipment: { ...fresh.equipment, ...saved.equipment },
+    inventory: { ...fresh.inventory, ...saved.inventory },
+  };
 }
 
 export async function saveGame(state: GameState): Promise<void> {

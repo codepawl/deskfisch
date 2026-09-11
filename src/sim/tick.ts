@@ -3,6 +3,7 @@ import { SPECIES } from "../data/species";
 import { happiness, stepFish, wasteLoad } from "./fish";
 import type { GameState } from "./state";
 import { stepTank } from "./tank";
+import { decayPellets } from "./food";
 
 /** Coins per hour from a fully happy fish, as a fraction of its shop price. */
 const INCOME_RATE = 0.02;
@@ -11,6 +12,7 @@ const INCOME_RATE = 0.02;
 export function simulate(state: GameState, seconds: number): string[] {
   const hours = seconds / 3600;
   stepTank(state, hours, wasteLoad(state));
+  decayPellets(state, hours);
   const died = stepFish(state, hours);
   for (const f of state.fish) {
     state.coins += (happiness(f) / 100) * SPECIES[f.speciesId].price * INCOME_RATE * hours;
@@ -26,6 +28,25 @@ export interface CatchUp {
   capped: boolean;
   coinsEarned: number;
   died: string[];
+}
+
+/** Gaps at least this long are replayed in coarse steps instead of second by second. */
+const COARSE_GAP_SECONDS = 5;
+
+/**
+ * Bring the simulation up to wall-clock `now`. Short gaps step one second at a
+ * time; anything longer (window hidden, laptop asleep, app closed) is replayed
+ * coarsely and summarised. Returns names of fish that died.
+ */
+export function advance(state: GameState, now = Date.now()): { died: string[]; away: CatchUp | null } {
+  const gap = (now - state.simTime) / 1000;
+  if (gap >= COARSE_GAP_SECONDS) {
+    const away = catchUp(state, now);
+    return { died: away?.died ?? [], away };
+  }
+  const died: string[] = [];
+  while (now - state.simTime >= 1000) died.push(...simulate(state, 1));
+  return { died, away: null };
 }
 
 /** Simulate time that passed while the app was closed, in coarse steps. */

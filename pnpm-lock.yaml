@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@fontsource/pixelify-sans':
+        specifier: ^5.3.0
+        version: 5.3.0
       '@tauri-apps/api':
         specifier: ^2
         version: 2.11.1
@@ -29,6 +32,9 @@ importers:
         version: 4.1.11(vite@8.2.2)
 
 packages:
+
+  '@fontsource/pixelify-sans@5.3.0':
+    resolution: {integrity: sha512-4RCe9nXbi7wUu5+H0FNX1sgPZ2kJ1MmY1uTkEfvQIzzqhoS8zGKJaJfdK8oreE0OU+5gM+NdurFi3H3FJRBvyw==}
 
   '@jridgewell/sourcemap-codec@1.6.0':
     resolution: {integrity: sha512-T7jf+5zgsZHwNJ4lvQ7/aezbyk0nNX+zJVWpmHA7VYsEx7a7qr5Rg5IbtJFqkgze5Y2sruq1RUY8Q837Od7iFw==}
@@ -525,6 +531,8 @@ packages:
     hasBin: true
 
 snapshots:
+
+  '@fontsource/pixelify-sans@5.3.0': {}
 
   '@jridgewell/sourcemap-codec@1.6.0': {}
 

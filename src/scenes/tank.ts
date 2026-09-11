@@ -4,13 +4,14 @@ import { sprite } from "../engine/sprite";
 import { rand } from "../engine/rng";
 import { SPECIES } from "../data/species";
 import type { Bounds, Fish } from "../sim/fish";
+import type { GameState } from "../sim/state";
 
 export const SCREEN_W = 384;
-export const SCREEN_H = 216;
+export const SCREEN_H = 240;
 
-/** Inner water area. Glass frame sits just outside it. */
-export const WATER: Bounds = { x0: 8, y0: 16, x1: 376, y1: 204 };
-const SAND_Y = 190;
+/** Inner water area. Glass frame sits just outside it; the toolbar lives below. */
+export const WATER: Bounds = { x0: 8, y0: 18, x1: 376, y1: 208 };
+const SAND_Y = 194;
 
 const WATER_TOP = rgba("#3b7dd8");
 const WATER_MID = rgba("#2f5fc4");
@@ -74,12 +75,16 @@ export class TankScene {
     this.bubbles = this.bubbles.filter((b) => b.y > WATER.y0);
   }
 
-  render(buf: PixelBuffer, fish: Fish[]): void {
+  render(buf: PixelBuffer, state: GameState): void {
     buf.clear(COLOR.K);
     this.drawWater(buf);
     this.drawSand(buf);
     this.drawPlants(buf);
-    for (const f of fish) this.drawFish(buf, f);
+    for (const p of state.pellets) {
+      buf.set(p.x, p.y, COLOR.t);
+      buf.set(p.x + 1, p.y, COLOR.s);
+    }
+    for (const f of state.fish) this.drawFish(buf, f);
     this.drawBubbles(buf);
     this.drawGlass(buf);
   }
@@ -126,6 +131,12 @@ export class TankScene {
   private drawFish(buf: PixelBuffer, f: Fish): void {
     const sp = SPECIES[f.speciesId];
     const frame = sp.frames[Math.floor(f.phase) % sp.frames.length];
+    if (!f.alive) {
+      // Belly up at the surface.
+      buf.blit(frame, f.x, f.y, f.facing < 0);
+      buf.tintRect(f.x, f.y, frame.w, frame.h, COLOR.D, 0.5);
+      return;
+    }
     const bob = Math.sin(f.phase * 0.8) * 0.8;
     buf.blit(frame, f.x, f.y + bob, f.facing < 0);
   }

@@ -75,8 +75,8 @@ export class PixelBuffer {
     }
   }
 
-  /** Draw onto the visible canvas at the largest integer scale that fits. */
-  present(screen: HTMLCanvasElement): void {
+  /** Draw onto the visible canvas at the largest integer scale that fits. Returns that scale. */
+  present(screen: HTMLCanvasElement): number {
     this.backCtx.putImageData(this.image, 0, 0);
     const stage = screen.parentElement!;
     const scale = Math.max(1, Math.floor(Math.min(stage.clientWidth / this.w, stage.clientHeight / this.h)));
@@ -89,6 +89,7 @@ export class PixelBuffer {
     const ctx = screen.getContext("2d")!;
     ctx.imageSmoothingEnabled = false;
     ctx.drawImage(this.back, 0, 0, cw, ch);
+    return scale;
   }
 }
 
