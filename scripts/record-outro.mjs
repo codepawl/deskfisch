@@ -1,0 +1,10 @@
+import { chromium } from "playwright";
+import { readdirSync, renameSync } from "node:fs";
+const OUT = process.argv[2];
+const browser = await chromium.launch({ executablePath: "/usr/bin/google-chrome", headless: true });
+const ctx = await browser.newContext({ viewport: { width: 1920, height: 988 }, recordVideo: { dir: OUT, size: { width: 1920, height: 988 } } });
+const page = await ctx.newPage();
+await page.goto("http://localhost:1420/outro.html");
+await page.waitForTimeout(6500);
+await ctx.close(); await browser.close();
+const f = readdirSync(OUT).find((x) => x.endsWith(".webm")); renameSync(`${OUT}/${f}`, `${OUT}/outro.webm`); console.log("ok");
