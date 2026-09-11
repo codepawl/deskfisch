@@ -3,7 +3,7 @@
  * filtered noise, so the app stays small and works offline. The context is
  * created lazily because browsers only allow audio after a user gesture.
  */
-/** Multiply by a random factor within ±pct, so repeated sounds never land identically. */
+/** Multiply by a random factor within ±pct, so repeated sounds never land identically. Never applied to levels: loudness stays predictable. */
 function vary(base: number, pct: number): number {
   return base * (1 + (Math.random() * 2 - 1) * pct);
 }
@@ -57,7 +57,7 @@ export class Sfx {
     osc.frequency.setValueAtTime(base, t);
     osc.frequency.exponentialRampToValueAtTime(base * rise, t + len * 0.65);
     gain.gain.setValueAtTime(0.0001, t);
-    gain.gain.exponentialRampToValueAtTime(vary(0.25, 0.2), t + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.25, t + 0.01);
     gain.gain.exponentialRampToValueAtTime(0.0001, t + len);
     osc.connect(gain).connect(this.master);
     osc.start(t);
@@ -77,7 +77,7 @@ export class Sfx {
     osc.type = "triangle";
     osc.frequency.setValueAtTime(pitch, t);
     osc.frequency.exponentialRampToValueAtTime(pitch * 0.4, t + decay * 0.7);
-    gain.gain.setValueAtTime(vary(0.35, 0.15), t);
+    gain.gain.setValueAtTime(0.35, t);
     gain.gain.exponentialRampToValueAtTime(0.0001, t + decay);
     osc.connect(gain).connect(this.master);
     osc.start(t);
@@ -170,7 +170,7 @@ export class Sfx {
     const gain = ctx.createGain();
     const t = ctx.currentTime;
     gain.gain.setValueAtTime(0.0001, t);
-    gain.gain.exponentialRampToValueAtTime(vary(0.2, 0.15), t + attack * 0.3);
+    gain.gain.exponentialRampToValueAtTime(0.2, t + attack * 0.3);
     gain.gain.exponentialRampToValueAtTime(0.0001, t + length);
     src.connect(filter).connect(gain).connect(this.master);
     src.start(t, Math.random() * 0.5);
