@@ -63,7 +63,6 @@ function run(state: GameState): void {
   hud.dragHandle.addEventListener("pointerdown", () => {
     if (state.mode === "pet") void startWindowDrag();
   });
-  (window as unknown as { fischUi: unknown }).fischUi = { hud, stats, inspect, shop, bagPanel };
 
   let sinceSave = 0;
   const persist = () => {

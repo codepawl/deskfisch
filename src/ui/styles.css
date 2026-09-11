@@ -75,7 +75,6 @@ html, body {
   pointer-events: auto;
   display: flex;
   gap: calc(3px * var(--s));
-  pointer-events: auto;
   height: calc(26px * var(--s));
   align-items: center;
 }
@@ -109,7 +108,7 @@ button.tool:disabled { opacity: 0.4; cursor: default; }
   font-size: inherit;
   color: var(--accent);
 }
-.muted { color: var(--panel-edge); color: #94b0c2; }
+.muted { color: #94b0c2; }
 
 .panel-stats { top: calc(20px * var(--s)); right: calc(8px * var(--s)); }
 .panel-inspect { top: calc(20px * var(--s)); left: calc(8px * var(--s)); }
