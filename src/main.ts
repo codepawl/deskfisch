@@ -31,6 +31,8 @@ const PELLETS_PER_PINCH = 6;
 /** Percentage points of algae/dirt removed per second of dragging. */
 const SCRUB_RATE = 40;
 const VACUUM_RATE = 30;
+/** The siphon reaches this far above the substrate. */
+const VACUUM_REACH = 16;
 
 const screen = document.getElementById("screen") as HTMLCanvasElement;
 const overlay = document.getElementById("overlay") as HTMLElement;
@@ -189,6 +191,7 @@ function run(state: GameState): void {
   setInterval(tick, 1000);
 
   let scrubSoundIn = 0;
+  let vacuumHintShown = false;
   startLoop({
     maxFps: () => state.settings.maxFps,
     frame(dt) {
@@ -210,10 +213,15 @@ function run(state: GameState): void {
           scrubSoundIn = SCRUB_SOUND_INTERVAL;
         }
       }
-      const vacuuming = working && hud.tool === "vacuum" && input.y >= SAND_Y;
+      const vacuuming = working && hud.tool === "vacuum";
       if (vacuuming) {
-        vacuumGravel(state, VACUUM_RATE * dt);
         scene.suck(input.x, input.y + 3);
+        if (input.y >= SAND_Y - VACUUM_REACH) {
+          vacuumGravel(state, VACUUM_RATE * dt);
+        } else if (!vacuumHintShown) {
+          vacuumHintShown = true;
+          toasts.show("The siphon only lifts dirt from the gravel. Drag it along the bottom.", 5000);
+        }
       }
       sfx.vacuum(vacuuming);
       updatePellets(state, WATER, dt);

@@ -177,7 +177,8 @@ export class TankScene {
     quality: Quality = "high",
   ): void {
     buf.clear(transparentBackdrop ? 0 : COLOR.K);
-    this.drawWater(buf, quality);
+    const lit = state.equipment.light > 0 && state.equipment.lightOn;
+    this.drawWater(buf, quality, lit);
     this.drawSand(buf);
     this.drawDecor(buf, state);
     for (const p of state.pellets) {
@@ -192,10 +193,9 @@ export class TankScene {
       else this.drawBag(buf, b, b.x, BAG_Y + Math.round(Math.sin(this.time * 1.2 + b.x) * 1));
     }
     // Room light follows the real clock; the tank light overrides it.
-    const lit = state.equipment.light > 0 && state.equipment.lightOn;
     const hour = new Date().getHours();
     const night = hour >= 21 || hour < 6 ? 0.55 : hour >= 18 || hour < 8 ? 0.3 : 0;
-    const dark = lit ? 0 : Math.max(0.2, night);
+    const dark = lit ? 0 : Math.max(0.45, night);
     if (dark > 0) buf.tintRect(WATER.x0, WATER.y0, WATER.x1 - WATER.x0, WATER.y1 - WATER.y0, COLOR.n, dark);
     if (state.tank.algae > 10) {
       buf.tintRect(WATER.x0, WATER.y0, WATER.x1 - WATER.x0, WATER.y1 - WATER.y0, COLOR.g, state.tank.algae / 250);
@@ -208,7 +208,7 @@ export class TankScene {
     }
   }
 
-  private drawWater(buf: PixelBuffer, quality: Quality): void {
+  private drawWater(buf: PixelBuffer, quality: Quality, lit: boolean): void {
     const h = WATER.y1 - WATER.y0;
     if (quality === "low") {
       buf.fillRect(WATER.x0, WATER.y0, WATER.x1 - WATER.x0, h, WATER_MID);
@@ -219,8 +219,8 @@ export class TankScene {
         buf.fillRect(WATER.x0, y, WATER.x1 - WATER.x0, 1, c);
       }
     }
-    // Light shafts: sparse dithered pale bands drifting slowly, fading with depth.
-    for (let i = 0; i < (quality === "high" ? 3 : 0); i++) {
+    // Light shafts from the tank light: sparse dithered pale bands drifting slowly, fading with depth.
+    for (let i = 0; i < (quality === "high" && lit ? 3 : 0); i++) {
       const cx = WATER.x0 + 70 + i * 110 + Math.sin(this.time * 0.3 + i) * 10;
       for (let y = WATER.y0 + 1; y < SAND_Y; y++) {
         const w = 5 + (y - WATER.y0) * 0.1;
