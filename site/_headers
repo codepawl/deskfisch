@@ -1,2 +1,4 @@
 /press/*
   Access-Control-Allow-Origin: *
+/fonts/*
+  Cache-Control: public, max-age=2592000

@@ -10,12 +10,6 @@
   --sand: #d9a066;
   --u: 4px; /* pixel unit */
 }
-/* Korean pixel face, OFL, served from jsDelivr (Google Fonts has no pixel Hangul). */
-@font-face {
-  font-family: "Galmuri11";
-  src: url("https://cdn.jsdelivr.net/npm/galmuri@latest/dist/Galmuri11.woff2") format("woff2");
-  font-display: swap;
-}
 /* Scripts without Latin pixel glyphs fall back to a pixel face of their own; Latin keeps VT323/Silkscreen. */
 html[lang="ja"], html[lang="zh"] { --cjk: "DotGothic16"; }
 html[lang="ko"] { --cjk: "Galmuri11"; }

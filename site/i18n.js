@@ -1,6 +1,6 @@
 // Site strings. English lives in the HTML; every other language overrides by key.
 // Pixel faces per script: VT323/Silkscreen for Latin, DotGothic16 for Japanese and
-// Chinese, Galmuri11 for Korean (loaded from jsDelivr in style.css).
+// Chinese, Galmuri11 for Korean (self-hosted in site/fonts).
 const I18N = {
   vi: {
     "nav.faq": "Hỏi đáp",
