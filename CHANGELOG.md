@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1 — 2026-09-11
+
+- Renamed to **Fischlein**. "Fisch" collides with an unrelated Roblox game in every search box; the new name keeps the word and stays findable. Bundle id is unchanged, saves carry over.
+
 ## 0.2.0 — 2026-09-11
 
 - Fish behaviour: schooling, foraging bottom dwellers, betta rivalry, fish rise to a hand holding food, stressed fish hide.

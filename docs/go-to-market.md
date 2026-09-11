@@ -1,4 +1,4 @@
-# Fisch — kế hoạch bán và marketing
+# Fischlein — kế hoạch bán và marketing
 
 Trạng thái: bản nháp 2026-09-11, sau release 0.2.0. Mọi con số là ước lượng để lập kế hoạch, không phải dữ liệu đo được.
 
@@ -14,7 +14,7 @@ Trạng thái: bản nháp 2026-09-11, sau release 0.2.0. Mọi con số là ư�
 **Sản phẩm so sánh trực tiếp:**
 - *Chillquarium* (Steam, 2023, ~$8): hồ cá idle, mở pack cá. Không có sim nước, không desktop pet.
 - *Rusty's Retirement* (Steam, 2024, $7): idle farm nằm dưới đáy màn hình. Chứng minh thị trường "game chạy trong lúc làm việc" bán tốt.
-- *Fisch* (Roblox): game câu cá rất phổ biến. **Trùng tên** — Steam search và SEO sẽ bị nuốt. Xem mục 7.
+- *Fisch* (Roblox): game câu cá rất phổ biến. Tên gốc "Fisch" của app trùng với nó, nên đã đổi thành **Fischlein** (xem mục 7).
 
 Khe hở của mình: Chillquarium + Rusty's Retirement + fishkeeping thật. Không ai có cả ba.
 
@@ -80,7 +80,7 @@ Marketing assets:
 
 ## 7. Rủi ro
 
-- **Tên "Fisch".** Trùng game Roblox lớn; search Steam/Google/TikTok sẽ ra game kia. Đổi tên trước khi mở Steam page (đổi sau tốn wishlist). Gợi ý: *Tankmates*, *Nano Tank*, *Deskquarium*, *Little Reef*. Kiểm tra trademark + Steam search + domain trước khi chốt.
+- **Tên.** "Fisch" trùng game Roblox lớn nên đã đổi thành **Fischlein** (tiếng Đức: cá nhỏ). Đã kiểm tra: không có game/app nào tên Fischlein trên Steam, App Store, Google Play (2026-09-11). Còn phải kiểm tra trademark và giữ domain `fischlein.app` trước khi mở Steam page. "Fischkeeper" và "Fischtank" đều đụng game có sẵn.
 - **Cửa sổ trong suốt trên Linux/Wayland** phụ thuộc XWayland; ghi rõ trong mô tả Steam là "Linux: X11 hoặc XWayland".
 - **Cá chết làm người chơi cozy bỏ game.** Giữ chế độ "Gentle" trong Settings: không bệnh, không chết, chỉ stress — bật mặc định cho người mới, người thích sim thật tự tắt.
 - **Một người làm.** Không hứa ngày ra trước khi trailer và bản ký số xong.
