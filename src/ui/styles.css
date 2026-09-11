@@ -111,8 +111,8 @@ button.tool.active {
 button.tool:disabled { opacity: 0.4; cursor: default; }
 
 /* Toolbar buttons show only their icon. The label floats above the button
-   (no layout shift, so neighbours stay put) and slides in on hover; it stays
-   up while the tool is active. Buttons without an icon keep their text. */
+   (no layout shift, so neighbours stay put) and slides in on hover; a click
+   hides it again. Buttons without an icon keep their text. */
 .toolbar button.tool { gap: 0; position: relative; overflow: visible; transition: border-color 0.15s ease; }
 .toolbar button.tool .icon + .label {
   position: absolute;
@@ -129,8 +129,7 @@ button.tool:disabled { opacity: 0.4; cursor: default; }
   transition: opacity 0.18s ease, transform 0.22s ease;
 }
 .toolbar button.tool.hover .icon + .label,
-.toolbar button.tool:focus-visible .icon + .label,
-.toolbar button.tool.active .icon + .label {
+.toolbar button.tool:focus-visible .icon + .label {
   opacity: 1;
   transform: translate(-50%, 0);
 }

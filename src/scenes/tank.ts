@@ -192,10 +192,12 @@ export class TankScene {
       if (drag?.bag === b) this.drawBag(buf, b, drag.x, drag.y);
       else this.drawBag(buf, b, b.x, BAG_Y + Math.round(Math.sin(this.time * 1.2 + b.x) * 1));
     }
-    // Room light follows the real clock; the tank light overrides it.
+    // Room light follows the real clock: bright by day, dim at dusk and dawn,
+    // dark at night. The tank light overrides it; without one the tank is
+    // always a touch dimmer than the room so toggling is visible.
     const hour = new Date().getHours();
-    const night = hour >= 21 || hour < 6 ? 0.55 : hour >= 18 || hour < 8 ? 0.3 : 0;
-    const dark = lit ? 0 : Math.max(0.45, night);
+    const room = hour >= 21 || hour < 6 ? 0.6 : hour >= 17 || hour < 8 ? 0.3 : 0;
+    const dark = lit ? 0 : Math.max(0.15, room);
     if (dark > 0) buf.tintRect(WATER.x0, WATER.y0, WATER.x1 - WATER.x0, WATER.y1 - WATER.y0, COLOR.n, dark);
     if (state.tank.algae > 10) {
       buf.tintRect(WATER.x0, WATER.y0, WATER.x1 - WATER.x0, WATER.y1 - WATER.y0, COLOR.g, state.tank.algae / 250);

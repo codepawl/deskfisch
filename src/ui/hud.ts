@@ -41,9 +41,12 @@ export class Hud {
       for (const o of this.bar.querySelectorAll("button.hover")) o.classList.remove("hover");
       b.classList.add("hover");
     });
-    this.bar.addEventListener("pointerleave", () => {
+    const clearHover = () => {
       for (const o of this.bar.querySelectorAll("button.hover")) o.classList.remove("hover");
-    });
+    };
+    this.bar.addEventListener("pointerleave", clearHover);
+    // Once a button is chosen the label has done its job.
+    this.bar.addEventListener("click", clearHover);
     this.dragHandle = el("div.hud-top", {}, this.coins, el("span.grip", {}, "⋮⋮ drag ⋮⋮"), this.clock);
     this.restore = button("hud-restore", "⋯", () => {});
     this.root = el("div.hud", {}, this.dragHandle, this.bar);
@@ -69,7 +72,9 @@ export class Hud {
     const now = new Date();
     const hh = String(now.getHours()).padStart(2, "0");
     const mm = String(now.getMinutes()).padStart(2, "0");
-    this.clock.textContent = `Day ${day} · ${hh}:${mm}`;
+    const h = now.getHours();
+    const sky = h >= 21 || h < 6 ? "☾" : h >= 17 || h < 8 ? "☁" : "☀";
+    this.clock.textContent = `Day ${day} · ${sky} ${hh}:${mm}`;
     const flakes = s.inventory.flakes ?? 0;
     setLabel(this.feedBtn, `Feed ×${flakes}`);
     this.feedBtn.disabled = flakes <= 0;
@@ -77,8 +82,9 @@ export class Hud {
     for (const b of this.bar.querySelectorAll("button")) {
       b.classList.toggle("active", this.tool !== null && b.textContent!.trim().toLowerCase().startsWith(this.tool));
     }
-    this.lightBtn.hidden = s.equipment.light === 0;
-    setLabel(this.lightBtn, s.equipment.lightOn ? "Light: on" : "Light: off");
+    const hasLight = s.equipment.light > 0;
+    this.lightBtn.disabled = !hasLight;
+    setLabel(this.lightBtn, !hasLight ? "No light yet (Shop → Gear)" : s.equipment.lightOn ? "Light: on" : "Light: off");
     this.lightBtn.classList.toggle("lit", s.equipment.lightOn);
   }
 }
