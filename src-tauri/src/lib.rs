@@ -1,5 +1,3 @@
-mod capture;
-
 use tauri::{
     menu::{Menu, MenuItem, PredefinedMenuItem},
     tray::TrayIconBuilder,
@@ -18,7 +16,6 @@ pub fn run() {
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
-        .invoke_handler(tauri::generate_handler![capture::capture_behind])
         .setup(|app| {
             let show = MenuItem::with_id(app, "show", "Show tank", true, None::<&str>)?;
             let window = MenuItem::with_id(app, "mode:window", "Window mode", true, None::<&str>)?;

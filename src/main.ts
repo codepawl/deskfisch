@@ -21,8 +21,7 @@ import { setLabel } from "./ui/dom";
 import { isCycled } from "./sim/tank";
 import { Sfx } from "./engine/audio";
 import { checkAchievements } from "./sim/achievements";
-import { applyMode, captureBehind, isTauri, onModeRequest, onWindowMoved, setPinned, startWindowDrag, startWindowResize, type Mode } from "./platform";
-import { GLASS_TOP } from "./scenes/tank";
+import { applyMode, isTauri, onModeRequest, onWindowMoved, setPinned, startWindowDrag, startWindowResize, type Mode } from "./platform";
 import { releaseBag, releaseShock, type Bag } from "./sim/bag";
 import type { Decor } from "./sim/state";
 import { DECOR_SPRITES } from "./scenes/tank";
@@ -227,40 +226,6 @@ function run(state: GameState): void {
   let scrubSoundIn = 0;
   let vacuumHintShown = false;
 
-  // Desktop refraction: while enabled and the tank is see-through, grab what is
-  // behind the glass a few times a second and let the water bend it.
-  let capturing = false;
-  let captureFailed = false;
-  let captureTimer = 0;
-  const CAPTURE_INTERVAL = 0.12;
-  const refractTick = (dt: number) => {
-    const wants = state.settings.refractDesktop && state.mode === "pet" && state.settings.transparent && state.decal === null && !captureFailed;
-    if (!wants) {
-      scene.desktop = null;
-      return;
-    }
-    captureTimer -= dt;
-    if (captureTimer > 0 || capturing) return;
-    captureTimer = CAPTURE_INTERVAL;
-    capturing = true;
-    const r = screen.getBoundingClientRect();
-    const k = r.width / SCREEN_W;
-    const w = WATER.x1 - WATER.x0;
-    const h = WATER.y1 - GLASS_TOP;
-    const rect = new DOMRect(r.left + WATER.x0 * k, r.top + GLASS_TOP * k, w * k, h * k);
-    captureBehind(rect, w, h)
-      .then((bytes) => {
-        scene.desktop = new Uint32Array(bytes.buffer, bytes.byteOffset, w * h);
-      })
-      .catch((e) => {
-        captureFailed = true;
-        scene.desktop = null;
-        toasts.show(String(e).includes("unsupported") ? t("Desktop refraction is not available on this system.") : t("Desktop capture failed: {e}", { e: String(e) }), 8000);
-      })
-      .finally(() => {
-        capturing = false;
-      });
-  };
   // Every painted frame costs WebKit about 6 ms of CPU regardless of the JS
   // work, so an unfocused tank (pet mode beside your work) idles at 15 fps.
   const IDLE_FPS = 15;
@@ -268,7 +233,6 @@ function run(state: GameState): void {
     maxFps: () => (document.hasFocus() ? state.settings.maxFps : Math.min(state.settings.maxFps, IDLE_FPS)),
     frame(dt) {
       setFillLevel(state.tank.fill);
-      refractTick(dt);
       input.beginFrame();
       if (input.pressed) handleClick();
       if (drag) {

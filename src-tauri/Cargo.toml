@@ -31,13 +31,3 @@ opt-level = 3
 panic = "abort"
 strip = true
 
-# Desktop refraction: capturing what is behind the window is platform specific.
-[target.'cfg(windows)'.dependencies]
-xcap = "0.4"
-image = { version = "0.25", default-features = false }
-windows-sys = { version = "0.59", features = ["Win32_UI_WindowsAndMessaging", "Win32_Foundation"] }
-
-[target.'cfg(target_os = "macos")'.dependencies]
-core-graphics = "0.24"
-core-foundation = "0.10"
-objc2 = "0.5"
