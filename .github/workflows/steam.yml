@@ -19,7 +19,7 @@ jobs:
   push:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Check secrets
         run: |
           if [ -z "${{ secrets.STEAM_USERNAME }}" ] || [ -z "${{ secrets.STEAM_CONFIG_VDF }}" ] || [ -z "${{ secrets.STEAM_APP_ID }}" ]; then
@@ -48,7 +48,7 @@ jobs:
       - name: Fill build scripts
         run: |
           sed -i "s/APPID1/${{ secrets.STEAM_APP_ID }}1/; s/APPID2/${{ secrets.STEAM_APP_ID }}2/; s/APPID3/${{ secrets.STEAM_APP_ID }}3/; s/APPID/${{ secrets.STEAM_APP_ID }}/; s/VERSION/${{ inputs.tag }}/" steam/*.vdf
-      - uses: game-ci/steam-deploy@v3
+      - uses: game-ci/steam-deploy@50f6b29fc64922e19a16d202a88fe199d394b536 # v3.2.1
         with:
           username: ${{ secrets.STEAM_USERNAME }}
           configVdf: ${{ secrets.STEAM_CONFIG_VDF }}
