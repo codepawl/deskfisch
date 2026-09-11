@@ -76,6 +76,26 @@ export class PixelBuffer {
     }
   }
 
+  /**
+   * Shift each column in a band vertically by `offset(x)` pixels (positive =
+   * down). Vacated pixels take the pixel just above the band, so air or a
+   * backdrop shows where the water fell away. Used for sloshing.
+   */
+  shearColumns(x0: number, x1: number, y0: number, y1: number, offset: (x: number) => number): void {
+    const h = y1 - y0;
+    const col = new Uint32Array(h);
+    for (let x = x0; x < x1; x++) {
+      const d = offset(x) | 0;
+      if (d === 0) continue;
+      for (let i = 0; i < h; i++) col[i] = this.px[(y0 + i) * this.w + x];
+      const air = y0 > 0 ? this.px[(y0 - 1) * this.w + x] : 0;
+      for (let i = 0; i < h; i++) {
+        const src = i - d;
+        this.px[(y0 + i) * this.w + x] = src < 0 ? air : src >= h ? col[h - 1] : col[src];
+      }
+    }
+  }
+
   blit(s: Sprite, x: number, y: number, flipX = false): void {
     const x0 = x | 0;
     const y0 = y | 0;

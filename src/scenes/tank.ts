@@ -123,6 +123,13 @@ export class TankScene {
   private working = false;
   /** Full-water tints for this frame (room light, algae), composited on the GPU. */
   overlays: Overlay[] = [];
+  /** Sloshing: surface tilt (−1..1, positive = high on the right) and heave, as damped springs. */
+  private tilt = 0;
+  private tiltVel = 0;
+  private heave = 0;
+  private heaveVel = 0;
+  private pushX = 0;
+  private pushY = 0;
   private sandSpeckles: [number, number][] = [];
 
   constructor() {
@@ -131,8 +138,40 @@ export class TankScene {
     }
   }
 
+  /** The window moved: water lags behind, so lean it against the motion (velocity in px/s). */
+  push(vx: number, vy: number): void {
+    this.pushX = vx;
+    this.pushY = vy;
+  }
+
+  private stepSlosh(dt: number): void {
+    // Target lean opposes the window's motion; once it stops, spring back and ring down.
+    const tiltTarget = Math.max(-1, Math.min(1, -this.pushX / 900));
+    const heaveTarget = Math.max(-1, Math.min(1, -this.pushY / 900));
+    const k = 40;
+    const damp = 3.5;
+    this.tiltVel += ((tiltTarget - this.tilt) * k - this.tiltVel * damp) * dt;
+    this.tilt += this.tiltVel * dt;
+    this.heaveVel += ((heaveTarget - this.heave) * k - this.heaveVel * damp) * dt;
+    this.heave += this.heaveVel * dt;
+    // Pushes are momentary: decay toward zero so a stopped window settles.
+    this.pushX *= Math.exp(-dt * 12);
+    this.pushY *= Math.exp(-dt * 12);
+  }
+
+  /** Whether the water is visibly moving; skips the shear when still. */
+  get sloshing(): boolean {
+    return Math.abs(this.tilt) > 0.01 || Math.abs(this.heave) > 0.01;
+  }
+
+  /** Horizontal water velocity felt by fish, px/s. */
+  get current(): number {
+    return this.tiltVel * 40;
+  }
+
   update(dt: number, quality: Quality = "high"): void {
     this.time += dt;
+    this.stepSlosh(dt);
     if (quality !== "low" && Math.random() < dt * 1.2) {
       this.bubbles.push({ x: rand(WATER.x0 + 30, WATER.x0 + 40), y: WATER.y1 - 6, speed: rand(18, 30), wobble: rand(0, 6) });
     }
@@ -208,6 +247,7 @@ export class TankScene {
     this.drawBubbles(buf);
     if (quality !== "low") for (const p of this.particles) buf.set(p.x, p.y, p.color);
     if (quality !== "low") this.refract(buf);
+    if (this.sloshing) this.slosh(buf);
     for (const b of state.bags) {
       if (drag?.bag === b) this.drawBag(buf, b, drag.x, drag.y);
       else this.drawBag(buf, b, b.x, bagY() + Math.round(Math.sin(this.time * 1.2 + b.x) * 1));
@@ -240,6 +280,18 @@ export class TankScene {
     for (let y = GLASS_TOP; y < WATER.y1; y++) {
       buf.fillRect(WATER.x0, y, WATER.x1 - WATER.x0, 1, mix(top, bottom, (y - GLASS_TOP) / h));
     }
+  }
+
+  /** Tilt the whole water band: high side rises, low side drops, with a travelling ripple. */
+  private slosh(buf: PixelBuffer): void {
+    const cx = (WATER.x0 + WATER.x1) / 2;
+    const half = (WATER.x1 - WATER.x0) / 2;
+    const t = this.time;
+    buf.shearColumns(WATER.x0, WATER.x1, WATER.y0 - 6, SAND_Y, (x) => {
+      const lean = (-this.tilt * (x - cx)) / half * 6;
+      const ripple = Math.sin((x - WATER.x0) * 0.08 + t * 9) * Math.abs(this.tiltVel) * 0.8;
+      return Math.round(lean + this.heave * 4 + ripple);
+    });
   }
 
   /** Water bends what is behind it: a slow sideways ripple plus a 1 px offset below the surface. */

@@ -74,6 +74,24 @@ export async function startWindowDrag(): Promise<void> {
   await getCurrentWindow().startDragging();
 }
 
+/**
+ * Report the window's velocity (screen px/s) while it is being moved. Fires on
+ * each move event; the caller decays it. No-op in the browser.
+ */
+export async function onWindowMoved(cb: (vx: number, vy: number) => void): Promise<void> {
+  if (!isTauri) return;
+  const { getCurrentWindow } = await import("@tauri-apps/api/window");
+  let last: { x: number; y: number; t: number } | null = null;
+  await getCurrentWindow().onMoved(({ payload }) => {
+    const now = performance.now();
+    if (last) {
+      const dt = Math.max(0.004, (now - last.t) / 1000);
+      cb((payload.x - last.x) / dt, (payload.y - last.y) / dt);
+    }
+    last = { x: payload.x, y: payload.y, t: now };
+  });
+}
+
 /** Launch on login. Returns the current state; null when unsupported (browser). */
 export async function autostart(enable?: boolean): Promise<boolean | null> {
   if (!isTauri) return null;

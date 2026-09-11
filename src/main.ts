@@ -21,7 +21,7 @@ import { setLabel } from "./ui/dom";
 import { isCycled } from "./sim/tank";
 import { Sfx } from "./engine/audio";
 import { checkAchievements } from "./sim/achievements";
-import { applyMode, isTauri, onModeRequest, setPinned, startWindowDrag, startWindowResize, type Mode } from "./platform";
+import { applyMode, isTauri, onModeRequest, onWindowMoved, setPinned, startWindowDrag, startWindowResize, type Mode } from "./platform";
 import { releaseBag, releaseShock, type Bag } from "./sim/bag";
 import type { Decor } from "./sim/state";
 import { DECOR_SPRITES } from "./scenes/tank";
@@ -60,6 +60,7 @@ function run(state: GameState): void {
   Object.assign(SIM_WATER, WATER);
   // Debug handle: inspect or poke the live state from the devtools console.
   (window as unknown as { fisch: GameState }).fisch = state;
+  (window as unknown as { fischScene: TankScene }).fischScene = scene;
   const hud = new Hud(overlay, state);
   const stats = new StatsPanel(overlay, state);
   const inspect = new InspectPanel(overlay, state, () => hud.refresh());
@@ -98,6 +99,7 @@ function run(state: GameState): void {
   sfx.setVolume(state.settings.volume, state.settings.muted);
   setMode(state.mode);
   void onModeRequest(setMode);
+  void onWindowMoved((vx, vy) => scene.push(vx, vy));
   if (isTauri) {
     const pinBtn = hud.addButton("", () => {
       state.pinned = !state.pinned;
@@ -268,7 +270,11 @@ function run(state: GameState): void {
       sfx.ambient(state.settings.ambient && !state.settings.muted && (eq.filter > 0 || eq.airPump > 0), eq.airPump > 0);
       updatePellets(state, WATER, dt);
       const lure = hud.tool === "feed" && input.inside && inWater(input.x, input.y) ? { x: input.x } : null;
-      for (const f of state.fish) moveFish(f, SPECIES[f.speciesId], WATER, dt, state, lure);
+      const current = scene.current;
+      for (const f of state.fish) {
+        moveFish(f, SPECIES[f.speciesId], WATER, dt, state, lure);
+        if (current) f.vx += current * dt;
+      }
     },
     render() {
       const showCursor = hud.tool && hud.tool !== "feed" && input.inside && inWater(input.x, input.y);
