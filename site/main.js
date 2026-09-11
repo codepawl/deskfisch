@@ -8,6 +8,11 @@ const ICONS = {
   coin: ["..yyyy..", ".yyyyyy.", "yyySSyyy", "yySyyyyy", "yySyyyyy", "yyySSyyy", ".yyyyyy.", "..yyyy.."],
   mode: ["DDDDDDDD", "DLLLLLLD", "DDDDDDDD", "D......D", "D......D", "D......D", "D......D", "DDDDDDDD"],
   chill: ["...WWW..", "..WW....", ".WW.....", ".WW.....", ".WW.....", "..WW....", "...WWW..", "........"],
+  // Platforms: penguin, apple, four panes, globe.
+  linux: ["..KKKK..", ".KWWWWK.", ".KWyWyK.", ".KKyyKK.", "KWWWWWWK", "KWWWWWWK", ".KWWWWK.", "..yy.yy."],
+  mac: ["....G...", "...G....", ".WWWWWW.", "WWWWWWWW", "WWWWWWWW", "WWWWWWWW", ".WWWWWW.", "..WW.WW."],
+  win: ["BBB.BBBB", "BBB.BBBB", "BBB.BBBB", "........", "BBB.BBBB", "BBB.BBBB", "BBB.BBBB", "........"],
+  web: ["..cccc..", ".cBBBBc.", "cBcBBcBc", "cBBBBBBc", "cccccccc", "cBcBBcBc", ".cBBBBc.", "..cccc.."],
 };
 
 for (const el of document.querySelectorAll(".ico[data-icon]")) {
@@ -35,7 +40,9 @@ const mb = (n) => `${(n / 1048576).toFixed(0)} MB`;
 fetch(`https://api.github.com/repos/${REPO}/releases/latest`)
   .then((r) => r.json())
   .then((rel) => {
-    document.getElementById("ver").textContent = rel.tag_name ?? "";
+    // Unauthenticated GitHub API calls are rate-limited per IP; fall back to plain links.
+    if (!rel.tag_name) throw new Error(rel.message ?? "no release");
+    document.getElementById("ver").textContent = rel.tag_name;
     let primary = null;
     for (const k of kinds) {
       const a = (rel.assets ?? []).find((x) => k.test.test(x.name));
@@ -58,5 +65,13 @@ fetch(`https://api.github.com/repos/${REPO}/releases/latest`)
     }
   })
   .catch(() => {
-    document.getElementById("ver").textContent = "see GitHub";
+    document.getElementById("ver").textContent = "latest";
+    for (const os of ["linux", "mac", "win"]) {
+      const box = document.querySelector(`.dl[data-os="${os}"] .links`);
+      const link = document.createElement("a");
+      link.className = "btn";
+      link.href = `https://github.com/${REPO}/releases/latest`;
+      link.textContent = "Get it on GitHub";
+      box.append(link);
+    }
   });
