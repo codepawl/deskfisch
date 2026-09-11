@@ -66,12 +66,16 @@ export class PixelBuffer {
     const row = new Uint32Array(w);
     for (let y = y0; y < y1; y++) {
       const d = offset(y) | 0;
-      if (d === 0) continue;
+      if (d === 0 || Math.abs(d) >= w) continue;
       const base = y * this.w + x0;
       row.set(this.px.subarray(base, base + w));
-      for (let x = 0; x < w; x++) {
-        const sx = Math.min(w - 1, Math.max(0, x - d));
-        this.px[base + x] = row[sx];
+      if (d > 0) {
+        // Shift right: copy the block, repeat the left edge into the gap.
+        this.px.set(row.subarray(0, w - d), base + d);
+        this.px.fill(row[0], base, base + d);
+      } else {
+        this.px.set(row.subarray(-d), base);
+        this.px.fill(row[w - 1], base + w + d, base + w);
       }
     }
   }

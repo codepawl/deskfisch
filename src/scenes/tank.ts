@@ -51,6 +51,9 @@ export const TOOL_SPRITES: Record<string, Sprite> = { scrub: SPONGE, vacuum: SIP
 /** Sand starts at this row; the vacuum only works here. */
 export const SAND_Y = 194;
 
+/** Surface velocity gained per px/s of window velocity change. A quick flick of ~600 px/s tilts the surface about half way. */
+const IMPULSE = 0.006;
+
 /** A bag being dragged by the pointer, drawn at the pointer instead of the surface. */
 export interface DragBag { bag: Bag; x: number; y: number }
 export const BAG_W = 26;
@@ -138,30 +141,34 @@ export class TankScene {
     }
   }
 
-  /** The window moved: water lags behind, so lean it against the motion (velocity in px/s). */
+  /**
+   * The window's velocity changed (px/s). Water only reacts to acceleration:
+   * a steady glide leaves the surface flat, a start or stop kicks it, and the
+   * surface then rings like a lightly damped pendulum.
+   */
   push(vx: number, vy: number): void {
+    const dvx = vx - this.pushX;
+    const dvy = vy - this.pushY;
     this.pushX = vx;
     this.pushY = vy;
+    this.tiltVel -= dvx * IMPULSE;
+    this.heaveVel -= dvy * IMPULSE;
   }
 
   private stepSlosh(dt: number): void {
-    // Target lean opposes the window's motion; once it stops, spring back and ring down.
-    const tiltTarget = Math.max(-1, Math.min(1, -this.pushX / 900));
-    const heaveTarget = Math.max(-1, Math.min(1, -this.pushY / 900));
-    const k = 40;
-    const damp = 3.5;
-    this.tiltVel += ((tiltTarget - this.tilt) * k - this.tiltVel * damp) * dt;
-    this.tilt += this.tiltVel * dt;
-    this.heaveVel += ((heaveTarget - this.heave) * k - this.heaveVel * damp) * dt;
-    this.heave += this.heaveVel * dt;
-    // Pushes are momentary: decay toward zero so a stopped window settles.
-    this.pushX *= Math.exp(-dt * 12);
-    this.pushY *= Math.exp(-dt * 12);
+    // Undamped natural frequency ~1.2 Hz, damping ratio ~0.12: rings a few times over ~3 s.
+    const omega = 2 * Math.PI * 1.2;
+    const k = omega * omega;
+    const c = 2 * 0.12 * omega;
+    this.tiltVel += (-k * this.tilt - c * this.tiltVel) * dt;
+    this.tilt = Math.max(-1, Math.min(1, this.tilt + this.tiltVel * dt));
+    this.heaveVel += (-k * this.heave - c * this.heaveVel) * dt;
+    this.heave = Math.max(-1, Math.min(1, this.heave + this.heaveVel * dt));
   }
 
   /** Whether the water is visibly moving; skips the shear when still. */
   get sloshing(): boolean {
-    return Math.abs(this.tilt) > 0.01 || Math.abs(this.heave) > 0.01;
+    return Math.abs(this.tilt) > 0.02 || Math.abs(this.heave) > 0.02 || Math.abs(this.tiltVel) > 0.1;
   }
 
   /** Horizontal water velocity felt by fish, px/s. */
@@ -247,7 +254,7 @@ export class TankScene {
     this.drawBubbles(buf);
     if (quality !== "low") for (const p of this.particles) buf.set(p.x, p.y, p.color);
     if (quality !== "low") this.refract(buf);
-    if (this.sloshing) this.slosh(buf);
+    if (quality !== "low" && this.sloshing) this.slosh(buf);
     for (const b of state.bags) {
       if (drag?.bag === b) this.drawBag(buf, b, drag.x, drag.y);
       else this.drawBag(buf, b, b.x, bagY() + Math.round(Math.sin(this.time * 1.2 + b.x) * 1));
@@ -303,13 +310,17 @@ export class TankScene {
   private drawWater(buf: PixelBuffer, quality: Quality, lit: boolean, seeThrough: boolean): void {
     const h = WATER.y1 - WATER.y0;
     // With no decal the water is only partly opaque, so a transparent window
-    // shows the desktop through the tank, murkier with depth; over a decal it
-    // is blended in fully.
+    // shows the desktop through the tank, murkier with depth. Over a decal (or
+    // the app's own backdrop) each row is one flat colour, so blend it once
+    // against the backdrop pixel and fill the row instead of blending per pixel.
     const paint = (y: number, c: number) => {
       const depth = (y - WATER.y0) / h;
-      const alpha = seeThrough ? 0.5 + depth * 0.3 : 0.72;
-      if (buf.px[y * buf.w + WATER.x0] === 0 && seeThrough) buf.fillRect(WATER.x0, y, WATER.x1 - WATER.x0, 1, withAlpha(c, alpha));
-      else buf.tintRect(WATER.x0, y, WATER.x1 - WATER.x0, 1, c, alpha);
+      const behind = buf.px[y * buf.w + WATER.x0];
+      if (seeThrough && behind === 0) {
+        buf.fillRect(WATER.x0, y, WATER.x1 - WATER.x0, 1, withAlpha(c, 0.5 + depth * 0.3));
+      } else {
+        buf.fillRect(WATER.x0, y, WATER.x1 - WATER.x0, 1, mix(behind, c, 0.72));
+      }
     };
     if (quality === "low") {
       for (let y = WATER.y0; y < WATER.y1; y++) paint(y, WATER_MID);

@@ -84,6 +84,7 @@ export async function onWindowMoved(cb: (vx: number, vy: number) => void, hz = 3
   const { getCurrentWindow } = await import("@tauri-apps/api/window");
   const win = getCurrentWindow();
   let last: { x: number; y: number; t: number } | null = null;
+  let wasMoving = false;
   let busy = false;
   setInterval(async () => {
     if (busy || document.hidden) return;
@@ -91,9 +92,13 @@ export async function onWindowMoved(cb: (vx: number, vy: number) => void, hz = 3
     try {
       const p = await win.outerPosition();
       const now = performance.now();
-      if (last && (p.x !== last.x || p.y !== last.y)) {
+      if (last) {
         const dt = Math.max(0.01, (now - last.t) / 1000);
-        cb((p.x - last.x) / dt, (p.y - last.y) / dt);
+        const moved = p.x !== last.x || p.y !== last.y;
+        // Report every sample while moving, and one zero once it stops, so the
+        // listener sees the deceleration that actually sloshes the water.
+        if (moved || wasMoving) cb(moved ? (p.x - last.x) / dt : 0, moved ? (p.y - last.y) / dt : 0);
+        wasMoving = moved;
       }
       last = { x: p.x, y: p.y, t: now };
     } catch {
