@@ -8,6 +8,7 @@
   "permissions": [
     "core:default",
     "store:default",
+    "opener:default",
     "core:window:allow-set-decorations",
     "core:window:allow-set-always-on-top",
     "core:window:allow-set-size",

@@ -23,6 +23,7 @@ tauri-plugin-updater = "2.11.0"
 tauri-plugin-process = "2.3.1"
 tauri-plugin-dialog = "2.7.3"
 tauri-plugin-fs = "2.5.2"
+tauri-plugin-opener = "2.5.5"
 
 [profile.release]
 codegen-units = 1

@@ -10,6 +10,7 @@ const ICONS = {
   chill: ["...WWW..", "..WW....", ".WW.....", ".WW.....", ".WW.....", "..WW....", "...WWW..", "........"],
   guide: ["WWWWWWW.", "WLLLWLLW", "WLLLWLLW", "WWWWWWWW", "WLLLWLLW", "WLLLWLLW", "WWWWWWW.", "........"],
   dl: ["...yy...", "...yy...", "...yy...", ".yyyyyy.", "..yyyy..", "...yy...", "LLLLLLLL", "L......L"],
+  ask: ["..yyyy..", ".yy..yy.", ".....yy.", "....yy..", "...yy...", "...yy...", "........", "...yy..."],
   code: [".c....c.", "c......c", "c......c", "c..yy..c", "c..yy..c", "c......c", "c......c", ".c....c."],
   // The codepawl mascot: a round blob with a tuft, winking >.-
   paw: ["...WW.......", "..WWWWW.....", "..WWWWWWW...", ".WWWWWWWWW..", "..WWWWWWWWW.", ".WWWWWWWWWWW", "WWWKWWWWWWWW", "WWWWKWWKKKWW", "WWWKWWWWWWWW", "WWWWWWKWWWWW", ".WWWWWWWWWW.", "..WWWWWWWW.."],

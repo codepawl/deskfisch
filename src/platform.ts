@@ -101,6 +101,16 @@ let lastPos: { x: number; y: number } | null = null;
 let wasMoving = false;
 
 /** Launch on login. Returns the current state; null when unsupported (browser). */
+/** Open a web page in the system browser (desktop) or a new tab (web build). */
+export async function openUrl(url: string): Promise<void> {
+  if (isTauri) {
+    const o = await import("@tauri-apps/plugin-opener");
+    await o.openUrl(url);
+  } else {
+    window.open(url, "_blank", "noopener");
+  }
+}
+
 export async function autostart(enable?: boolean): Promise<boolean | null> {
   if (!isTauri) return null;
   const a = await import("@tauri-apps/plugin-autostart");

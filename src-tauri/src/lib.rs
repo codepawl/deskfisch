@@ -16,6 +16,7 @@ pub fn run() {
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_opener::init())
         .setup(|app| {
             let show = MenuItem::with_id(app, "show", "Show tank", true, None::<&str>)?;
             let window = MenuItem::with_id(app, "mode:window", "Window mode", true, None::<&str>)?;

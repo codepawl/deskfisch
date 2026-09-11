@@ -439,3 +439,6 @@ button.playstyle {
 }
 button.playstyle:hover { border-color: var(--accent); }
 .playstyle-title { color: var(--accent); font-size: calc(9px * var(--s)); margin-bottom: calc(1px * var(--s)); }
+
+.settings-heading { margin: calc(4px * var(--s)) 0 calc(1px * var(--s)); font-size: inherit; font-weight: normal; color: var(--accent); }
+.panel-actions.wrap { flex-wrap: wrap; }

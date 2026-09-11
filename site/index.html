@@ -24,6 +24,7 @@
     <nav>
       <a href="#download"><span class="ico" data-icon="dl"></span><span data-i18n="nav.download">Download</span></a>
       <a href="#how"><span class="ico" data-icon="guide"></span><span data-i18n="nav.how">How it works</span></a>
+      <a href="#faq"><span class="ico" data-icon="ask"></span><span data-i18n="nav.faq">Questions</span></a>
       <a href="https://github.com/codepawl/deskfisch"><span class="ico" data-icon="code"></span><span data-i18n="nav.source">Source</span></a>
       <a href="https://codepawl.com"><span class="ico" data-icon="paw"></span><span>codepawl</span></a>
       <select id="lang" aria-label="Language"></select>
@@ -85,6 +86,25 @@
       </ol>
     </section>
 
+    <section class="faq" id="faq">
+      <h2 data-i18n="faq.title">Questions</h2>
+      <dl>
+        <dt data-i18n="q1.t">macOS says the app is damaged or from an unidentified developer.</dt>
+        <dd data-i18n="q1.p">The build is not notarized yet. Right-click Deskfisch in Applications, choose Open, then Open again. If it still refuses, run this once in Terminal and try again:</dd>
+        <dd><code>xattr -dr com.apple.quarantine /Applications/Deskfisch.app</code></dd>
+        <dt data-i18n="q2.t">Windows shows a blue SmartScreen box.</dt>
+        <dd data-i18n="q2.p">Click “More info”, then “Run anyway”. The installer is not code-signed yet, so Windows has no publisher to show. The download is exactly what GitHub Actions built from the public source.</dd>
+        <dt data-i18n="q3.t">Does it collect anything?</dt>
+        <dd data-i18n="q3.p">No. No account, no analytics, no crash reporting. The desktop app makes one kind of network request: an update check against GitHub Releases. The website loads fonts from Google Fonts and jsDelivr and reads the release list from the GitHub API.</dd>
+        <dt data-i18n="q4.t">Where is my tank saved?</dt>
+        <dd data-i18n="q4.p">In your user data folder, with the last five saves backed up before each launch. Settings → Save file exports it as JSON and imports it on another machine. The browser version saves in that browser only.</dd>
+        <dt data-i18n="q5.t">Pet mode is not staying on top on Linux.</dt>
+        <dd data-i18n="q5.p">On GNOME Wayland the app runs through XWayland so always-on-top works. Some other compositors ignore it; window mode still works there.</dd>
+        <dt data-i18n="q6.t">Can I leave it running all day?</dt>
+        <dd data-i18n="q6.p">That is the idea. At the default 30 fps it uses about a fifth of one core, less while unfocused, and the tank keeps living while the app is closed, catching up when you come back.</dd>
+      </dl>
+    </section>
+
     <section class="source">
       <h2 data-i18n="src.title">Source and credits</h2>
       <p><span data-i18n="src.p1">Built with Tauri, TypeScript and a 384×240 framebuffer. Every fish is a grid of palette characters.</span> <a href="https://github.com/codepawl/deskfisch" data-i18n="src.link">Read the source on GitHub.</a></p>
@@ -94,7 +114,7 @@
 
   <footer>
     <span>© codepawl</span>
-    <span><a href="https://github.com/codepawl/deskfisch/issues" data-i18n="foot.bug">Report a bug</a></span>
+    <span><a href="#faq" data-i18n="foot.faq">Questions</a> · <a href="https://github.com/codepawl/deskfisch/issues/new/choose" data-i18n="foot.bug">Report a bug</a> · <span data-i18n="foot.privacy">No account, no ads, no tracking.</span></span>
   </footer>
   <script src="i18n.js"></script>
   <script src="main.js"></script>

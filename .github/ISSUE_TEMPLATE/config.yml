@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Installing on macOS or Windows (unsigned build warnings)
+    url: https://deskfisch.codepawl.com/#faq
+    about: How to open the installer while builds are not yet code-signed.

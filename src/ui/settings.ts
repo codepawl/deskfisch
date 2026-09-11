@@ -1,5 +1,5 @@
 import type { GameState, Quality } from "../sim/state";
-import { autostart, isTauri } from "../platform";
+import { autostart, isTauri, openUrl } from "../platform";
 import { checkForUpdate } from "../updater";
 import { exportSave, pickSaveFile, KEEP } from "../save/backup";
 import { normalise, saveGame } from "../save/store";
@@ -77,6 +77,15 @@ export class SettingsPanel {
         }),
       )),
       el("div.muted", {}, t("The last {n} saves are backed up automatically before each launch.", { n: KEEP })),
+      el("h3.settings-heading", {}, t("About")),
+      el("div.muted", {}, `Deskfisch ${__APP_VERSION__} · codepawl · PolyForm Noncommercial 1.0.0`),
+      el("div.muted", {}, t("No account, no ads, no tracking. The only network call is the update check against GitHub.")),
+      el("div.panel-actions.wrap", {},
+        button("tool", t("Website"), () => void openUrl("https://deskfisch.codepawl.com")),
+        button("tool", t("What's new"), () => void openUrl("https://github.com/codepawl/deskfisch/blob/master/CHANGELOG.md")),
+        button("tool", t("Report a bug"), () => void openUrl("https://github.com/codepawl/deskfisch/issues/new/choose")),
+        button("tool", t("License"), () => void openUrl("https://github.com/codepawl/deskfisch/blob/master/LICENSE")),
+      ),
     );
     if (isTauri) {
       const status = el("span.muted", {}, "");

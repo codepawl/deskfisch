@@ -1,0 +1,29 @@
+name: Bug report
+description: Something in the tank is broken
+labels: [bug]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: Deskfisch version and OS
+      description: Settings → About shows the version. Say Windows 11, macOS 15, Ubuntu 24.04, or "browser".
+      placeholder: 0.4.0 · Windows 11
+    validations:
+      required: true
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Display mode
+      options: [Window, Pet, Fullscreen, Browser]
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, what you saw. A screenshot helps.
+    validations:
+      required: true
+  - type: textarea
+    id: save
+    attributes:
+      label: Save file (optional)
+      description: Settings → Save file → Export, then drag the .json here if the bug depends on your tank.

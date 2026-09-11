@@ -116,3 +116,8 @@ footer { max-width: 1080px; margin: 0 auto; padding: 24px; display: flex; justif
   h1 { font-size: 38px; }
   .top nav { display: none; }
 }
+
+.faq dl { margin: 0; }
+.faq dt { color: var(--accent); margin-top: 18px; }
+.faq dd { margin: 6px 0 0; color: var(--muted); }
+.faq dd code { display: inline-block; margin-top: 6px; padding: 4px 10px; background: var(--panel); border: calc(0.5 * var(--u)) solid var(--edge); color: var(--ink); font: inherit; }

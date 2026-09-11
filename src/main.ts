@@ -8,6 +8,7 @@ import { isCurious, moveFish, startle, type Fish, type Poke } from "./sim/fish";
 import { dropPellets, updatePellets } from "./sim/food";
 import { demoGame, newGame, type GameState } from "./sim/state";
 import { spawnFish } from "./sim/fish";
+import { newSand } from "./sim/sand";
 import { advance, SIM_WATER } from "./sim/tick";
 import { loadGame, saveGame } from "./save/store";
 import { BAG_H, BAG_W, bagY, sandTop, SCREEN_H, SCREEN_W, setFillLevel, TankScene, WATER, type DragBag } from "./scenes/tank";
@@ -51,7 +52,8 @@ const SCRUB_SOUND_INTERVAL = 0.12;
 
 async function boot(): Promise<void> {
   const embedded = window.self !== window.top;
-  let state = await loadGame();
+  const shot = new URLSearchParams(location.search).get("scene");
+  let state = shot ? sceneState(shot) : await loadGame();
   if (!state) {
     state = embedded ? demoGame() : newGame();
     if (embedded) {
@@ -64,7 +66,8 @@ async function boot(): Promise<void> {
     }
   }
   // Embedded on the website: skip the onboarding card so the hero shows the tank.
-  if (embedded) state.guideSeen = state.onboarded = true;
+  if (embedded || (shot && shot !== "welcome")) state.guideSeen = state.onboarded = true;
+  if (shot) document.documentElement.dataset.shot = shot;
   setLang(state.settings.lang === "auto" ? detectLang() : state.settings.lang);
   run(state);
 }
@@ -162,6 +165,7 @@ function run(state: GameState): void {
   let sinceSave = 0;
   const persist = () => {
     sinceSave = 0;
+    if (document.documentElement.dataset.shot) return; // screenshot scenes are never saved
     void saveGame(state);
   };
   document.addEventListener("visibilitychange", () => {
@@ -347,6 +351,32 @@ const UI_MIN_SCALE = 1.25;
   });
 }
 
+/**
+ * Tanks for screenshots (`?scene=…`): a fresh empty tank, one set up and cycling,
+ * and the stocked demo. Not saved.
+ */
+function sceneState(name: string): GameState {
+  const g = name === "stocked" ? demoGame() : newGame();
+  // Early afternoon on the tank's own clock, so the room is lit however late it is here.
+  g.settings.clock = "sim";
+  g.dayStartHour = 14 - (g.ageHours % 24);
+  if (name === "setup") {
+    g.tank.sand = newSand(14);
+    g.tank.fill = 0.9;
+    g.tank.temp = 25;
+    g.equipment = { ...g.equipment, filter: 1, heater: 1, light: 1, lightOn: true, thermometer: true };
+    g.decor = [{ kind: "plantTall", x: 48 }, { kind: "plant", x: 84 }, { kind: "rock", x: 200 }, { kind: "wood", x: 300 }];
+  }
+  if (name === "stocked") {
+    const stock: [string, string][] = [["neon", "Neo"], ["neon", "Nia"], ["neon", "Nix"], ["neon", "Nam"], ["neon", "Nub"], ["neon", "Nox"], ["guppy", "Gus"], ["guppy", "Gia"], ["molly", "Mo"], ["cory", "Cody"], ["cory", "Cleo"], ["angel", "Ari"], ["betta", "Blu"]];
+    for (const [sp, n] of stock) g.fish.push(spawnFish(SPECIES[sp], n, WATER, g.nextFishId++));
+    for (const f of g.fish) f.size = 1;
+    g.decal = "deep";
+    checkAchievements(g);
+  }
+  return g;
+}
+
 function decorAt(decor: Decor[], x: number, y: number, sand: number[]): Decor | null {
   for (const d of decor) {
     const s = DECOR_SPRITES[d.kind];
@@ -367,4 +397,4 @@ function fishAt(fish: Fish[], x: number, y: number): Fish | null {
   return null;
 }
 
-void boot();
+boot().catch((e) => console.error("boot failed", e));

@@ -274,4 +274,11 @@ export const vi: Record<string, string> = {
   "Real fishkeeping. Cycle the tank, watch the water, fish can fall ill and die.": "Nuôi cá thật. Cycle hồ, canh nước, cá có thể bệnh và chết.",
   "Illness twice as likely, stress hurts more, prices up, fewer coins to start.": "Bệnh gấp đôi, stress hại hơn, giá cao hơn, ít xu khởi đầu.",
   "Unlimited coins, no risk. Build the tank you want and watch it.": "Xu vô hạn, không rủi ro. Xây hồ bạn thích rồi ngắm.",
+  // About
+  "About": "Giới thiệu",
+  "No account, no ads, no tracking. The only network call is the update check against GitHub.": "Không tài khoản, không quảng cáo, không theo dõi. Kết nối mạng duy nhất là kiểm tra bản mới trên GitHub.",
+  "Website": "Trang web",
+  "What's new": "Có gì mới",
+  "Report a bug": "Báo lỗi",
+  "License": "Giấy phép",
 };

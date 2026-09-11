@@ -1,0 +1,16 @@
+name: Idea
+description: A fish, a tool, a behaviour you wish the tank had
+labels: [idea]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: The idea
+      description: What it is and why it would make the tank nicer to keep.
+    validations:
+      required: true
+  - type: textarea
+    id: real
+    attributes:
+      label: How it works in real fishkeeping (optional)
+      description: Deskfisch follows real aquarium behaviour where it can, so a pointer to how hobbyists do it helps.

@@ -59,7 +59,10 @@ jobs:
             } >> "$GITHUB_ENV"
             echo "Apple signing: on"
           else
-            echo "Apple signing: off (no APPLE_SIGNING_IDENTITY secret)"
+            # Ad-hoc signature: no trust, but Apple silicon will at least run the
+            # binary after right-click → Open instead of calling it damaged.
+            echo "APPLE_SIGNING_IDENTITY=-" >> "$GITHUB_ENV"
+            echo "Apple signing: ad-hoc (no APPLE_SIGNING_IDENTITY secret)"
           fi
       - name: Windows signing env
         if: matrix.platform == 'windows-latest'
