@@ -16,7 +16,7 @@ export class CarePanel {
   constructor(overlay: HTMLElement, private readonly state: GameState, private readonly onChange: () => void) {
     const row = el("div.panel-actions");
     for (const pct of [20, 35, 50]) {
-      row.append(button("tool", `${pct}%`, () => this.change(pct / 100)));
+      row.append(button("tool num", `${pct}%`, () => this.change(pct / 100)));
     }
     const nudge = (delta: number) => {
       const eq = this.state.equipment;
