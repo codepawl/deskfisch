@@ -217,6 +217,27 @@ html[data-mode="pet"] .hud-top { pointer-events: auto; cursor: move; }
   border: calc(1px * var(--s)) solid var(--panel-edge);
   accent-color: var(--accent);
 }
+/* WebKitGTK paints native (light) form widgets unless appearance is off. */
+.settings-row select {
+  -webkit-appearance: none;
+  appearance: none;
+  padding: calc(1px * var(--s)) calc(8px * var(--s)) calc(1px * var(--s)) calc(2px * var(--s));
+  background-image: linear-gradient(45deg, transparent 50%, var(--accent) 50%), linear-gradient(135deg, var(--accent) 50%, transparent 50%);
+  background-position: calc(100% - calc(4px * var(--s))) 50%, calc(100% - calc(2px * var(--s))) 50%;
+  background-size: calc(2px * var(--s)) calc(2px * var(--s));
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+.settings-row select option { background: var(--panel); color: var(--ink); }
+.settings-row input[type="checkbox"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: calc(7px * var(--s));
+  height: calc(7px * var(--s));
+  margin: 0;
+  cursor: pointer;
+}
+.settings-row input[type="checkbox"]:checked { background: var(--accent); border-color: var(--accent); }
 .settings-row input[type="range"] { width: calc(50px * var(--s)); }
 .toolbar { flex-wrap: wrap; }
 
