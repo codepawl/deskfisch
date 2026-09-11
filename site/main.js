@@ -8,11 +8,11 @@ const ICONS = {
   coin: ["..yyyy..", ".yyyyyy.", "yyySSyyy", "yySyyyyy", "yySyyyyy", "yyySSyyy", ".yyyyyy.", "..yyyy.."],
   mode: ["DDDDDDDD", "DLLLLLLD", "DDDDDDDD", "D......D", "D......D", "D......D", "D......D", "DDDDDDDD"],
   chill: ["...WWW..", "..WW....", ".WW.....", ".WW.....", ".WW.....", "..WW....", "...WWW..", "........"],
-  // Platforms: penguin, apple, four panes, globe.
-  linux: ["..KKKK..", ".KWWWWK.", ".KWyWyK.", ".KKyyKK.", "KWWWWWWK", "KWWWWWWK", ".KWWWWK.", "..yy.yy."],
-  mac: ["....G...", "...G....", ".WWWWWW.", "WWWWWWWW", "WWWWWWWW", "WWWWWWWW", ".WWWWWW.", "..WW.WW."],
-  win: ["BBB.BBBB", "BBB.BBBB", "BBB.BBBB", "........", "BBB.BBBB", "BBB.BBBB", "BBB.BBBB", "........"],
-  web: ["..cccc..", ".cBBBBc.", "cBcBBcBc", "cBBBBBBc", "cccccccc", "cBcBBcBc", ".cBBBBc.", "..cccc.."],
+  // Platforms at 12×12: Tux (slate body so it reads on the dark panel), apple with leaf and bite, four panes, ringed globe.
+  linux: ["....dddd....", "...dddddd...", "...dWddWd...", "...ddyydd...", "..ddWyyWdd..", ".ddWWWWWWdd.", ".dWWWWWWWWd.", ".dWWWWWWWWd.", "ddWWWWWWWWdd", "dddWWWWWWddd", ".yydWWWWdyy.", "..yyddddyy.."],
+  mac: [".......G....", "......G.....", "..WWW.WWW...", ".WWWWWWWWWW.", "WWWWWWWWWW..", "WWWWWWWWW...", "WWWWWWWWW...", "WWWWWWWWWW..", "WWWWWWWWWWW.", ".WWWWWWWWWW.", ".WWWW.WWWW..", "............"],
+  win: ["BBBBB.BBBBB.", "BBBBB.BBBBB.", "BBBBB.BBBBB.", "BBBBB.BBBBB.", "BBBBB.BBBBB.", "............", "BBBBB.BBBBB.", "BBBBB.BBBBB.", "BBBBB.BBBBB.", "BBBBB.BBBBB.", "BBBBB.BBBBB.", "............"],
+  web: ["....BBBB....", "..BBGGBBBB..", ".BBGGGBBBBB.", ".BGGBBBBGBB.", "cBBBBBBBGGBc", ".ccBBBBBBcc.", "...ccccccc..", ".BBBGGBBBBB.", ".BBBBGGBBBB.", "..BBBBBBBB..", "....BBBB....", "............"],
 };
 
 for (const el of document.querySelectorAll(".ico[data-icon]")) {
@@ -20,7 +20,7 @@ for (const el of document.querySelectorAll(".ico[data-icon]")) {
   if (!rows) continue;
   const rects = [];
   rows.forEach((row, y) => [...row].forEach((ch, x) => { if (PALETTE[ch]) rects.push(`<rect x="${x}" y="${y}" width="1" height="1" fill="${PALETTE[ch]}"/>`); }));
-  el.innerHTML = `<svg viewBox="0 0 8 8" aria-hidden="true">${rects.join("")}</svg>`;
+  el.innerHTML = `<svg viewBox="0 0 ${rows[0].length} ${rows.length}" aria-hidden="true">${rects.join("")}</svg>`;
 }
 
 const ua = navigator.userAgent;

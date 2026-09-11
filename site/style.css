@@ -14,10 +14,11 @@
 html { background: var(--bg); color: var(--ink); font-family: "VT323", monospace; font-size: 22px; line-height: 1.25; }
 body { margin: 0; }
 a { color: var(--accent); }
-h1, h2, h3 { font-family: "Pixelify Sans", "VT323", monospace; font-weight: 600; margin: 0; text-wrap: balance; }
-h1 { font-size: 48px; line-height: 1.05; }
-h2 { font-size: 32px; margin-bottom: calc(4 * var(--u)); }
-h3 { font-size: 22px; margin-bottom: var(--u); }
+/* Silkscreen: square pixel caps, no fi ligature, an f that keeps clear of the i's dot. */
+h1, h2, h3, .brand { font-family: "Silkscreen", "VT323", monospace; font-weight: 400; margin: 0; text-wrap: balance; font-variant-ligatures: none; letter-spacing: 0.01em; }
+h1 { font-size: 34px; line-height: 1.25; }
+h2 { font-size: 24px; margin-bottom: calc(4 * var(--u)); }
+h3 { font-size: 15px; margin-bottom: var(--u); }
 p { margin: 0; }
 .muted { color: var(--muted); }
 .fine { color: var(--muted); font-size: 18px; }
@@ -26,7 +27,7 @@ p { margin: 0; }
   display: flex; justify-content: space-between; align-items: center; gap: 24px;
   max-width: 1080px; margin: 0 auto; padding: 20px 24px;
 }
-.brand { display: inline-flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; font-family: "Pixelify Sans", monospace; font-size: 26px; }
+.brand { display: inline-flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; font-size: 18px; }
 .brand img { image-rendering: pixelated; }
 .top nav { display: flex; gap: 20px; }
 .top nav a { color: var(--muted); text-decoration: none; }
@@ -81,7 +82,7 @@ main { max-width: 1080px; margin: 0 auto; padding: 0 24px 80px; display: flex; f
 
 .steps { counter-reset: n; list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; }
 .steps li { display: grid; grid-template-columns: 48px 1fr; column-gap: 16px; padding: 14px 0; border-top: calc(0.5 * var(--u)) solid var(--edge); color: var(--muted); }
-.steps li::before { counter-increment: n; content: counter(n); color: var(--accent); font-family: "Pixelify Sans", monospace; font-size: 26px; line-height: 1; grid-row: span 2; }
+.steps li::before { counter-increment: n; content: counter(n); color: var(--accent); font-family: "Silkscreen", monospace; font-size: 22px; line-height: 1; grid-row: span 2; }
 .steps li:last-child { border-bottom: calc(0.5 * var(--u)) solid var(--edge); }
 .steps b { display: block; color: var(--ink); font-weight: 400; font-size: 24px; line-height: 1.1; }
 .steps span { display: block; margin-top: 4px; }

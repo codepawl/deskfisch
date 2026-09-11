@@ -115,6 +115,20 @@ export interface GameState {
   settings: Settings;
 }
 
+/** A stocked, cycled tank for the website demo so the hero shows life, not an empty box. */
+export function demoGame(now = Date.now()): GameState {
+  const g = newGame(now);
+  g.coins = 120;
+  g.tank.bactA = g.tank.bactB = 1;
+  g.tank.temp = 25;
+  g.tank.no3 = 12;
+  g.equipment = { ...g.equipment, filter: 2, heater: 2, light: 1, lightOn: true, airPump: 1, thermometer: true, testKit: true };
+  g.decor = [{ kind: "plantTall", x: 40 }, { kind: "plant", x: 70 }, { kind: "rock", x: 180 }, { kind: "plant", x: 300 }, { kind: "wood", x: 330 }];
+  g.guideSeen = true;
+  g.ageHours = 24 * 9;
+  return g;
+}
+
 export function newGame(now = Date.now()): GameState {
   return {
     version: 1,

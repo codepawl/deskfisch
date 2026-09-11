@@ -6,7 +6,8 @@ import { SPECIES } from "./data/species";
 import { AUTOSAVE_SECONDS } from "./data/constants";
 import { moveFish, type Fish } from "./sim/fish";
 import { dropPellets, updatePellets } from "./sim/food";
-import { newGame, type GameState } from "./sim/state";
+import { demoGame, newGame, type GameState } from "./sim/state";
+import { spawnFish } from "./sim/fish";
 import { advance, SIM_WATER } from "./sim/tick";
 import { loadGame, saveGame } from "./save/store";
 import { BAG_H, BAG_W, bagY, SAND_Y, SCREEN_H, SCREEN_W, setFillLevel, TankScene, WATER, type DragBag } from "./scenes/tank";
@@ -48,9 +49,19 @@ const sfx = new Sfx();
 const SCRUB_SOUND_INTERVAL = 0.12;
 
 async function boot(): Promise<void> {
-  const state = (await loadGame()) ?? newGame();
+  const embedded = window.self !== window.top;
+  let state = await loadGame();
+  if (!state) {
+    state = embedded ? demoGame() : newGame();
+    if (embedded) {
+      // Website hero: a lively tank on first sight.
+      const stock: [string, string][] = [["neon", "Neo"], ["neon", "Nia"], ["neon", "Nix"], ["neon", "Nam"], ["neon", "Nub"], ["neon", "Nox"], ["guppy", "Gus"], ["guppy", "Gia"], ["cory", "Cody"], ["cory", "Cleo"], ["angel", "Ari"]];
+      for (const [sp, name] of stock) state.fish.push(spawnFish(SPECIES[sp], name, WATER, state.nextFishId++));
+      for (const f of state.fish) f.size = 1;
+    }
+  }
   // Embedded on the website: skip the onboarding card so the hero shows the tank.
-  if (window.self !== window.top) state.guideSeen = true;
+  if (embedded) state.guideSeen = true;
   setLang(state.settings.lang === "auto" ? detectLang() : state.settings.lang);
   run(state);
 }
