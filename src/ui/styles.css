@@ -214,6 +214,9 @@ button.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
 }
 .shop-row button.tool { min-width: calc(24px * var(--s)); }
 .shop-note { color: #ef7d57; min-height: 1.2em; }
+.shop-heading { color: var(--accent); margin-top: calc(3px * var(--s)); }
+.swatch-row { display: flex; align-items: center; gap: calc(3px * var(--s)); }
+.swatch { width: calc(8px * var(--s)); height: calc(8px * var(--s)); border: calc(1px * var(--s)) solid var(--panel-edge); flex: none; }
 .panel-actions { display: flex; gap: calc(2px * var(--s)); margin-top: calc(2px * var(--s)); }
 .panel-care { bottom: calc(32px * var(--s)); right: calc(8px * var(--s)); max-width: calc(130px * var(--s)); }
 .panel-care .panel-actions { align-items: center; margin-top: 0; }

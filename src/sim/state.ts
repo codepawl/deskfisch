@@ -90,6 +90,8 @@ export interface GameState {
   pellets: Pellet[];
   bags: Bag[];
   decor: Decor[];
+  /** Active backdrop decal id, or null for a see-through back glass. Owned decals live in `inventory` as `decal:<id>`. */
+  decal: string | null;
   /** Next fish id, so ids stay unique across sells and deaths. */
   nextFishId: number;
   /** Item id -> count. */
@@ -143,6 +145,7 @@ export function newGame(now = Date.now()): GameState {
     pellets: [],
     bags: [],
     decor: [],
+    decal: null,
     nextFishId: 1,
     inventory: { flakes: 20, conditioner: 2 },
     ageHours: 0,

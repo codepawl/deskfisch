@@ -1,4 +1,4 @@
-import { FISH_NAMES, SUPPLIES, DECOR, FILTERS, HEATERS, AIR_PUMPS, LIGHTS, TANKS } from "../data/items";
+import { FISH_NAMES, SUPPLIES, DECOR, DECALS, FILTERS, HEATERS, AIR_PUMPS, LIGHTS, TANKS } from "../data/items";
 import { doWaterChange } from "./tank";
 import { treat } from "./disease";
 import { SPECIES } from "../data/species";
@@ -63,6 +63,23 @@ export function buyDecor(state: GameState, kind: string, water: Bounds): string 
   if (err) return err;
   state.decor.push({ kind, x: Math.round(rand(water.x0 + 10, water.x1 - 30)) });
   return null;
+}
+
+/** Buy a decal once, then switch between owned ones for free. */
+export function buyDecal(state: GameState, id: string): string | null {
+  const decal = DECALS.find((d) => d.id === id)!;
+  const key = `decal:${id}`;
+  if (!state.inventory[key]) {
+    const err = pay(state, decal.price);
+    if (err) return err;
+    state.inventory[key] = 1;
+  }
+  state.decal = id;
+  return null;
+}
+
+export function ownsDecal(state: GameState, id: string): boolean {
+  return (state.inventory[`decal:${id}`] ?? 0) > 0;
 }
 
 export type GearKey = "tank" | "filter" | "heater" | "airPump" | "light";

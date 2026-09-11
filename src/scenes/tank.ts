@@ -1,4 +1,5 @@
 import { COLOR, rgba } from "../engine/palette";
+import { DECALS } from "../data/items";
 import { PixelBuffer, type Overlay } from "../engine/pixelbuffer";
 import { sprite, type Sprite } from "../engine/sprite";
 import { rand } from "../engine/rng";
@@ -181,7 +182,9 @@ export class TankScene {
   ): void {
     buf.clear(transparentBackdrop ? 0 : COLOR.K);
     const lit = state.equipment.light > 0 && state.equipment.lightOn;
-    this.drawWater(buf, quality, lit);
+    this.drawBackdrop(buf, state);
+    // Only a transparent window has anything behind the glass to see through.
+    this.drawWater(buf, quality, lit, state.decal === null && transparentBackdrop);
     this.drawSand(buf);
     this.drawDecor(buf, state);
     for (const p of state.pellets) {
@@ -191,6 +194,7 @@ export class TankScene {
     for (const f of state.fish) this.drawFish(buf, f);
     this.drawBubbles(buf);
     if (quality !== "low") for (const p of this.particles) buf.set(p.x, p.y, p.color);
+    if (quality !== "low") this.refract(buf);
     for (const b of state.bags) {
       if (drag?.bag === b) this.drawBag(buf, b, drag.x, drag.y);
       else this.drawBag(buf, b, b.x, BAG_Y + Math.round(Math.sin(this.time * 1.2 + b.x) * 1));
@@ -213,15 +217,39 @@ export class TankScene {
     }
   }
 
-  private drawWater(buf: PixelBuffer, quality: Quality, lit: boolean): void {
+  /** The decal stuck to the back glass; nothing when the back is left clear. */
+  private drawBackdrop(buf: PixelBuffer, state: GameState): void {
+    const decal = state.decal && DECALS.find((d) => d.id === state.decal);
+    if (!decal) return;
+    const top = rgba(decal.top);
+    const bottom = rgba(decal.bottom);
     const h = WATER.y1 - WATER.y0;
+    for (let y = WATER.y0; y < WATER.y1; y++) {
+      buf.fillRect(WATER.x0, y, WATER.x1 - WATER.x0, 1, mix(top, bottom, (y - WATER.y0) / h));
+    }
+  }
+
+  /** Water bends what is behind it: a slow sideways ripple plus a 1 px offset below the surface. */
+  private refract(buf: PixelBuffer): void {
+    const t = this.time;
+    buf.shearRows(WATER.x0, WATER.x1, WATER.y0 + 2, SAND_Y, (y) => 1 + Math.round(Math.sin(y * 0.11 + t * 1.3) * 0.9));
+  }
+
+  private drawWater(buf: PixelBuffer, quality: Quality, lit: boolean, seeThrough: boolean): void {
+    const h = WATER.y1 - WATER.y0;
+    // With no decal the water is only partly opaque, so a transparent window
+    // shows the desktop through the tank; over a decal it is blended in fully.
+    const alpha = seeThrough ? 0.62 : 0.72;
+    const paint = (y: number, c: number) => {
+      if (buf.px[y * buf.w + WATER.x0] === 0 && seeThrough) buf.fillRect(WATER.x0, y, WATER.x1 - WATER.x0, 1, withAlpha(c, alpha));
+      else buf.tintRect(WATER.x0, y, WATER.x1 - WATER.x0, 1, c, alpha);
+    };
     if (quality === "low") {
-      buf.fillRect(WATER.x0, WATER.y0, WATER.x1 - WATER.x0, h, WATER_MID);
+      for (let y = WATER.y0; y < WATER.y1; y++) paint(y, WATER_MID);
     } else {
       for (let y = WATER.y0; y < WATER.y1; y++) {
         const t = (y - WATER.y0) / h;
-        const c = t < 0.5 ? mix(WATER_TOP, WATER_MID, t * 2) : mix(WATER_MID, WATER_DEEP, (t - 0.5) * 2);
-        buf.fillRect(WATER.x0, y, WATER.x1 - WATER.x0, 1, c);
+        paint(y, t < 0.5 ? mix(WATER_TOP, WATER_MID, t * 2) : mix(WATER_MID, WATER_DEEP, (t - 0.5) * 2));
       }
     }
     // Light shafts from the tank light: sparse dithered pale bands drifting slowly, fading with depth.
@@ -326,6 +354,10 @@ function halfSize(s: Sprite): Sprite {
   small = { w, h, px };
   halfCache.set(s, small);
   return small;
+}
+
+function withAlpha(c: number, a: number): number {
+  return ((Math.round(a * 255) << 24) | (c & 0xffffff)) >>> 0;
 }
 
 function mix(a: number, b: number, t: number): number {

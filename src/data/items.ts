@@ -59,6 +59,17 @@ export const DECOR: DecorKind[] = [
   { id: "wood", name: "Driftwood", price: 45, no3Uptake: 0 },
 ];
 
+/** Backdrop decals stuck to the back glass. Two colours make a vertical gradient. */
+export interface Decal { id: string; name: string; price: number; top: string; bottom: string }
+export const DECALS: Decal[] = [
+  { id: "black", name: "Black backdrop", price: 15, top: "#0b0d14", bottom: "#0b0d14" },
+  { id: "deep", name: "Deep blue backdrop", price: 20, top: "#1f2b4d", bottom: "#0d1226" },
+  { id: "jungle", name: "Jungle backdrop", price: 25, top: "#1f4a2a", bottom: "#0d2414" },
+  { id: "sunset", name: "Sunset backdrop", price: 30, top: "#ef7d57", bottom: "#5d275d" },
+  { id: "coral", name: "Coral backdrop", price: 30, top: "#ff77a8", bottom: "#b13e53" },
+  { id: "sand", name: "Sand backdrop", price: 20, top: "#eec39a", bottom: "#d9a066" },
+];
+
 /** Each decoration is a hiding spot; stress relief tops out at this many. */
 export const MAX_DECOR_COMFORT = 5;
 export const DECOR_COMFORT = 2;

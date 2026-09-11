@@ -56,6 +56,26 @@ export class PixelBuffer {
     }
   }
 
+  /**
+   * Shift each row in a band sideways by `offset(y)` pixels, filling the exposed
+   * edge with the row's edge pixel. Applied to the water band it reads as
+   * refraction: things under the surface wobble and sit slightly displaced.
+   */
+  shearRows(x0: number, x1: number, y0: number, y1: number, offset: (y: number) => number): void {
+    const w = x1 - x0;
+    const row = new Uint32Array(w);
+    for (let y = y0; y < y1; y++) {
+      const d = offset(y) | 0;
+      if (d === 0) continue;
+      const base = y * this.w + x0;
+      row.set(this.px.subarray(base, base + w));
+      for (let x = 0; x < w; x++) {
+        const sx = Math.min(w - 1, Math.max(0, x - d));
+        this.px[base + x] = row[sx];
+      }
+    }
+  }
+
   blit(s: Sprite, x: number, y: number, flipX = false): void {
     const x0 = x | 0;
     const y0 = y | 0;

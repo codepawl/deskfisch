@@ -54,3 +54,21 @@ describe("breeding", () => {
     expect(canBreed(g, f)).toBe(false);
   });
 });
+
+describe("decals", () => {
+  it("are bought once and then switched for free", async () => {
+    const { buyDecal, ownsDecal } = await import("../src/sim/shop");
+    const g = newGame(0);
+    g.coins = 100;
+    expect(buyDecal(g, "sunset")).toBeNull();
+    expect(g.coins).toBe(70);
+    expect(g.decal).toBe("sunset");
+    expect(buyDecal(g, "black")).toBeNull();
+    expect(g.coins).toBe(55);
+    expect(buyDecal(g, "sunset")).toBeNull();
+    expect(g.coins).toBe(55);
+    expect(ownsDecal(g, "coral")).toBe(false);
+    g.coins = 0;
+    expect(buyDecal(g, "coral")).toBe("Not enough coins.");
+  });
+});

@@ -1,6 +1,6 @@
-import { DECOR, SUPPLIES } from "../data/items";
+import { DECALS, DECOR, SUPPLIES } from "../data/items";
 import { SPECIES } from "../data/species";
-import { buyDecor, buyFish, buySupply, GEAR, upgradeGear, type GearKey } from "../sim/shop";
+import { buyDecal, buyDecor, buyFish, buySupply, GEAR, ownsDecal, upgradeGear, type GearKey } from "../sim/shop";
 import type { Bounds } from "../sim/fish";
 import type { GameState } from "../sim/state";
 import { button, el } from "./dom";
@@ -80,6 +80,21 @@ export class ShopPanel {
       case "decor":
         for (const d of DECOR) {
           row(t(d.name), (d.no3Uptake ? t("Absorbs nitrate") : t("A hiding spot")) + t(" · drag to place"), d.price, () => this.attempt(buyDecor(this.state, d.id, this.water)), coins < d.price);
+        }
+        this.list.append(el("div.shop-heading", {}, t("Backdrop decals")));
+        this.list.append(
+          el("div.shop-row", {}, el("div", {}, el("div", {}, t("No decal")), el("div.muted", {}, t("See-through back glass, water bends the view"))),
+            this.state.decal === null ? el("span.muted", {}, t("Applied")) : button("tool", t("Apply"), () => this.attempt((this.state.decal = null, null)))),
+        );
+        for (const d of DECALS) {
+          const owned = ownsDecal(this.state, d.id);
+          const active = this.state.decal === d.id;
+          const swatch = el("span.swatch");
+          swatch.style.background = `linear-gradient(${d.top}, ${d.bottom})`;
+          this.list.append(
+            el("div.shop-row", {}, el("div.swatch-row", {}, swatch, el("div", {}, el("div", {}, t(d.name)), el("div.muted", {}, owned ? t("Owned") : ""))),
+              active ? el("span.muted", {}, t("Applied")) : owned ? button("tool", t("Apply"), () => this.attempt(buyDecal(this.state, d.id))) : coins < d.price ? button("tool", "—", () => {}) : button("tool", String(d.price), () => this.attempt(buyDecal(this.state, d.id)), "coin")),
+          );
         }
         break;
     }
