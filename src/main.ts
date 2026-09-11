@@ -222,8 +222,11 @@ function run(state: GameState): void {
 
   let scrubSoundIn = 0;
   let vacuumHintShown = false;
+  // Every painted frame costs WebKit about 6 ms of CPU regardless of the JS
+  // work, so an unfocused tank (pet mode beside your work) idles at 15 fps.
+  const IDLE_FPS = 15;
   startLoop({
-    maxFps: () => state.settings.maxFps,
+    maxFps: () => (document.hasFocus() ? state.settings.maxFps : Math.min(state.settings.maxFps, IDLE_FPS)),
     frame(dt) {
       input.beginFrame();
       if (input.pressed) handleClick();
