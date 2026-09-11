@@ -60,6 +60,8 @@ export interface GameState {
   achievements: string[];
   /** How the desktop window is presented; ignored in the browser build. */
   mode: "window" | "pet" | "fullscreen";
+  /** Keep the window above other apps (window and pet modes). */
+  pinned: boolean;
 }
 
 export function newGame(now = Date.now()): GameState {
@@ -100,5 +102,6 @@ export function newGame(now = Date.now()): GameState {
     ageHours: 0,
     achievements: [],
     mode: "window",
+    pinned: true,
   };
 }

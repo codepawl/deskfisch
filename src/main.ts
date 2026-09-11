@@ -14,7 +14,7 @@ import { scrubGlass, vacuumGravel } from "./sim/tank";
 import { CarePanel } from "./ui/care";
 import { Toasts } from "./ui/toast";
 import { checkAchievements } from "./sim/achievements";
-import { applyMode, onModeRequest, startWindowDrag, type Mode } from "./platform";
+import { applyMode, isTauri, onModeRequest, setPinned, startWindowDrag, type Mode } from "./platform";
 import { releaseBag, releaseShock, type Bag } from "./sim/bag";
 import { BagPanel } from "./ui/bag";
 import { Hud } from "./ui/hud";
@@ -56,10 +56,18 @@ function run(state: GameState): void {
   const setMode = (mode: Mode) => {
     state.mode = mode;
     modeBtn.textContent = `Mode: ${mode}`;
-    void applyMode(mode);
+    void applyMode(mode, state.pinned);
   };
   setMode(state.mode);
   void onModeRequest(setMode);
+  if (isTauri) {
+    const pinBtn = hud.addButton("", () => {
+      state.pinned = !state.pinned;
+      pinBtn.textContent = state.pinned ? "Unpin" : "Pin";
+      void setPinned(state.pinned);
+    });
+    pinBtn.textContent = state.pinned ? "Unpin" : "Pin";
+  }
   hud.dragHandle.addEventListener("pointerdown", () => {
     if (state.mode === "pet") void startWindowDrag();
   });
