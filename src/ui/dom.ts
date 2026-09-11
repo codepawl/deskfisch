@@ -22,7 +22,6 @@ export function button(className: string, label: string, onclick: () => void, ic
   b.className = className;
   if (iconName) b.append(icon(iconName));
   b.append(el("span.label", {}, label));
-  b.title = label;
   b.onclick = onclick;
   return b;
 }
@@ -30,5 +29,4 @@ export function button(className: string, label: string, onclick: () => void, ic
 /** Replace a button's text while keeping its icon. */
 export function setLabel(b: HTMLButtonElement, label: string): void {
   b.querySelector(".label")!.textContent = label;
-  b.title = label;
 }

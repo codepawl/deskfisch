@@ -101,9 +101,25 @@ button.tool {
 }
 button.tool:hover { border-color: var(--accent); }
 button.tool.lit { border-color: var(--accent); }
-/* The pet window is small: icons only, labels live in the tooltip. */
-html[data-mode="pet"] button.tool .label { display: none; }
-html[data-mode="pet"] button.tool { padding: calc(2px * var(--s)); }
+
+/* Toolbar buttons show only their icon; the label slides out on hover and
+   stays out while the tool is active. Buttons without an icon keep their text. */
+.toolbar button.tool { gap: 0; }
+.toolbar button.tool .icon + .label {
+  max-width: 0;
+  opacity: 0;
+  margin-left: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: max-width 0.28s ease, opacity 0.2s ease, margin-left 0.28s ease;
+}
+.toolbar button.tool:hover .icon + .label,
+.toolbar button.tool:focus-visible .icon + .label,
+.toolbar button.tool.active .icon + .label {
+  max-width: calc(60px * var(--s));
+  opacity: 1;
+  margin-left: calc(2px * var(--s));
+}
 button.tool.active { background: var(--accent); color: var(--panel); }
 button.tool:disabled { opacity: 0.4; cursor: default; }
 
