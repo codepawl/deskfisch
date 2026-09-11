@@ -18,6 +18,10 @@ export interface TankState {
   dirt: number;
   /** 0..100 film on the glass */
   algae: number;
+  /** Water level as a fraction of the glass height; evaporation lowers it, water changes refill it. */
+  fill: number;
+  /** Level the player fills to. */
+  fillTarget: number;
   /** Nitrifying bacteria as a fraction of the filter's capacity (can exceed 1 briefly after a downgrade). */
   bactA: number;
   bactB: number;
@@ -127,6 +131,8 @@ export function newGame(now = Date.now()): GameState {
       chlorine: 0,
       dirt: 0,
       algae: 0,
+      fill: 0.9,
+      fillTarget: 0.9,
       bactA: BACTERIA.seed,
       bactB: BACTERIA.seed,
     },

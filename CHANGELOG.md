@@ -6,6 +6,7 @@
 - Saves: the last 5 saves are backed up before each launch; Settings gets Export and Import.
 - Daylight: without a tank light the room follows the sun. Night is dark, dawn and dusk go rose and gold, day is clear. Settings → Clock: Real time (follows your clock, speed locked at 1×) or Simulated (own day at the chosen speed). Sunrise and sunset can be typed in or computed from your location.
 - One pixel face (VT323) for the whole UI; finished guide steps are struck through; tooltips clear reliably.
+- Water level: tanks are filled to 90% by default, adjustable 70–100% in Care. Water evaporates about a percent a day (faster when warm) and every water change refills to the target.
 - Backdrop decals in Shop → Decor: six colours stuck to the back glass, buy once and switch freely. With no decal a see-through pet window shows the desktop through the water, and the water refracts what is under the surface with a slow ripple.
 - CPU: the frame is presented at 1× and upscaled by the compositor, room tints are canvas fills, default 30 fps, 15 fps while the window is not focused. Measured on Linux/WebKitGTK: 60 fps ≈ 38% of a core, 30 ≈ 21%, 15 ≈ 10%.
 

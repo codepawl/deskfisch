@@ -1,4 +1,4 @@
-import { doWaterChange } from "../sim/tank";
+import { doWaterChange, MAX_FILL, MIN_FILL } from "../sim/tank";
 import type { GameState } from "../sim/state";
 import { button, el } from "./dom";
 import { t } from "../i18n";
@@ -13,6 +13,7 @@ export class CarePanel {
   private readonly note = el("div.shop-note");
   private readonly heaterRow = el("div.settings-row");
   private readonly heaterValue = el("span.heater-value");
+  private readonly fillValue = el("span.heater-value");
 
   constructor(overlay: HTMLElement, private readonly state: GameState, private readonly onChange: () => void) {
     const row = el("div.panel-actions");
@@ -29,11 +30,24 @@ export class CarePanel {
       el("span", {}, t("Heater target")),
       el("span.panel-actions", {}, button("tool", "−", () => nudge(-1)), this.heaterValue, button("tool", "+", () => nudge(1))),
     );
+    const nudgeFill = (delta: number) => {
+      const tank = this.state.tank;
+      tank.fillTarget = Math.round(Math.max(MIN_FILL, Math.min(MAX_FILL, tank.fillTarget + delta)) * 100) / 100;
+      // Raising the target tops the tank up right away; lowering waits for evaporation.
+      tank.fill = Math.min(tank.fillTarget, Math.max(tank.fill, tank.fillTarget));
+      this.onChange();
+      this.refresh();
+    };
+    const fillRow = el("div.settings-row", {},
+      el("span", {}, t("Water level")),
+      el("span.panel-actions", {}, button("tool", "−", () => nudgeFill(-0.05)), this.fillValue, button("tool", "+", () => nudgeFill(0.05))),
+    );
     this.root = el(
       "div.panel.panel-care",
       { hidden: true },
       el("h2", {}, t("Care")),
       this.heaterRow,
+      fillRow,
       el("h2", {}, t("Water change")),
       el("div.muted", {}, t("Swaps old water for tap water. Dilutes nitrate, resets temperature.")),
       this.doses,
@@ -63,5 +77,7 @@ export class CarePanel {
     this.doses.textContent = n > 0 ? t("Conditioner doses: {n}", { n }) : t("No conditioner doses left.");
     this.heaterRow.hidden = this.state.equipment.heater === 0;
     this.heaterValue.textContent = `${this.state.equipment.heaterTarget} °C`;
+    const tank = this.state.tank;
+    this.fillValue.textContent = tank.fill < tank.fillTarget - 0.01 ? `${Math.round(tank.fill * 100)} → ${Math.round(tank.fillTarget * 100)}%` : `${Math.round(tank.fillTarget * 100)}%`;
   }
 }

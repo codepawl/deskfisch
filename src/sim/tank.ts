@@ -3,6 +3,10 @@ import { AIR_PUMPS, BASE_AERATION, DECOR, FILTERS, HEATERS, LIGHTS } from "../da
 import { clamp } from "../engine/rng";
 import type { GameState } from "./state";
 
+/** Below this the tank counts as needing a top-up; the UI will not let it be set lower. */
+export const MIN_FILL = 0.7;
+export const MAX_FILL = 1.0;
+
 /** Oxygen saturation of fresh water at a temperature (mg/L), quadratic fit of standard tables. */
 export function o2Saturation(temp: number): number {
   return 14.62 - 0.36 * temp + 0.0047 * temp * temp;
@@ -57,6 +61,8 @@ export function stepTank(state: GameState, hours: number, wasteLoad: number): vo
   }
   t.dirt = Math.max(0, t.dirt - filter.dirtRemovalPerHour * hours);
   t.chlorine = Math.max(0, t.chlorine - 0.15 * hours);
+  // Evaporation: about a percent of the glass height per day, more when warm.
+  t.fill = Math.max(MIN_FILL, t.fill - (0.0004 + Math.max(0, t.temp - 24) * 0.00005) * hours);
   const light = eq.lightOn ? LIGHTS[eq.light].intensity : 0;
   t.algae = clamp(t.algae + (light * (0.4 + t.no3 * 0.01) - 0.05) * hours, 0, 100);
 }
@@ -80,6 +86,8 @@ export function waterChange(state: GameState, fraction: number, conditioned: boo
   t.no3 = t.no3 * keep + TAP.no3 * f;
   t.chlorine += conditioned ? 0 : TAP.chlorine * f;
   t.o2 = t.o2 * keep + o2Saturation(TAP.temp) * f;
+  // Refilling is part of any water change.
+  t.fill = t.fillTarget;
 }
 
 /**

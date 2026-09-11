@@ -167,6 +167,7 @@ export const vi: Record<string, string> = {
   // Care
   "Care": "Chăm sóc",
   "Heater target": "Nhiệt sưởi",
+  "Water level": "Mức nước",
   "Water change": "Thay nước",
   "Swaps old water for tap water. Dilutes nitrate, resets temperature.": "Thay nước cũ bằng nước máy. Giảm nitrate, kéo nhiệt độ về nước máy.",
   "Conditioner doses: {n}": "Khử clo còn: {n} liều",

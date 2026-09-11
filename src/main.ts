@@ -9,7 +9,7 @@ import { dropPellets, updatePellets } from "./sim/food";
 import { newGame, type GameState } from "./sim/state";
 import { advance, SIM_WATER } from "./sim/tick";
 import { loadGame, saveGame } from "./save/store";
-import { BAG_H, BAG_W, BAG_Y, SAND_Y, SCREEN_H, SCREEN_W, TankScene, WATER, type DragBag } from "./scenes/tank";
+import { BAG_H, BAG_W, bagY, SAND_Y, SCREEN_H, SCREEN_W, setFillLevel, TankScene, WATER, type DragBag } from "./scenes/tank";
 import { scrubGlass, vacuumGravel } from "./sim/tank";
 import { CarePanel } from "./ui/care";
 import { Toasts } from "./ui/toast";
@@ -56,6 +56,7 @@ async function boot(): Promise<void> {
 }
 
 function run(state: GameState): void {
+  setFillLevel(state.tank.fill);
   Object.assign(SIM_WATER, WATER);
   // Debug handle: inspect or poke the live state from the devtools console.
   (window as unknown as { fisch: GameState }).fisch = state;
@@ -153,7 +154,7 @@ function run(state: GameState): void {
     const { pressX: x, pressY: y } = input;
     const bag = bagAt(state.bags, x, y);
     if (bag) {
-      drag = { bag, x: bag.x, y: BAG_Y };
+      drag = { bag, x: bag.x, y: bagY() };
       bagPanel.show(bag);
       inspect.show(null);
       return;
@@ -228,6 +229,7 @@ function run(state: GameState): void {
   startLoop({
     maxFps: () => (document.hasFocus() ? state.settings.maxFps : Math.min(state.settings.maxFps, IDLE_FPS)),
     frame(dt) {
+      setFillLevel(state.tank.fill);
       input.beginFrame();
       if (input.pressed) handleClick();
       if (drag) {
@@ -289,7 +291,7 @@ function decorAt(decor: Decor[], x: number, y: number): Decor | null {
 }
 
 function bagAt(bags: Bag[], x: number, y: number): Bag | null {
-  return bags.find((b) => x >= b.x && x < b.x + BAG_W && y >= BAG_Y && y < BAG_Y + BAG_H) ?? null;
+  return bags.find((b) => x >= b.x && x < b.x + BAG_W && y >= bagY() && y < bagY() + BAG_H) ?? null;
 }
 
 function fishAt(fish: Fish[], x: number, y: number): Fish | null {

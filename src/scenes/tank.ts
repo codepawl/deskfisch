@@ -13,8 +13,23 @@ import { ambientNow } from "../sim/clock";
 export const SCREEN_W = 384;
 export const SCREEN_H = 240;
 
-/** Inner water area. Glass frame sits just outside it; the toolbar lives below. */
-export const WATER: Bounds = { x0: 8, y0: 18, x1: 376, y1: 208 };
+/** Top of the glass. The water surface sits below it by the fill level. */
+export const GLASS_TOP = 18;
+/**
+ * Water area. `y0` is the surface and moves with the fill level (see
+ * `setFillLevel`); the glass frame sits just outside; the toolbar lives below.
+ */
+export const WATER: Bounds = { x0: 8, y0: 37, x1: 376, y1: 208 };
+
+/** Move the surface to `fill` of the glass height (0.7–1). */
+export function setFillLevel(fill: number): void {
+  WATER.y0 = GLASS_TOP + Math.round((1 - fill) * (WATER.y1 - GLASS_TOP));
+}
+
+/** Bags float with their top above the water line. */
+export function bagY(): number {
+  return WATER.y0 - 8;
+}
 /** Pointer tool sprites drawn at the cursor. */
 const SPONGE = sprite([
   ".yyyyyy.",
@@ -40,8 +55,6 @@ export const SAND_Y = 194;
 export interface DragBag { bag: Bag; x: number; y: number }
 export const BAG_W = 26;
 export const BAG_H = 22;
-/** Bags float with their top above the water line. */
-export const BAG_Y = WATER.y0 - 8;
 
 const WATER_TOP = rgba("#3b7dd8");
 const WATER_MID = rgba("#2f5fc4");
@@ -197,7 +210,7 @@ export class TankScene {
     if (quality !== "low") this.refract(buf);
     for (const b of state.bags) {
       if (drag?.bag === b) this.drawBag(buf, b, drag.x, drag.y);
-      else this.drawBag(buf, b, b.x, BAG_Y + Math.round(Math.sin(this.time * 1.2 + b.x) * 1));
+      else this.drawBag(buf, b, b.x, bagY() + Math.round(Math.sin(this.time * 1.2 + b.x) * 1));
     }
     // Room light follows the sun (real or simulated clock): night is dark navy,
     // dawn and dusk go rose and gold, day is clear. The tank light overrides it;
@@ -223,9 +236,24 @@ export class TankScene {
     if (!decal) return;
     const top = rgba(decal.top);
     const bottom = rgba(decal.bottom);
-    const h = WATER.y1 - WATER.y0;
-    for (let y = WATER.y0; y < WATER.y1; y++) {
-      buf.fillRect(WATER.x0, y, WATER.x1 - WATER.x0, 1, mix(top, bottom, (y - WATER.y0) / h));
+    const h = WATER.y1 - GLASS_TOP;
+    for (let y = GLASS_TOP; y < WATER.y1; y++) {
+      buf.fillRect(WATER.x0, y, WATER.x1 - WATER.x0, 1, mix(top, bottom, (y - GLASS_TOP) / h));
+    }
+  }
+
+  /** Bright ripples drifting through see-through water so it reads as water, not tinted glass. */
+  private caustics(buf: PixelBuffer): void {
+    const w = WATER.x1 - WATER.x0;
+    const light = withAlpha(COLOR.c, 0.55);
+    for (let band = 0; band < 6; band++) {
+      const baseY = WATER.y0 + 6 + band * 28;
+      if (baseY >= SAND_Y - 2) break;
+      const phase = this.time * 0.9 + band * 1.7;
+      for (let x = 0; x < w; x += 2) {
+        const y = baseY + Math.round(Math.sin(x * 0.07 + phase) * 4 + Math.sin(x * 0.023 - phase * 0.6) * 3);
+        if (y > WATER.y0 && y < SAND_Y) buf.set(WATER.x0 + x, y, light);
+      }
     }
   }
 
@@ -238,9 +266,11 @@ export class TankScene {
   private drawWater(buf: PixelBuffer, quality: Quality, lit: boolean, seeThrough: boolean): void {
     const h = WATER.y1 - WATER.y0;
     // With no decal the water is only partly opaque, so a transparent window
-    // shows the desktop through the tank; over a decal it is blended in fully.
-    const alpha = seeThrough ? 0.62 : 0.72;
+    // shows the desktop through the tank, murkier with depth; over a decal it
+    // is blended in fully.
     const paint = (y: number, c: number) => {
+      const depth = (y - WATER.y0) / h;
+      const alpha = seeThrough ? 0.5 + depth * 0.3 : 0.72;
       if (buf.px[y * buf.w + WATER.x0] === 0 && seeThrough) buf.fillRect(WATER.x0, y, WATER.x1 - WATER.x0, 1, withAlpha(c, alpha));
       else buf.tintRect(WATER.x0, y, WATER.x1 - WATER.x0, 1, c, alpha);
     };
@@ -252,6 +282,7 @@ export class TankScene {
         paint(y, t < 0.5 ? mix(WATER_TOP, WATER_MID, t * 2) : mix(WATER_MID, WATER_DEEP, (t - 0.5) * 2));
       }
     }
+    if (seeThrough && quality !== "low") this.caustics(buf);
     // Light shafts from the tank light: sparse dithered pale bands drifting slowly, fading with depth.
     for (let i = 0; i < (quality === "high" && lit ? 3 : 0); i++) {
       const cx = WATER.x0 + 70 + i * 110 + Math.sin(this.time * 0.3 + i) * 10;
@@ -334,10 +365,10 @@ export class TankScene {
 
   private drawGlass(buf: PixelBuffer): void {
     const t = 3;
-    buf.fillRect(WATER.x0 - t, WATER.y0 - t, WATER.x1 - WATER.x0 + t * 2, t, GLASS);
+    buf.fillRect(WATER.x0 - t, GLASS_TOP - t, WATER.x1 - WATER.x0 + t * 2, t, GLASS);
     buf.fillRect(WATER.x0 - t, WATER.y1, WATER.x1 - WATER.x0 + t * 2, t, GLASS);
-    buf.fillRect(WATER.x0 - t, WATER.y0 - t, t, WATER.y1 - WATER.y0 + t * 2, GLASS);
-    buf.fillRect(WATER.x1, WATER.y0 - t, t, WATER.y1 - WATER.y0 + t * 2, GLASS);
+    buf.fillRect(WATER.x0 - t, GLASS_TOP - t, t, WATER.y1 - GLASS_TOP + t * 2, GLASS);
+    buf.fillRect(WATER.x1, GLASS_TOP - t, t, WATER.y1 - GLASS_TOP + t * 2, GLASS);
   }
 }
 
