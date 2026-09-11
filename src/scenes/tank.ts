@@ -45,7 +45,6 @@ const WATER_TOP = rgba("#3b7dd8");
 const WATER_MID = rgba("#2f5fc4");
 const WATER_DEEP = rgba("#29366f");
 const GLASS = COLOR.d;
-const GLASS_HI = COLOR.L;
 
 const PLANT = sprite([
   "..G....",
@@ -295,9 +294,6 @@ export class TankScene {
     buf.fillRect(WATER.x0 - t, WATER.y1, WATER.x1 - WATER.x0 + t * 2, t, GLASS);
     buf.fillRect(WATER.x0 - t, WATER.y0 - t, t, WATER.y1 - WATER.y0 + t * 2, GLASS);
     buf.fillRect(WATER.x1, WATER.y0 - t, t, WATER.y1 - WATER.y0 + t * 2, GLASS);
-    // Reflection highlight down the left pane.
-    buf.fillRect(WATER.x0 + 2, WATER.y0 + 6, 1, 60, GLASS_HI);
-    buf.fillRect(WATER.x0 + 3, WATER.y0 + 10, 1, 30, GLASS_HI);
   }
 }
 
