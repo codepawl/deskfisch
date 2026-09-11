@@ -102,6 +102,13 @@ button.tool {
 }
 button.tool:hover { border-color: var(--accent); }
 button.tool.lit { border-color: var(--accent); }
+/* Selected tool: thick accent ring, lighter face, no inset shadow. */
+button.tool.active {
+  border-color: var(--accent);
+  background: var(--panel-edge);
+  box-shadow: 0 0 0 calc(1px * var(--s)) var(--accent);
+}
+button.tool:disabled { opacity: 0.4; cursor: default; }
 
 /* Toolbar buttons show only their icon. The label floats above the button
    (no layout shift, so neighbours stay put) and slides in on hover; it stays
