@@ -8,11 +8,20 @@ const WINDOW_SIZE: [number, number] = [1170, 690];
 /** Pet mode shows the tank at 2x with no chrome around it. */
 const PET_SIZE: [number, number] = [384 * 2, 240 * 2];
 
-/** Keep the window above other apps. No-op in the browser. */
-export async function setPinned(pinned: boolean): Promise<void> {
+/** Pinned = fixed to the screen: above other apps and, in pet mode, not resizable. */
+export async function setPinned(pinned: boolean, mode: Mode): Promise<void> {
   if (!isTauri) return;
   const { getCurrentWindow } = await import("@tauri-apps/api/window");
-  await getCurrentWindow().setAlwaysOnTop(pinned);
+  const w = getCurrentWindow();
+  await w.setAlwaysOnTop(pinned);
+  if (mode === "pet") await w.setResizable(!pinned);
+}
+
+/** Resize the borderless pet window from its bottom-right corner. */
+export async function startWindowResize(): Promise<void> {
+  if (!isTauri) return;
+  const { getCurrentWindow } = await import("@tauri-apps/api/window");
+  await getCurrentWindow().startResizeDragging("SouthEast");
 }
 
 /** Configure the native window (or the browser) for a display mode. */
@@ -39,7 +48,7 @@ export async function applyMode(mode: Mode, pinned: boolean, transparent: boolea
     case "pet":
       await w.setDecorations(false);
       await w.setShadow(false);
-      await w.setResizable(false);
+      await w.setResizable(!pinned);
       await w.setSize(new LogicalSize(...PET_SIZE));
       await w.setAlwaysOnTop(pinned);
       break;

@@ -16,7 +16,7 @@ import { Toasts } from "./ui/toast";
 import { SettingsPanel } from "./ui/settings";
 import { Sfx } from "./engine/audio";
 import { checkAchievements } from "./sim/achievements";
-import { applyMode, isTauri, onModeRequest, setPinned, startWindowDrag, type Mode } from "./platform";
+import { applyMode, isTauri, onModeRequest, setPinned, startWindowDrag, startWindowResize, type Mode } from "./platform";
 import { releaseBag, releaseShock, type Bag } from "./sim/bag";
 import { BagPanel } from "./ui/bag";
 import { Hud } from "./ui/hud";
@@ -77,11 +77,26 @@ function run(state: GameState): void {
       state.pinned = !state.pinned;
       pinBtn.textContent = state.pinned ? "Unpin" : "Pin";
       reflectPin();
-      void setPinned(state.pinned);
+      void setPinned(state.pinned, state.mode);
     });
     pinBtn.textContent = state.pinned ? "Unpin" : "Pin";
   }
   hud.addButton("Settings", () => settings.toggle());
+  hud.resizeHandle.addEventListener("pointerdown", () => {
+    if (state.mode === "pet" && !state.pinned) void startWindowResize();
+  });
+
+  // Chill: hide every control and leave the tank. "⋯" or Escape brings them back.
+  const setChill = (on: boolean) => {
+    state.settings.chill = on;
+    document.documentElement.dataset.chill = String(on);
+  };
+  hud.addButton("Chill", () => setChill(true));
+  hud.restore.onclick = () => setChill(false);
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") setChill(false);
+  });
+  setChill(state.settings.chill);
   // Pinned means fixed to the screen: on top of other windows and not movable.
   const reflectPin = () => (document.documentElement.dataset.pinned = String(state.pinned));
   reflectPin();
@@ -201,8 +216,8 @@ function run(state: GameState): void {
       scene.render(buf, state, drag, cursor, state.mode === "pet" && state.settings.transparent, state.settings.quality);
       const scale = buf.present(screen);
       overlay.style.setProperty("--s", String(scale));
-      overlay.style.width = `${screen.width}px`;
-      overlay.style.height = `${screen.height}px`;
+      overlay.style.width = screen.style.width;
+      overlay.style.height = screen.style.height;
     },
   });
 }

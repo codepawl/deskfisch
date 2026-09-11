@@ -8,6 +8,10 @@ export class Hud {
   readonly root: HTMLElement;
   /** The top strip; in pet mode it doubles as the window drag handle. */
   readonly dragHandle: HTMLElement;
+  /** Bottom-right corner handle for resizing the pet window. */
+  readonly resizeHandle = el("div.resize-grip", { title: "Resize" });
+  /** The only control left in chill mode; brings the rest back. */
+  readonly restore: HTMLButtonElement;
   tool: Tool = null;
   private readonly coins = el("span.hud-coins");
   private readonly clock = el("span.hud-clock");
@@ -28,8 +32,9 @@ export class Hud {
       this.lightBtn,
     );
     this.dragHandle = el("div.hud-top", {}, this.coins, el("span.grip", {}, "⋮⋮ drag ⋮⋮"), this.clock);
+    this.restore = button("hud-restore", "⋯", () => {});
     this.root = el("div.hud", {}, this.dragHandle, this.bar);
-    overlay.append(this.root);
+    overlay.append(this.root, this.resizeHandle, this.restore);
     this.refresh();
   }
 

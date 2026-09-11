@@ -75,24 +75,31 @@ export class PixelBuffer {
     }
   }
 
-  /** Draw onto the visible canvas at the largest integer scale that fits. Returns that scale. */
+  /**
+   * Draw onto the visible canvas. The backing store uses the largest integer
+   * scale that fits (crisp pixels); CSS then stretches it the last fraction so
+   * the tank hugs the window edges. Returns the effective on-screen scale.
+   */
   present(screen: HTMLCanvasElement): number {
     this.backCtx.putImageData(this.image, 0, 0);
     const stage = screen.parentElement!;
-    const scale = Math.max(1, Math.floor(Math.min(stage.clientWidth / this.w, stage.clientHeight / this.h)));
+    const fit = Math.max(0.5, Math.min(stage.clientWidth / this.w, stage.clientHeight / this.h));
+    const scale = Math.max(1, Math.floor(fit));
     const cw = this.w * scale;
     const ch = this.h * scale;
     if (screen.width !== cw || screen.height !== ch) {
       screen.width = cw;
       screen.height = ch;
     }
+    screen.style.width = `${Math.floor(this.w * fit)}px`;
+    screen.style.height = `${Math.floor(this.h * fit)}px`;
     const ctx = screen.getContext("2d")!;
     ctx.imageSmoothingEnabled = false;
     // Transparent framebuffer pixels would composite over the previous frame
     // and leave trails, so wipe the canvas first.
     ctx.clearRect(0, 0, cw, ch);
     ctx.drawImage(this.back, 0, 0, cw, ch);
-    return scale;
+    return fit;
   }
 }
 

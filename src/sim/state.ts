@@ -52,6 +52,8 @@ export interface Settings {
   simSpeed: number;
   quality: Quality;
   maxFps: number;
+  /** Hide every control and leave only the tank. */
+  chill: boolean;
 }
 
 export interface GameState {
@@ -118,6 +120,6 @@ export function newGame(now = Date.now()): GameState {
     achievements: [],
     mode: "window",
     pinned: true,
-    settings: { transparent: true, volume: 0.5, muted: false, simSpeed: 1, quality: "high", maxFps: 60 },
+    settings: { transparent: true, volume: 0.5, muted: false, simSpeed: 1, quality: "high", maxFps: 60, chill: false },
   };
 }
