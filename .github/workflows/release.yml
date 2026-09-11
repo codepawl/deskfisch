@@ -124,3 +124,30 @@ jobs:
         with:
           name: deskfisch-web
           path: dist
+
+  # Redeploys the landing site so /play/ carries the new browser build. Needs a
+  # Cloudflare API token with Workers Scripts:Edit and Zone DNS:Edit for codepawl.com.
+  site:
+    runs-on: ubuntu-latest
+    needs: web
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check secret
+        id: token
+        run: |
+          if [ -n "${{ secrets.CLOUDFLARE_API_TOKEN }}" ]; then echo "present=true" >> "$GITHUB_OUTPUT"; else echo "CLOUDFLARE_API_TOKEN not set; skipping site deploy"; fi
+      - uses: pnpm/action-setup@v4
+        if: steps.token.outputs.present == 'true'
+        with:
+          version: 11
+      - uses: actions/setup-node@v4
+        if: steps.token.outputs.present == 'true'
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+        if: steps.token.outputs.present == 'true'
+      - run: pnpm site && npx wrangler deploy
+        if: steps.token.outputs.present == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
