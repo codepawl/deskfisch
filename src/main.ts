@@ -267,7 +267,7 @@ function run(state: GameState): void {
       const showCursor = hud.tool && hud.tool !== "feed" && input.inside && inWater(input.x, input.y);
       const cursor = showCursor ? { tool: hud.tool!, x: input.x, y: input.y } : null;
       scene.render(buf, state, drag, cursor, state.mode === "pet" && state.settings.transparent, state.settings.quality);
-      const scale = buf.present(screen);
+      const scale = buf.present(screen, scene.overlays);
       overlay.style.setProperty("--s", String(scale));
       overlay.style.width = screen.style.width;
       overlay.style.height = screen.style.height;

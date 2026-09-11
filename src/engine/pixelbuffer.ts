@@ -1,5 +1,8 @@
 import type { Sprite } from "./sprite";
 
+/** A translucent rectangle composited by the canvas after the pixel pass; far cheaper than per-pixel blending. */
+export interface Overlay { x: number; y: number; w: number; h: number; color: number; alpha: number }
+
 /**
  * Low-resolution RGBA framebuffer. Everything is drawn here in native pixels,
  * then presented onto the visible canvas at an integer scale so edges stay crisp.
@@ -80,8 +83,13 @@ export class PixelBuffer {
    * scale that fits (crisp pixels); CSS then stretches it the last fraction so
    * the tank hugs the window edges. Returns the effective on-screen scale.
    */
-  present(screen: HTMLCanvasElement): number {
+  present(screen: HTMLCanvasElement, overlays: Overlay[] = []): number {
     this.backCtx.putImageData(this.image, 0, 0);
+    for (const o of overlays) {
+      if (o.alpha <= 0) continue;
+      this.backCtx.fillStyle = css(o.color, o.alpha);
+      this.backCtx.fillRect(o.x, o.y, o.w, o.h);
+    }
     const stage = screen.parentElement!;
     const fit = Math.max(0.5, Math.min(stage.clientWidth / this.w, stage.clientHeight / this.h));
     const scale = Math.max(1, Math.floor(fit));
@@ -101,6 +109,10 @@ export class PixelBuffer {
     ctx.drawImage(this.back, 0, 0, cw, ch);
     return fit;
   }
+}
+
+function css(color: number, alpha: number): string {
+  return `rgba(${color & 0xff}, ${(color >>> 8) & 0xff}, ${(color >>> 16) & 0xff}, ${alpha.toFixed(3)})`;
 }
 
 function blend(dst: number, src: number, a: number): number {

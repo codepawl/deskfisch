@@ -1,5 +1,5 @@
 import { COLOR, rgba } from "../engine/palette";
-import { PixelBuffer } from "../engine/pixelbuffer";
+import { PixelBuffer, type Overlay } from "../engine/pixelbuffer";
 import { sprite, type Sprite } from "../engine/sprite";
 import { rand } from "../engine/rng";
 import { SPECIES } from "../data/species";
@@ -107,6 +107,8 @@ export class TankScene {
   private time = 0;
   /** True while a tool is being applied this frame; wiggles the tool sprite. */
   private working = false;
+  /** Full-water tints for this frame (room light, algae), composited on the GPU. */
+  overlays: Overlay[] = [];
   private sandSpeckles: [number, number][] = [];
 
   constructor() {
@@ -196,14 +198,13 @@ export class TankScene {
     // Room light follows the sun (real or simulated clock): night is dark navy,
     // dawn and dusk go rose and gold, day is clear. The tank light overrides it;
     // without one the tank is always a touch dimmer than the room so toggling shows.
+    this.overlays.length = 0;
+    const water = { x: WATER.x0, y: WATER.y0, w: WATER.x1 - WATER.x0, h: WATER.y1 - WATER.y0 };
     if (!lit) {
       const a = ambientNow(state);
-      const alpha = Math.max(0.15, a.alpha);
-      buf.tintRect(WATER.x0, WATER.y0, WATER.x1 - WATER.x0, WATER.y1 - WATER.y0, a.alpha > 0 ? a.color : COLOR.n, alpha);
+      this.overlays.push({ ...water, color: a.alpha > 0 ? a.color : COLOR.n, alpha: Math.max(0.15, a.alpha) });
     }
-    if (state.tank.algae > 10) {
-      buf.tintRect(WATER.x0, WATER.y0, WATER.x1 - WATER.x0, WATER.y1 - WATER.y0, COLOR.g, state.tank.algae / 250);
-    }
+    if (state.tank.algae > 10) this.overlays.push({ ...water, color: COLOR.g, alpha: state.tank.algae / 250 });
     this.drawGlass(buf);
     const toolSprite = cursor && TOOL_SPRITES[cursor.tool];
     if (toolSprite && cursor) {

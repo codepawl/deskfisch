@@ -35,8 +35,8 @@ export class Hud {
     scrubBtn.dataset.tool = "scrub";
     vacuumBtn.dataset.tool = "vacuum";
     this.bar.append(this.feedBtn, scrubBtn, vacuumBtn, this.lightBtn);
-    // Labels follow the last hovered button, not :hover, so crossing the gap
-    // between two buttons hands the label over instead of collapsing it.
+    // Labels follow a `hover` class rather than :hover so every clearing path
+    // below can drop them; labels float above the bar, so no handoff across gaps.
     this.bar.addEventListener("pointerover", (e) => {
       const b = (e.target as HTMLElement).closest("button");
       if (!b) return;
@@ -52,7 +52,7 @@ export class Hud {
     // pointerleave is skipped when the cursor flies out of a small window, so
     // also clear whenever the pointer is seen anywhere else or the window loses it.
     document.addEventListener("pointermove", (e) => {
-      if (!(e.target as HTMLElement).closest?.(".toolbar")) clearHover();
+      if (!(e.target as HTMLElement).closest?.(".toolbar button")) clearHover();
     });
     document.addEventListener("pointerout", (e) => {
       if (e.relatedTarget === null) clearHover();

@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Deskfisch — a little fish tank that lives on your desk</title>
+  <meta name="description" content="A cozy pixel-art aquarium for your desktop with a real nitrogen cycle. Pet mode floats over your windows. Free download for Linux, macOS and Windows.">
+  <meta property="og:title" content="Deskfisch">
+  <meta property="og:description" content="A little fish tank that lives on your desk. Real fishkeeping, pixel fish, pet mode.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://deskfisch.codepawl.com/">
+  <meta property="og:image" content="https://deskfisch.codepawl.com/og.png">
+  <link rel="icon" href="favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@600&family=VT323&display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="/">
+      <img src="favicon.png" alt="" width="32" height="32">
+      <span>Deskfisch</span>
+    </a>
+    <nav>
+      <a href="#download">Download</a>
+      <a href="#how">How it works</a>
+      <a href="https://github.com/codepawl/deskfisch">Source</a>
+      <a href="https://codepawl.com">codepawl</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-text">
+        <p class="eyebrow">Free · Linux · macOS · Windows · browser</p>
+        <h1>A little fish tank that lives on your desk.</h1>
+        <p class="lede">Pixel fish with real needs. The water runs a real nitrogen cycle, new fish have to be acclimated, and pet mode floats the tank over whatever you are working on.</p>
+        <div class="cta">
+          <a class="btn primary" id="cta-download" href="#download">Download</a>
+          <a class="btn" href="play/">Play in the browser</a>
+        </div>
+        <p class="fine" id="cta-note">Version <span id="ver">…</span> · no account, no ads, no tracking.</p>
+      </div>
+      <div class="hero-demo">
+        <div class="frame">
+          <iframe src="play/" title="Deskfisch running live" loading="lazy"></iframe>
+        </div>
+        <p class="caption">This is the real app running in your browser. Feed it.</p>
+      </div>
+    </section>
+
+    <section class="features" id="features">
+      <h2>What makes it different</h2>
+      <div class="grid">
+        <article><div class="ico" data-icon="test"></div><h3>A real nitrogen cycle</h3><p>Ammonia becomes nitrite becomes nitrate. A fresh tank takes days to cycle, and fish added too early get stressed. Buy a test kit to see it happen.</p></article>
+        <article><div class="ico" data-icon="mode"></div><h3>Pet mode</h3><p>A borderless, see-through window that floats above your apps. Pin it in place or drag it anywhere. Chill mode hides every control.</p></article>
+        <article><div class="ico" data-icon="water"></div><h3>Acclimation that matters</h3><p>New fish arrive in a bag. Float it, mix in tank water, then drag it under the surface. Rush it and the fish is shocked.</p></article>
+        <article><div class="ico" data-icon="feed"></div><h3>Care, not clicking</h3><p>Feed by hand, scrub algae, vacuum the gravel, change water with conditioner. Skip it and you will see ich and fin rot.</p></article>
+        <article><div class="ico" data-icon="coin"></div><h3>Breeding and a shop</h3><p>Happy guppies and mollies drop fry that grow into sellable adults. Coins buy filters, heaters, lights, bigger tanks and decor.</p></article>
+        <article><div class="ico" data-icon="chill"></div><h3>Follows the sun</h3><p>Without a tank light the room goes dark at night and rose-gold at dawn and dusk, on your real clock or the tank's own simulated day.</p></article>
+      </div>
+    </section>
+
+    <section class="download" id="download">
+      <h2>Download</h2>
+      <p class="muted">Latest release from GitHub. Installers are not code-signed yet, so Windows and macOS will warn on first launch.</p>
+      <div class="dl-grid" id="dl-grid">
+        <div class="dl" data-os="linux"><h3>Linux</h3><div class="links"></div></div>
+        <div class="dl" data-os="mac"><h3>macOS</h3><div class="links"></div></div>
+        <div class="dl" data-os="win"><h3>Windows</h3><div class="links"></div></div>
+        <div class="dl" data-os="web"><h3>Browser</h3><div class="links"><a class="btn" href="play/">Play now</a><p class="fine">Saves in this browser only.</p></div></div>
+      </div>
+      <p class="fine">Steam: coming soon. <a href="https://github.com/codepawl/deskfisch/releases">All releases</a></p>
+    </section>
+
+    <section class="how" id="how">
+      <h2>How a tank starts</h2>
+      <ol class="steps">
+        <li><b>Buy a filter and a heater.</b> The filter is where the good bacteria live.</li>
+        <li><b>Drop a pinch of food into the empty tank.</b> It rots into ammonia, which feeds the bacteria.</li>
+        <li><b>Watch the cycle.</b> Ammonia spikes, then nitrite, then both fall. A few real days.</li>
+        <li><b>Buy your first fish.</b> Schooling species need a group of their own kind.</li>
+        <li><b>Acclimate and release.</b> Float the bag ten minutes, add tank water three times, drag it under.</li>
+        <li><b>Feed once or twice a day, change some water weekly.</b> That is the whole hobby.</li>
+      </ol>
+    </section>
+
+    <section class="source">
+      <h2>Source and credits</h2>
+      <p>Built with Tauri, TypeScript and a 384×240 framebuffer. Every fish is a grid of palette characters. <a href="https://github.com/codepawl/deskfisch">Read the source on GitHub.</a></p>
+      <p class="muted">Font: VT323 (OFL). Made by <a href="https://codepawl.com">codepawl</a>.</p>
+    </section>
+  </main>
+
+  <footer>
+    <span>© codepawl</span>
+    <span><a href="https://github.com/codepawl/deskfisch/issues">Report a bug</a></span>
+  </footer>
+  <script src="main.js"></script>
+</body>
+</html>
