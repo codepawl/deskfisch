@@ -88,7 +88,22 @@ button.tool {
   padding: calc(2px * var(--s)) calc(4px * var(--s));
   cursor: pointer;
 }
+button.tool {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(2px * var(--s));
+}
+.icon {
+  width: calc(7px * var(--s));
+  height: calc(7px * var(--s));
+  shape-rendering: crispEdges;
+  flex: none;
+}
 button.tool:hover { border-color: var(--accent); }
+button.tool.lit { border-color: var(--accent); }
+/* The pet window is small: icons only, labels live in the tooltip. */
+html[data-mode="pet"] button.tool .label { display: none; }
+html[data-mode="pet"] button.tool { padding: calc(2px * var(--s)); }
 button.tool.active { background: var(--accent); color: var(--panel); }
 button.tool:disabled { opacity: 0.4; cursor: default; }
 
@@ -291,12 +306,28 @@ html[data-chill="true"] .hud, html[data-chill="true"] .panel, html[data-chill="t
 /* --- Guide ---------------------------------------------------------- */
 
 .panel-guide {
-  top: calc(20px * var(--s));
+  top: calc(24px * var(--s));
   left: 50%;
   transform: translateX(-50%);
-  width: calc(190px * var(--s));
+  width: calc(230px * var(--s));
+  padding: calc(5px * var(--s)) calc(8px * var(--s)) calc(6px * var(--s));
+  line-height: 1.5;
 }
-.guide-list { display: flex; flex-direction: column; gap: calc(1px * var(--s)); }
+.panel-guide h2 {
+  text-align: center;
+  font-size: calc(7px * var(--s));
+  margin-bottom: calc(4px * var(--s));
+  padding-bottom: calc(2px * var(--s));
+  border-bottom: calc(1px * var(--s)) solid var(--panel-edge);
+}
+.panel-guide .panel-actions { justify-content: center; margin-top: calc(4px * var(--s)); }
+.guide-list { display: flex; flex-direction: column; gap: calc(3px * var(--s)); }
+.guide-step { padding: calc(1px * var(--s)) 0; }
 .guide-step.done { color: #94b0c2; }
 .guide-step.current { color: var(--accent); }
-.guide-step.current .muted { color: var(--ink); }
+.guide-step.current .muted {
+  color: var(--ink);
+  margin: calc(1px * var(--s)) 0 0 calc(6px * var(--s));
+  padding-left: calc(3px * var(--s));
+  border-left: calc(1px * var(--s)) solid var(--accent);
+}

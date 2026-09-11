@@ -1,5 +1,6 @@
 import type { GameState } from "../sim/state";
-import { button, el } from "./dom";
+import { button, el, setLabel } from "./dom";
+import type { IconName } from "./icons";
 
 export type Tool = "feed" | "scrub" | "vacuum" | null;
 
@@ -20,15 +21,15 @@ export class Hud {
   private readonly bar = el("div.toolbar");
 
   constructor(overlay: HTMLElement, private readonly state: GameState) {
-    this.feedBtn = button("tool", "Feed", () => this.toggleTool("feed"));
+    this.feedBtn = button("tool", "Feed", () => this.toggleTool("feed"), "feed");
     this.lightBtn = button("tool", "Light", () => {
       state.equipment.lightOn = !state.equipment.lightOn;
       this.refresh();
-    });
+    }, "light");
     this.bar.append(
       this.feedBtn,
-      button("tool", "Scrub", () => this.toggleTool("scrub")),
-      button("tool", "Vacuum", () => this.toggleTool("vacuum")),
+      button("tool", "Scrub", () => this.toggleTool("scrub"), "scrub"),
+      button("tool", "Vacuum", () => this.toggleTool("vacuum"), "vacuum"),
       this.lightBtn,
     );
     this.dragHandle = el("div.hud-top", {}, this.coins, el("span.grip", {}, "⋮⋮ drag ⋮⋮"), this.clock);
@@ -38,8 +39,8 @@ export class Hud {
     this.refresh();
   }
 
-  addButton(label: string, onclick: () => void): HTMLButtonElement {
-    const b = button("tool", label, onclick);
+  addButton(label: string, onclick: () => void, iconName?: IconName): HTMLButtonElement {
+    const b = button("tool", label, onclick, iconName);
     this.bar.append(b);
     return b;
   }
@@ -58,13 +59,14 @@ export class Hud {
     const mm = String(now.getMinutes()).padStart(2, "0");
     this.clock.textContent = `Day ${day} · ${hh}:${mm}`;
     const flakes = s.inventory.flakes ?? 0;
-    this.feedBtn.textContent = `Feed ×${flakes}`;
+    setLabel(this.feedBtn, `Feed ×${flakes}`);
     this.feedBtn.disabled = flakes <= 0;
     if (this.tool === "feed" && flakes <= 0) this.tool = null;
     for (const b of this.bar.querySelectorAll("button")) {
-      b.classList.toggle("active", this.tool !== null && b.textContent!.toLowerCase().startsWith(this.tool));
+      b.classList.toggle("active", this.tool !== null && b.textContent!.trim().toLowerCase().startsWith(this.tool));
     }
     this.lightBtn.hidden = s.equipment.light === 0;
-    this.lightBtn.textContent = s.equipment.lightOn ? "Light: on" : "Light: off";
+    setLabel(this.lightBtn, s.equipment.lightOn ? "Light: on" : "Light: off");
+    this.lightBtn.classList.toggle("lit", s.equipment.lightOn);
   }
 }

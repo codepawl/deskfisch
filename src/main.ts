@@ -15,6 +15,7 @@ import { CarePanel } from "./ui/care";
 import { Toasts } from "./ui/toast";
 import { SettingsPanel } from "./ui/settings";
 import { GuidePanel } from "./ui/guide";
+import { setLabel } from "./ui/dom";
 import { isCycled } from "./sim/tank";
 import { Sfx } from "./engine/audio";
 import { checkAchievements } from "./sim/achievements";
@@ -62,15 +63,15 @@ function run(state: GameState): void {
   };
   const settings = new SettingsPanel(overlay, state, applySettings);
   const guide = new GuidePanel(overlay, state);
-  hud.addButton("Change water", () => care.toggle());
-  hud.addButton("Test water", () => stats.toggle());
-  hud.addButton("Shop", () => shop.toggle());
+  hud.addButton("Change water", () => care.toggle(), "water");
+  hud.addButton("Test water", () => stats.toggle(), "test");
+  hud.addButton("Shop", () => shop.toggle(), "shop");
 
   const MODES: Mode[] = ["window", "pet", "fullscreen"];
-  const modeBtn = hud.addButton("", () => setMode(MODES[(MODES.indexOf(state.mode) + 1) % MODES.length]));
+  const modeBtn = hud.addButton("", () => setMode(MODES[(MODES.indexOf(state.mode) + 1) % MODES.length]), "mode");
   const setMode = (mode: Mode) => {
     state.mode = mode;
-    modeBtn.textContent = `Mode: ${mode}`;
+    setLabel(modeBtn, `Mode: ${mode}`);
     void applyMode(mode, state.pinned, state.settings.transparent);
   };
   sfx.setVolume(state.settings.volume, state.settings.muted);
@@ -79,14 +80,14 @@ function run(state: GameState): void {
   if (isTauri) {
     const pinBtn = hud.addButton("", () => {
       state.pinned = !state.pinned;
-      pinBtn.textContent = state.pinned ? "Unpin" : "Pin";
+      setLabel(pinBtn, state.pinned ? "Unpin" : "Pin");
       reflectPin();
       void setPinned(state.pinned, state.mode);
-    });
-    pinBtn.textContent = state.pinned ? "Unpin" : "Pin";
+    }, "pin");
+    setLabel(pinBtn, state.pinned ? "Unpin" : "Pin");
   }
-  hud.addButton("Guide", () => guide.toggle());
-  hud.addButton("Settings", () => settings.toggle());
+  hud.addButton("Guide", () => guide.toggle(), "guide");
+  hud.addButton("Settings", () => settings.toggle(), "settings");
   hud.resizeHandle.addEventListener("pointerdown", () => {
     if (state.mode === "pet" && !state.pinned) void startWindowResize();
   });
@@ -96,7 +97,7 @@ function run(state: GameState): void {
     state.settings.chill = on;
     document.documentElement.dataset.chill = String(on);
   };
-  hud.addButton("Chill", () => setChill(true));
+  hud.addButton("Chill", () => setChill(true), "chill");
   hud.restore.onclick = () => setChill(false);
   window.addEventListener("keydown", (e) => {
     if (e.key === "Escape") setChill(false);

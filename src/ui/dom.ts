@@ -1,3 +1,5 @@
+import { icon, type IconName } from "./icons";
+
 /** Tiny DOM builder: el("div.panel", {onclick}, child, "text"). */
 export function el(
   spec: string,
@@ -15,10 +17,18 @@ export function el(
   return node;
 }
 
-export function button(className: string, label: string, onclick: () => void): HTMLButtonElement {
+export function button(className: string, label: string, onclick: () => void, iconName?: IconName): HTMLButtonElement {
   const b = document.createElement("button");
   b.className = className;
-  b.textContent = label;
+  if (iconName) b.append(icon(iconName));
+  b.append(el("span.label", {}, label));
+  b.title = label;
   b.onclick = onclick;
   return b;
+}
+
+/** Replace a button's text while keeping its icon. */
+export function setLabel(b: HTMLButtonElement, label: string): void {
+  b.querySelector(".label")!.textContent = label;
+  b.title = label;
 }
