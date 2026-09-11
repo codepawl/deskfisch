@@ -88,6 +88,9 @@ export class PixelBuffer {
     }
     const ctx = screen.getContext("2d")!;
     ctx.imageSmoothingEnabled = false;
+    // Transparent framebuffer pixels would composite over the previous frame
+    // and leave trails, so wipe the canvas first.
+    ctx.clearRect(0, 0, cw, ch);
     ctx.drawImage(this.back, 0, 0, cw, ch);
     return scale;
   }

@@ -6,6 +6,8 @@ export class Input {
   pressX = 0;
   pressY = 0;
   down = false;
+  /** False once the pointer leaves the canvas, so cursors stop at the edge. */
+  inside = false;
   /** True for exactly one frame after a press. */
   pressed = false;
   /** True for exactly one frame after a release. */
@@ -14,7 +16,13 @@ export class Input {
   private pendingRelease = false;
 
   constructor(private readonly screen: HTMLCanvasElement, private readonly bufW: number, private readonly bufH: number) {
-    screen.addEventListener("pointermove", (e) => this.track(e));
+    screen.addEventListener("pointermove", (e) => {
+      this.track(e);
+      this.inside = true;
+    });
+    screen.addEventListener("pointerleave", () => {
+      this.inside = false;
+    });
     screen.addEventListener("pointerdown", (e) => {
       this.track(e);
       this.pressX = this.x;

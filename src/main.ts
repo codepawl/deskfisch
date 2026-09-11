@@ -159,7 +159,8 @@ function run(state: GameState): void {
       for (const f of state.fish) moveFish(f, SPECIES[f.speciesId], WATER, dt, state);
     },
     render() {
-      const cursor = hud.tool && hud.tool !== "feed" ? { tool: hud.tool, x: input.x, y: input.y } : null;
+      const showCursor = hud.tool && hud.tool !== "feed" && input.inside && inWater(input.x, input.y);
+      const cursor = showCursor ? { tool: hud.tool!, x: input.x, y: input.y } : null;
       scene.render(buf, state, drag, cursor, state.mode === "pet");
       const scale = buf.present(screen);
       overlay.style.setProperty("--s", String(scale));
