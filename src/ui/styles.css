@@ -103,26 +103,30 @@ button.tool {
 button.tool:hover { border-color: var(--accent); }
 button.tool.lit { border-color: var(--accent); }
 
-/* Toolbar buttons show only their icon; the label slides out on hover and
-   stays out while the tool is active. Buttons without an icon keep their text. */
-.toolbar button.tool { gap: 0; transition: border-color 0.15s ease; }
+/* Toolbar buttons show only their icon. The label floats above the button
+   (no layout shift, so neighbours stay put) and slides in on hover; it stays
+   up while the tool is active. Buttons without an icon keep their text. */
+.toolbar button.tool { gap: 0; position: relative; overflow: visible; transition: border-color 0.15s ease; }
 .toolbar button.tool .icon + .label {
-  max-width: 0;
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + calc(2px * var(--s)));
+  transform: translate(-50%, calc(2px * var(--s)));
   opacity: 0;
-  margin-left: 0;
-  overflow: hidden;
+  pointer-events: none;
   white-space: nowrap;
-  transition: max-width 0.28s ease, opacity 0.2s ease, margin-left 0.28s ease;
+  color: var(--ink);
+  background: var(--panel);
+  border: calc(1px * var(--s)) solid var(--accent);
+  padding: calc(1px * var(--s)) calc(3px * var(--s));
+  transition: opacity 0.18s ease, transform 0.22s ease;
 }
 .toolbar button.tool.hover .icon + .label,
 .toolbar button.tool:focus-visible .icon + .label,
 .toolbar button.tool.active .icon + .label {
-  max-width: calc(60px * var(--s));
   opacity: 1;
-  margin-left: calc(2px * var(--s));
+  transform: translate(-50%, 0);
 }
-button.tool.active { background: var(--accent); color: var(--panel); }
-button.tool:disabled { opacity: 0.4; cursor: default; }
 
 /* --- Panels --------------------------------------------------------- */
 
