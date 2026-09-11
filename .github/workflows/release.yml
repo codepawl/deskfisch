@@ -5,6 +5,10 @@ on:
     tags: ["v*"]
   workflow_dispatch:
 
+# tauri-action creates the draft release and uploads installers.
+permissions:
+  contents: write
+
 jobs:
   build:
     strategy:
