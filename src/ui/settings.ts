@@ -3,6 +3,7 @@ import { autostart, isTauri } from "../platform";
 import { checkForUpdate } from "../updater";
 import { exportSave, pickSaveFile, KEEP } from "../save/backup";
 import { normalise, saveGame } from "../save/store";
+import { solarTimes } from "../sim/daylight";
 import { button, el } from "./dom";
 import { LANGS, t, type Lang } from "../i18n";
 
@@ -10,6 +11,10 @@ import { LANGS, t, type Lang } from "../i18n";
 export class SettingsPanel {
   readonly root: HTMLElement;
   private readonly speedWarn = el("div.shop-note");
+  private speedSelect!: HTMLSelectElement;
+  private sunriseInput!: HTMLInputElement;
+  private sunsetInput!: HTMLInputElement;
+  private locNote!: HTMLElement;
 
   constructor(
     overlay: HTMLElement,
@@ -30,11 +35,18 @@ export class SettingsPanel {
       this.row(t("Sound"), this.checkbox(!s.muted, (v) => (s.muted = !v))),
       this.row(t("Ambient hum"), this.checkbox(s.ambient, (v) => (s.ambient = v))),
       this.row(t("Volume"), this.range(s.volume, (v) => (s.volume = v))),
-      this.row(t("Sim speed"), this.select(["1", "2", "5", "10"], String(s.simSpeed), (v) => {
+      this.row(t("Clock"), this.select(["real", "sim"], s.clock, (v) => {
+        s.clock = v as typeof s.clock;
+        this.refresh();
+      }, (v) => (v === "real" ? t("Real time") : t("Simulated")))),
+      this.row(t("Sim speed"), (this.speedSelect = this.select(["1", "2", "5", "10"], String(s.simSpeed), (v) => {
         s.simSpeed = Number(v);
         this.refresh();
-      }, (v) => `${v}×`)),
+      }, (v) => `${v}×`))),
       this.speedWarn,
+      this.row(t("Sunrise"), (this.sunriseInput = this.time(s.sunrise, (v) => (s.sunrise = v)))),
+      this.row(t("Sunset"), (this.sunsetInput = this.time(s.sunset, (v) => (s.sunset = v)))),
+      this.row(t("Location"), el("span.panel-actions", {}, (this.locNote = el("span.muted")), button("tool", t("Use my location"), () => this.locate()))),
       this.row(t("Visuals"), this.select(["high", "medium", "low"], s.quality, (v) => (s.quality = v as Quality), (v) => t(v))),
       this.row(t("Max FPS"), this.select(["60", "30", "15"], String(s.maxFps), (v) => (s.maxFps = Number(v)))),
     );
@@ -88,11 +100,60 @@ export class SettingsPanel {
     this.root.hidden = !this.root.hidden;
   }
 
+  /** Ask the OS for coordinates once; sunrise and sunset are then computed daily. */
+  private locate(): void {
+    const s = this.state.settings;
+    if (!navigator.geolocation) {
+      this.locNote.textContent = t("Location is not available here.");
+      return;
+    }
+    this.locNote.textContent = t("Locating…");
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        s.lat = Math.round(pos.coords.latitude * 100) / 100;
+        s.lon = Math.round(pos.coords.longitude * 100) / 100;
+        this.onChange();
+        this.refresh();
+      },
+      () => {
+        this.locNote.textContent = t("Could not get a location; set the times by hand.");
+      },
+      { timeout: 10000 },
+    );
+  }
+
   private refresh(): void {
-    const speed = this.state.settings.simSpeed;
-    this.speedWarn.textContent = speed > 1
-      ? t("{n}× runs {n} game seconds per real second: fish age and the tank cycles faster, and higher speeds cost more CPU. Offline catch-up stays at 1×.", { n: speed })
-      : "";
+    const s = this.state.settings;
+    const real = s.clock === "real";
+    this.speedSelect.disabled = real;
+    if (real) this.speedSelect.value = "1";
+    const speed = real ? 1 : s.simSpeed;
+    if (s.lat !== undefined && s.lon !== undefined) {
+      const { sunrise, sunset } = solarTimes(new Date(), s.lat, s.lon);
+      this.sunriseInput.value = fmt(sunrise);
+      this.sunsetInput.value = fmt(sunset);
+      this.sunriseInput.disabled = this.sunsetInput.disabled = true;
+      this.locNote.textContent = t("{lat}, {lon} · computed daily", { lat: s.lat, lon: s.lon });
+    } else {
+      this.sunriseInput.disabled = this.sunsetInput.disabled = false;
+      this.locNote.textContent = t("Not set; using the times above.");
+    }
+    this.speedWarn.textContent = real
+      ? t("Real time: the tank follows your clock and the sun. Switch to Simulated to change speed.")
+      : speed > 1
+        ? t("{n}× runs {n} game seconds per real second: fish age and the tank cycles faster, and higher speeds cost more CPU. Offline catch-up stays at 1×.", { n: speed })
+        : t("Simulated: the tank has its own day that runs at the speed above.");
+  }
+
+  private time(value: string, set: (v: string) => void): HTMLInputElement {
+    const input = document.createElement("input");
+    input.type = "time";
+    input.value = value;
+    input.onchange = () => {
+      if (input.value) set(input.value);
+      this.onChange();
+    };
+    return input;
   }
 
   private row(label: string, control: HTMLElement): HTMLElement {
@@ -124,7 +185,7 @@ export class SettingsPanel {
     return input;
   }
 
-  private select(options: string[], value: string, set: (v: string) => void, label = (v: string) => v): HTMLElement {
+  private select(options: string[], value: string, set: (v: string) => void, label = (v: string) => v): HTMLSelectElement {
     const sel = document.createElement("select");
     for (const o of options) {
       const opt = document.createElement("option");
@@ -139,4 +200,8 @@ export class SettingsPanel {
     };
     return sel;
   }
+}
+
+function fmt(hour: number): string {
+  return `${String(Math.floor(hour)).padStart(2, "0")}:${String(Math.round((hour % 1) * 60)).padStart(2, "0")}`;
 }

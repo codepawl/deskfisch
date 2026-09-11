@@ -7,6 +7,7 @@ import { decayPellets } from "./food";
 import { stepBags } from "./bag";
 import { stepBreeding, type Birth } from "./breeding";
 import { stepDisease, type Illness } from "./disease";
+import { simSpeed } from "./clock";
 import type { Bounds } from "./fish";
 
 /** Where fry appear; the scene sets the real tank bounds at boot. */
@@ -72,7 +73,7 @@ export function advance(state: GameState, now = Date.now()): SimEvents & { away:
   }
   const events: SimEvents = { died: [], born: [], sick: [] };
   while (now - state.simTime >= 1000) {
-    merge(events, simulate(state, state.settings.simSpeed));
+    merge(events, simulate(state, simSpeed(state)));
     state.simTime += 1000;
   }
   return { ...events, away: null };

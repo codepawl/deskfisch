@@ -6,6 +6,7 @@ import { SPECIES } from "../data/species";
 import type { Bounds, Fish } from "../sim/fish";
 import type { GameState, Quality } from "../sim/state";
 import type { Bag } from "../sim/bag";
+import { ambientNow } from "../sim/clock";
 
 
 export const SCREEN_W = 384;
@@ -192,13 +193,14 @@ export class TankScene {
       if (drag?.bag === b) this.drawBag(buf, b, drag.x, drag.y);
       else this.drawBag(buf, b, b.x, BAG_Y + Math.round(Math.sin(this.time * 1.2 + b.x) * 1));
     }
-    // Room light follows the real clock: bright by day, dim at dusk and dawn,
-    // dark at night. The tank light overrides it; without one the tank is
-    // always a touch dimmer than the room so toggling is visible.
-    const hour = new Date().getHours();
-    const room = hour >= 21 || hour < 6 ? 0.6 : hour >= 17 || hour < 8 ? 0.3 : 0;
-    const dark = lit ? 0 : Math.max(0.15, room);
-    if (dark > 0) buf.tintRect(WATER.x0, WATER.y0, WATER.x1 - WATER.x0, WATER.y1 - WATER.y0, COLOR.n, dark);
+    // Room light follows the sun (real or simulated clock): night is dark navy,
+    // dawn and dusk go rose and gold, day is clear. The tank light overrides it;
+    // without one the tank is always a touch dimmer than the room so toggling shows.
+    if (!lit) {
+      const a = ambientNow(state);
+      const alpha = Math.max(0.15, a.alpha);
+      buf.tintRect(WATER.x0, WATER.y0, WATER.x1 - WATER.x0, WATER.y1 - WATER.y0, a.alpha > 0 ? a.color : COLOR.n, alpha);
+    }
     if (state.tank.algae > 10) {
       buf.tintRect(WATER.x0, WATER.y0, WATER.x1 - WATER.x0, WATER.y1 - WATER.y0, COLOR.g, state.tank.algae / 250);
     }

@@ -124,6 +124,7 @@ describe("advance", () => {
   it("sim speed multiplies game time per real second", async () => {
     const { advance } = await import("../src/sim/tick");
     const g = newGame(0);
+    g.settings.clock = "sim";
     g.settings.simSpeed = 10;
     advance(g, 3000);
     expect(g.simTime).toBe(3000);

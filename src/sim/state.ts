@@ -60,6 +60,14 @@ export interface Settings {
   ambient: boolean;
   /** UI language; "auto" follows the system. */
   lang: "auto" | "en" | "vi";
+  /** Real time locks sim speed to 1× and lights the room by the real sun; simulated uses game time. */
+  clock: "real" | "sim";
+  /** "HH:MM" local; used unless a location is set. */
+  sunrise: string;
+  sunset: string;
+  /** Optional coordinates; when set, sunrise/sunset are computed daily. */
+  lat?: number;
+  lon?: number;
 }
 
 /** Lifetime counters for the journal. */
@@ -88,6 +96,8 @@ export interface GameState {
   inventory: Record<string, number>;
   /** Total hours the tank has been running, for achievements and cycle detection. */
   ageHours: number;
+  /** Hour of day when the tank was started; the simulated clock runs from here. */
+  dayStartHour: number;
   achievements: string[];
   stats: Stats;
   /** The getting-started checklist has been dismissed once. */
@@ -136,11 +146,12 @@ export function newGame(now = Date.now()): GameState {
     nextFishId: 1,
     inventory: { flakes: 20, conditioner: 2 },
     ageHours: 0,
+    dayStartHour: new Date(now).getHours() + new Date(now).getMinutes() / 60,
     achievements: [],
     stats: { bought: 0, born: 0, died: 0, sold: 0, coinsEarned: 0 },
     guideSeen: false,
     mode: "window",
     pinned: true,
-    settings: { transparent: true, volume: 0.5, muted: false, simSpeed: 1, quality: "high", maxFps: 60, chill: false, ambient: true, lang: "auto" },
+    settings: { transparent: true, volume: 0.5, muted: false, simSpeed: 1, quality: "high", maxFps: 60, chill: false, ambient: true, lang: "auto", clock: "real", sunrise: "06:00", sunset: "18:00" },
   };
 }

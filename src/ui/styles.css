@@ -250,7 +250,9 @@ html[data-mode="pet"][data-pinned="true"] .grip { opacity: 0.35; }
   top: calc(20px * var(--s));
   left: 50%;
   transform: translateX(-50%);
-  width: calc(170px * var(--s));
+  width: calc(190px * var(--s));
+  max-height: calc(200px * var(--s));
+  overflow-y: auto;
 }
 .settings-rows { display: flex; flex-direction: column; gap: calc(2px * var(--s)); }
 .settings-row {
@@ -288,6 +290,8 @@ html[data-mode="pet"][data-pinned="true"] .grip { opacity: 0.35; }
 }
 .settings-row input[type="checkbox"]:checked { background: var(--accent); border-color: var(--accent); }
 .settings-row input[type="range"] { width: calc(50px * var(--s)); }
+.settings-row input[type="time"] { -webkit-appearance: none; appearance: none; padding: calc(1px * var(--s)) calc(2px * var(--s)); }
+.settings-row input:disabled, .settings-row select:disabled { opacity: 0.5; }
 .toolbar { flex-wrap: wrap; }
 
 /* Coins and clock get their own backing when the window is see-through. */

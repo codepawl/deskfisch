@@ -2,6 +2,7 @@ import type { GameState } from "../sim/state";
 import { button, el, setLabel } from "./dom";
 import { icon, type IconName } from "./icons";
 import { t } from "../i18n";
+import { ambientNow, tankHour } from "../sim/clock";
 
 export type Tool = "feed" | "scrub" | "vacuum" | null;
 
@@ -79,11 +80,11 @@ export class Hud {
     const s = this.state;
     this.coinCount.textContent = String(Math.floor(s.coins));
     const day = Math.floor(s.ageHours / 24) + 1;
-    const now = new Date();
-    const hh = String(now.getHours()).padStart(2, "0");
-    const mm = String(now.getMinutes()).padStart(2, "0");
-    const h = now.getHours();
-    const sky = h >= 21 || h < 6 ? "☾" : h >= 17 || h < 8 ? "☁" : "☀";
+    const hour = tankHour(s);
+    const hh = String(Math.floor(hour)).padStart(2, "0");
+    const mm = String(Math.floor((hour % 1) * 60)).padStart(2, "0");
+    const phase = ambientNow(s).phase;
+    const sky = phase === "night" ? "☾" : phase === "day" ? "☀" : "◐";
     this.clock.textContent = t("Day {day} · {sky} {time}", { day, sky, time: `${hh}:${mm}` });
     const flakes = s.inventory.flakes ?? 0;
     setLabel(this.feedBtn, t("Feed ×{n}", { n: flakes }));
