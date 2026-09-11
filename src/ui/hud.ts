@@ -32,6 +32,17 @@ export class Hud {
       button("tool", "Vacuum", () => this.toggleTool("vacuum"), "vacuum"),
       this.lightBtn,
     );
+    // Labels follow the last hovered button, not :hover, so crossing the gap
+    // between two buttons hands the label over instead of collapsing it.
+    this.bar.addEventListener("pointerover", (e) => {
+      const b = (e.target as HTMLElement).closest("button");
+      if (!b) return;
+      for (const o of this.bar.querySelectorAll("button.hover")) o.classList.remove("hover");
+      b.classList.add("hover");
+    });
+    this.bar.addEventListener("pointerleave", () => {
+      for (const o of this.bar.querySelectorAll("button.hover")) o.classList.remove("hover");
+    });
     this.dragHandle = el("div.hud-top", {}, this.coins, el("span.grip", {}, "⋮⋮ drag ⋮⋮"), this.clock);
     this.restore = button("hud-restore", "⋯", () => {});
     this.root = el("div.hud", {}, this.dragHandle, this.bar);

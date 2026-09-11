@@ -104,7 +104,7 @@ button.tool.lit { border-color: var(--accent); }
 
 /* Toolbar buttons show only their icon; the label slides out on hover and
    stays out while the tool is active. Buttons without an icon keep their text. */
-.toolbar button.tool { gap: 0; }
+.toolbar button.tool { gap: 0; transition: border-color 0.15s ease; }
 .toolbar button.tool .icon + .label {
   max-width: 0;
   opacity: 0;
@@ -113,7 +113,7 @@ button.tool.lit { border-color: var(--accent); }
   white-space: nowrap;
   transition: max-width 0.28s ease, opacity 0.2s ease, margin-left 0.28s ease;
 }
-.toolbar button.tool:hover .icon + .label,
+.toolbar button.tool.hover .icon + .label,
 .toolbar button.tool:focus-visible .icon + .label,
 .toolbar button.tool.active .icon + .label {
   max-width: calc(60px * var(--s));
