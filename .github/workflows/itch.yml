@@ -1,0 +1,62 @@
+# Pushes a published GitHub release to itch.io with butler.
+# Runs on every published release, or by hand with a tag. Needs BUTLER_API_KEY.
+name: itch.io
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to push (for example v0.4.0)
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    env:
+      BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+      TARGET: codepawl/deskfisch
+    steps:
+      - uses: actions/checkout@v4
+      - name: Resolve tag
+        id: tag
+        run: |
+          tag="${{ github.event.inputs.tag || github.event.release.tag_name }}"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "version=${tag#v}" >> "$GITHUB_OUTPUT"
+      - name: Download installers
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p dl
+          gh release download "${{ steps.tag.outputs.tag }}" --dir dl \
+            --pattern '*x64-setup.exe' --pattern '*universal.dmg' --pattern '*amd64.AppImage'
+          ls -la dl
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Build browser version
+        run: pnpm exec tsc && pnpm exec vite build --base=./ --outDir html5 --emptyOutDir
+      # butler is itch.io's official upload tool: https://itch.io/docs/butler/
+      - name: Install butler
+        run: |
+          curl -L -o butler.zip https://broth.itch.zone/butler/linux-amd64/LATEST/archive/default
+          unzip -q butler.zip -d butler
+          chmod +x butler/butler
+          ./butler/butler -V
+      - name: Push
+        run: |
+          v="${{ steps.tag.outputs.version }}"
+          ./butler/butler push dl/*x64-setup.exe  "$TARGET:windows" --userversion "$v"
+          ./butler/butler push dl/*universal.dmg  "$TARGET:mac"     --userversion "$v"
+          ./butler/butler push dl/*amd64.AppImage "$TARGET:linux"   --userversion "$v"
+          ./butler/butler push html5              "$TARGET:html5"   --userversion "$v"
