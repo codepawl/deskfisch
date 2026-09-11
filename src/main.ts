@@ -58,6 +58,8 @@ async function boot(): Promise<void> {
       const stock: [string, string][] = [["neon", "Neo"], ["neon", "Nia"], ["neon", "Nix"], ["neon", "Nam"], ["neon", "Nub"], ["neon", "Nox"], ["guppy", "Gus"], ["guppy", "Gia"], ["cory", "Cody"], ["cory", "Cleo"], ["angel", "Ari"]];
       for (const [sp, name] of stock) state.fish.push(spawnFish(SPECIES[sp], name, WATER, state.nextFishId++));
       for (const f of state.fish) f.size = 1;
+      // The demo tank already earned everything; no toast parade on load.
+      checkAchievements(state);
     }
   }
   // Embedded on the website: skip the onboarding card so the hero shows the tank.
