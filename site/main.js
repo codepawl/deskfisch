@@ -11,7 +11,8 @@ const ICONS = {
   guide: ["WWWWWWW.", "WLLLWLLW", "WLLLWLLW", "WWWWWWWW", "WLLLWLLW", "WLLLWLLW", "WWWWWWW.", "........"],
   dl: ["...yy...", "...yy...", "...yy...", ".yyyyyy.", "..yyyy..", "...yy...", "LLLLLLLL", "L......L"],
   code: [".c....c.", "c......c", "c......c", "c..yy..c", "c..yy..c", "c......c", "c......c", ".c....c."],
-  paw: [".yy..yy.", ".yy..yy.", "........", "yy....yy", "yy.yy.yy", "..yyyy..", ".yyyyyy.", "..yyyy.."],
+  // The codepawl mascot: a round blob with a tuft, winking >.-
+  paw: ["...WW.......", "..WWWWW.....", "..WWWWWWW...", ".WWWWWWWWW..", "..WWWWWWWWW.", ".WWWWWWWWWWW", "WWWKWWWWWWWW", "WWWWKWWKKKWW", "WWWKWWWWWWWW", "WWWWWWKWWWWW", ".WWWWWWWWWW.", "..WWWWWWWW.."],
   // Platforms at 12×12: Tux (slate body so it reads on the dark panel), apple with leaf and bite, four panes, ringed globe.
   linux: ["....dddd....", "...dddddd...", "...dWddWd...", "...ddyydd...", "..ddWyyWdd..", ".ddWWWWWWdd.", ".dWWWWWWWWd.", ".dWWWWWWWWd.", "ddWWWWWWWWdd", "dddWWWWWWddd", ".yydWWWWdyy.", "..yyddddyy.."],
   mac: [".......G....", "......G.....", "..WWW.WWW...", ".WWWWWWWWWW.", "WWWWWWWWWW..", "WWWWWWWWW...", "WWWWWWWWW...", "WWWWWWWWWW..", "WWWWWWWWWWW.", ".WWWWWWWWWW.", ".WWWW.WWWW..", "............"],
