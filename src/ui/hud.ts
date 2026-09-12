@@ -22,6 +22,8 @@ export class Hud {
   private readonly feedBtn: HTMLButtonElement;
   private readonly lightBtn: HTMLButtonElement;
   private readonly bar = el("div.toolbar");
+  /** One floating label for the whole bar: only ever one element, so nothing is left behind. */
+  private readonly tip = el("div.tooltip", { hidden: true });
 
   constructor(overlay: HTMLElement, private readonly state: GameState) {
     this.feedBtn = button("tool", t("Feed"), () => this.toggleTool("feed"), "feed");
@@ -39,12 +41,15 @@ export class Hud {
     // below can drop them; labels float above the bar, so no handoff across gaps.
     this.bar.addEventListener("pointerover", (e) => {
       const b = (e.target as HTMLElement).closest("button");
-      if (!b) return;
-      for (const o of this.bar.querySelectorAll("button.hover")) o.classList.remove("hover");
-      b.classList.add("hover");
+      if (!b || !this.bar.contains(b)) return;
+      const label = b.querySelector(".label")?.textContent ?? "";
+      if (!label) return;
+      this.tip.textContent = label;
+      this.tip.style.left = `${b.offsetLeft + b.offsetWidth / 2}px`;
+      this.tip.hidden = false;
     });
     const clearHover = () => {
-      for (const o of this.bar.querySelectorAll("button.hover")) o.classList.remove("hover");
+      this.tip.hidden = true;
     };
     this.bar.addEventListener("pointerleave", clearHover);
     // Once a button is chosen the label has done its job.
@@ -59,6 +64,7 @@ export class Hud {
     });
     window.addEventListener("blur", clearHover);
     this.dragHandle = el("div.hud-top", {}, this.coins, el("span.grip", {}, t("⋮⋮ drag ⋮⋮")), this.clock);
+    this.bar.append(this.tip);
     this.restore = button("hud-restore", t("Show controls"), () => {}, "settings");
     this.root = el("div.hud", {}, this.dragHandle, this.bar);
     overlay.append(this.root, this.resizeHandle, this.restore);

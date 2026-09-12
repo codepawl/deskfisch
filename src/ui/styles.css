@@ -118,28 +118,20 @@ button.tool:disabled { opacity: 0.4; cursor: default; }
    (no layout shift, so neighbours stay put) and slides in on hover; a click
    hides it again. Buttons without an icon keep their text. */
 .toolbar button.tool { gap: 0; position: relative; overflow: visible; transition: border-color 0.15s ease; }
-.toolbar button.tool .icon + .label {
+.toolbar button.tool .icon + .label { display: none; }
+/* A single label for the whole bar, moved under the hovered button. No fade:
+   WebKitGTK left ghosts of per-button labels behind while they animated out. */
+.toolbar { position: relative; }
+.toolbar .tooltip {
   position: absolute;
-  left: 50%;
   bottom: calc(100% + calc(2px * var(--s)));
-  transform: translate(-50%, 0);
-  opacity: 0;
-  visibility: hidden;
+  transform: translateX(-50%);
   pointer-events: none;
   white-space: nowrap;
   color: var(--ink);
   background: var(--panel);
   border: calc(1px * var(--s)) solid var(--accent);
   padding: calc(1px * var(--s)) calc(3px * var(--s));
-  /* Opacity only, and visibility flips after the fade so WebKitGTK drops the
-     layer instead of leaving a stale paint of the label behind. */
-  transition: opacity 0.15s ease, visibility 0s linear 0.15s;
-}
-.toolbar button.tool.hover .icon + .label,
-.toolbar button.tool:focus-visible .icon + .label {
-  opacity: 1;
-  visibility: visible;
-  transition: opacity 0.15s ease, visibility 0s;
 }
 
 /* --- Panels --------------------------------------------------------- */
