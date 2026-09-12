@@ -5,8 +5,8 @@ import { button, el } from "./dom";
 import { t } from "../i18n";
 
 /** Short, honest descriptions. Shown on first run and inside Settings. */
-export const PLAYSTYLES: { id: Playstyle; title: string; blurb: string }[] = [
-  { id: "zen", title: "Zen", blurb: "Nothing dies, nothing gets sick. Fish still get grumpy when neglected. Just vibes." },
+export const PLAYSTYLES: { id: Playstyle; title: string; blurb: string; hint?: string }[] = [
+  { id: "zen", title: "Zen", hint: "Good if you just want fish on your desk", blurb: "Nothing dies, nothing gets sick. Fish still get grumpy when neglected. Just vibes." },
   { id: "normal", title: "Normal", blurb: "Real fishkeeping. Cycle the tank, watch the water, fish can fall ill and die." },
   { id: "hardcore", title: "Hardcore", blurb: "Illness twice as likely, stress hurts more, prices up, fewer coins to start." },
   { id: "sandbox", title: "Sandbox", blurb: "Unlimited coins, no risk. Build the tank you want and watch it." },
@@ -19,7 +19,7 @@ export class WelcomePanel {
   constructor(overlay: HTMLElement, private readonly state: GameState, private readonly onDone: () => void) {
     const cards = PLAYSTYLES.map((p) =>
       el("button.playstyle", { onclick: () => this.pick(p.id) },
-        el("div.playstyle-title", {}, t(p.title)),
+        el("div.playstyle-title", {}, t(p.title), p.hint ? el("span.playstyle-hint", {}, t(p.hint)) : null),
         el("div.muted", {}, t(p.blurb))),
     );
     this.root = el(

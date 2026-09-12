@@ -268,6 +268,7 @@ export const vi: Record<string, string> = {
   "How do you want to keep fish? You can change this later in Settings.": "Bạn muốn nuôi cá kiểu nào? Đổi lại được trong Cài đặt.",
   "Play style": "Kiểu chơi",
   "Zen": "Zen",
+  "Good if you just want fish on your desk": "Hợp nếu bạn chỉ muốn có cá trên bàn",
   "Normal": "Thường",
   "Hardcore": "Hardcore",
   "Sandbox": "Sandbox",
