@@ -182,8 +182,13 @@ export class TankScene {
     const dvy = vy - this.pushY;
     this.pushX = vx;
     this.pushY = vy;
+    // Mode 1: the whole body leans and piles up on the trailing wall.
+    // Mode 2: a faster, shorter wave the same kick excites, so the two never line up.
     this.tiltVel -= dvx * IMPULSE;
+    this.mode2Vel += dvx * IMPULSE * 0.6;
     this.heaveVel -= dvy * IMPULSE;
+    // A hard shove throws spray at the wall the water is heading for.
+    if (Math.abs(dvx) > 500) this.wallSplash(dvx > 0 ? WATER.x0 + 4 : WATER.x1 - 5, Math.min(1, Math.abs(dvx) / 1500));
     // Friction drags the top grains against the shove; a hard yank piles the bed up one side.
     const grains = Math.min(4, Math.floor(Math.abs(dvx) / 300));
     if (grains > 0 && this.shoves.length < 8) this.shoves.push(dvx > 0 ? -grains : grains);
@@ -210,11 +215,26 @@ export class TankScene {
     this.tilt = Math.max(-1, Math.min(1, this.tilt + this.tiltVel * dt));
     this.heaveVel += (-k * this.heave - c * this.heaveVel) * dt;
     this.heave = Math.max(-1, Math.min(1, this.heave + this.heaveVel * dt));
+    // Second sloshing mode: ~1.7× the frequency, damped twice as fast.
+    const omega2 = omega * 1.7;
+    this.mode2Vel += (-omega2 * omega2 * this.mode2 - 2 * 0.24 * omega2 * this.mode2Vel) * dt;
+    this.mode2 = Math.max(-1, Math.min(1, this.mode2 + this.mode2Vel * dt));
+  }
+
+  private mode2 = 0;
+  private mode2Vel = 0;
+
+  /** Spray where the surging water meets the glass. */
+  private wallSplash(x: number, strength: number): void {
+    const n = Math.round(4 + strength * 10);
+    for (let i = 0; i < n; i++) {
+      this.particles.push({ x: x + rand(-3, 3), y: WATER.y0 + rand(-2, 2), vx: rand(-10, 10), vy: rand(-40, -15) * (0.5 + strength), life: rand(0.25, 0.5), color: i % 3 ? COLOR.c : COLOR.W });
+    }
   }
 
   /** Whether the water is visibly moving; skips the shear when still. */
   get sloshing(): boolean {
-    return Math.abs(this.tilt) > 0.02 || Math.abs(this.heave) > 0.02 || Math.abs(this.tiltVel) > 0.1;
+    return Math.abs(this.tilt) > 0.02 || Math.abs(this.heave) > 0.02 || Math.abs(this.tiltVel) > 0.1 || Math.abs(this.mode2) > 0.02;
   }
 
   /** Horizontal water velocity felt by fish, px/s. */
@@ -397,15 +417,25 @@ export class TankScene {
     }
   }
 
-  /** Tilt the whole water band: high side rises, low side drops, with a travelling ripple. */
+  /**
+   * Sloshing water: the first mode piles the surface up on one wall (a half
+   * cosine across the width, flat in the middle), the second mode adds a
+   * shorter wave, and a ripple runs the way the water is surging, strongest
+   * near the wall it is about to hit. One pass over the columns; skipped when still.
+   */
   private slosh(buf: PixelBuffer): void {
-    const cx = (WATER.x0 + WATER.x1) / 2;
-    const half = (WATER.x1 - WATER.x0) / 2;
+    const w = WATER.x1 - WATER.x0;
     const t = this.time;
-    buf.shearColumns(WATER.x0, WATER.x1, WATER.y0 - 6, this.crest, (x) => {
-      const lean = (-this.tilt * (x - cx)) / half * 6;
-      const ripple = Math.sin((x - WATER.x0) * 0.08 + t * 9) * Math.abs(this.tiltVel) * 0.8;
-      return Math.round(lean + this.heave * 4 + ripple);
+    const dir = this.tiltVel >= 0 ? 1 : -1;
+    const surge = Math.min(1, Math.abs(this.tiltVel) * 1.5);
+    buf.shearColumns(WATER.x0, WATER.x1, WATER.y0 - 8, this.crest, (x) => {
+      const u = (x - WATER.x0) / w; // 0 at the left wall, 1 at the right
+      const mode1 = -this.tilt * Math.cos(u * Math.PI) * 8;
+      const mode2 = this.mode2 * Math.sin(u * Math.PI * 2) * 3;
+      // Ripple travelling with the surge; fades toward the wall it comes from.
+      const towards = dir > 0 ? u : 1 - u;
+      const ripple = Math.sin(u * w * 0.09 - dir * t * 10) * surge * (0.4 + towards * 1.6);
+      return Math.round(mode1 + mode2 + this.heave * 4 + ripple);
     });
   }
 
