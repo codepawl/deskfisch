@@ -4,7 +4,7 @@ import { Input } from "./engine/input";
 import { startLoop } from "./engine/loop";
 import { SPECIES } from "./data/species";
 import { AUTOSAVE_SECONDS } from "./data/constants";
-import { isCurious, moveFish, startle, type Fish, type Poke } from "./sim/fish";
+import { isCurious, moveFish, startle, type Fish, type Poke, type Threat } from "./sim/fish";
 import { dropPellets, updatePellets } from "./sim/food";
 import { demoGame, newGame, type GameState } from "./sim/state";
 import { spawnFish } from "./sim/fish";
@@ -346,8 +346,10 @@ const UI_MIN_SCALE = 1.25;
       const poke: Poke | null = hoverStill > 0.6 ? { x: hoverX, y: hoverY } : null;
       nipCooldown -= dt;
       const current = scene.current;
+      // A sponge or siphon working in the water is something fish give room to.
+      const threat: Threat | null = working && (hud.tool === "scrub" || hud.tool === "vacuum") ? { x: input.x, y: input.y } : null;
       for (const f of state.fish) {
-        moveFish(f, SPECIES[f.speciesId], WATER, dt, state, lure, poke);
+        moveFish(f, SPECIES[f.speciesId], WATER, dt, state, lure, poke, threat);
         if (current) f.vx += current * dt;
         if (poke && f.alive && isCurious(f) && nipCooldown <= 0) {
           const w = SPECIES[f.speciesId].frames[0].w;

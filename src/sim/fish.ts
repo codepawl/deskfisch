@@ -24,6 +24,12 @@ export interface Fish {
   phase: number;
   /** Speed multiplier for the current intent (chasing, hiding...). */
   pace?: number;
+  /** Seconds of a pending fright: the fish has noticed the knock but not reacted yet. */
+  spook?: number;
+  spookX?: number;
+  spookY?: number;
+  /** Seconds the fish keeps its distance from the last scare. */
+  wary?: number;
   sex: "m" | "f";
   /** Hours a female has carried fry; 0 or absent when not gravid. */
   gravidHours?: number;
@@ -80,24 +86,88 @@ export function isCurious(f: Fish): boolean {
 }
 
 /** A knock on the glass: fish within `radius` dart away from the point for a moment. */
-export function startle(state: GameState, x: number, y: number, water: Bounds, radius = 90): number {
+/**
+ * How much a species holds its ground: 0 darts at anything (tetras, danios),
+ * 1 barely flinches unless something is right on it (betta, angelfish).
+ */
+export function boldness(sp: Species): number {
+  if (sp.id === "betta" || sp.id === "angel") return 1;
+  if (sp.id === "molly" || sp.id === "guppy") return 0.5;
+  if (sp.depth[0] >= 0.8) return 0.35;
+  return 0;
+}
+
+/**
+ * A knock on the glass. Nobody moves at once: each fish notices after its own
+ * short delay (bold ones later, sometimes not at all), then flees in moveFish.
+ */
+export function startle(state: GameState, x: number, y: number, _water: Bounds, radius = 90): number {
   let hit = 0;
   for (const f of state.fish) {
     if (!f.alive) continue;
-    const w = SPECIES[f.speciesId].frames[0].w;
-    const cx = f.x + w / 2;
-    const d = Math.hypot(cx - x, f.y - y);
-    if (d > radius) continue;
-    const away = cx >= x ? 1 : -1;
-    f.tx = clamp(cx + away * (60 + rand(0, 50)) - w / 2, water.x0, water.x1 - w);
-    f.ty = clamp(f.y + rand(-25, 25), water.y0, floorAt(water, f.tx, SPECIES[f.speciesId].frames[0].h));
-    f.retarget = rand(0.6, 1);
-    f.pace = 2.4;
-    f.vx += away * 40;
-    f.stress = clamp(f.stress + 1.5, 0, 100);
+    const sp = SPECIES[f.speciesId];
+    const b = boldness(sp);
+    const w = sp.frames[0].w;
+    const d = Math.hypot(f.x + w / 2 - x, f.y - y);
+    if (d > radius * (1.2 - 0.7 * b)) continue;
+    if (b >= 1 && d > 45 && Math.random() < 0.6) continue; // a betta mostly just looks
+    f.spook = rand(0.04, 0.3) + b * 0.25;
+    f.spookX = x;
+    f.spookY = y;
     hit++;
   }
   return hit;
+}
+
+/** The fright lands: dart away with some scatter, bold fish less far, bottom dwellers then freeze. */
+function flee(f: Fish, sp: Species, water: Bounds, x: number, y: number): void {
+  const w = sp.frames[0].w;
+  const h = sp.frames[0].h;
+  const b = boldness(sp);
+  const cx = f.x + w / 2;
+  const away = cx >= x ? 1 : -1;
+  const angle = rand(-0.6, 0.6); // not straight along the line from the knock
+  const run = (50 + rand(0, 60)) * (1 - 0.6 * b);
+  f.tx = clamp(cx + away * Math.cos(angle) * run - w / 2, water.x0, water.x1 - w);
+  f.ty = clamp(f.y + Math.sin(angle) * run * 0.6 + rand(-8, 8), water.y0, floorAt(water, f.tx, h));
+  f.retarget = rand(0.5, 1.1);
+  f.pace = rand(2, 2.8) * (1 - 0.3 * b);
+  f.vx += away * (25 + rand(0, 30)) * (1 - 0.5 * b);
+  f.wary = rand(2, 5) * (1 - 0.5 * b);
+  f.spookX = x;
+  f.spookY = y;
+  f.stress = clamp(f.stress + 1.5 * (1 - 0.6 * b), 0, 100);
+}
+
+/** A hand or tool working in the water: fish give it room while it is there. */
+export interface Threat {
+  x: number;
+  y: number;
+}
+
+/** Nudge away from a threat: a smooth push that grows as it gets closer, plus a bit of nerves. */
+function avoid(f: Fish, sp: Species, water: Bounds, dt: number, threat: Threat): void {
+  const w = sp.frames[0].w;
+  const b = boldness(sp);
+  const cx = f.x + w / 2;
+  const dx = cx - threat.x;
+  const dy = f.y + sp.frames[0].h / 2 - threat.y;
+  const d = Math.max(4, Math.hypot(dx, dy));
+  const reach = 70 * (1.1 - 0.7 * b);
+  if (d > reach) return;
+  const push = ((reach - d) / reach) * 140 * (1 - 0.5 * b);
+  f.vx += (dx / d) * push * dt + rand(-6, 6) * dt;
+  f.vy += (dy / d) * push * dt * 0.7;
+  f.wary = Math.max(f.wary ?? 0, 1.2);
+  f.spookX = threat.x;
+  f.spookY = threat.y;
+  // Bottom dwellers scoot a little way and sit tight rather than swim off.
+  if (sp.depth[0] >= 0.8 && d < 35 && (f.retarget ?? 0) < 0.2) {
+    f.tx = clamp(cx + Math.sign(dx || 1) * rand(25, 45) - w / 2, water.x0, water.x1 - w);
+    f.ty = floorAt(water, f.tx + w / 2, sp.frames[0].h);
+    f.retarget = rand(1.5, 3);
+    f.pace = 2.2;
+  }
 }
 
 /** Per-fish position inside its school, stable across sessions. */
@@ -112,9 +182,18 @@ export interface Poke {
   y: number;
 }
 
-export function moveFish(f: Fish, sp: Species, water: Bounds, dt: number, state?: GameState, lure: Lure | null = null, poke: Poke | null = null): void {
+export function moveFish(f: Fish, sp: Species, water: Bounds, dt: number, state?: GameState, lure: Lure | null = null, poke: Poke | null = null, threat: Threat | null = null): void {
   const w = sp.frames[0].w;
   const h = sp.frames[0].h;
+  if (f.alive && f.spook !== undefined) {
+    f.spook -= dt;
+    if (f.spook <= 0) {
+      f.spook = undefined;
+      flee(f, sp, water, f.spookX ?? f.x, f.spookY ?? f.y);
+    }
+  }
+  if (f.alive && (f.wary ?? 0) > 0) f.wary! -= dt;
+  if (f.alive && threat) avoid(f, sp, water, dt, threat);
   if (!f.alive) {
     f.vx *= 0.9;
     f.y = Math.max(water.y0 + 1, f.y - 6 * dt);
@@ -138,6 +217,17 @@ export function moveFish(f: Fish, sp: Species, water: Bounds, dt: number, state?
     f.pace = 1.6;
   } else if (f.retarget <= 0 || Math.hypot(f.tx - f.x, f.ty - f.y) < 4) {
     chooseTarget(f, sp, water, state, lure, poke);
+    if ((f.wary ?? 0) > 0 && f.spookX !== undefined && f.spookY !== undefined) {
+      // Still nervous: do not wander back toward the scare just yet.
+      const dx = f.tx - f.spookX;
+      const dy = f.ty - f.spookY;
+      const d = Math.hypot(dx, dy);
+      if (d < 60) {
+        const away = d < 1 ? 1 : dx / d;
+        f.tx = clamp(f.spookX + away * 70, water.x0, water.x1 - w);
+        f.ty = clamp(f.spookY + (d < 1 ? 0 : dy / d) * 40, water.y0, floorAt(water, f.tx + w / 2, h));
+      }
+    }
   }
   const dx = f.tx - f.x;
   const dy = f.ty - f.y;

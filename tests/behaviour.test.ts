@@ -69,8 +69,26 @@ describe("glass", () => {
     far.y = 100;
     g.fish.push(near, far);
     expect(startle(g, 90, 100, WATER)).toBe(1);
-    expect(near.pace).toBeGreaterThan(2);
-    expect(near.tx).toBeGreaterThan(near.x);
-    expect(far.pace ?? 1).toBe(1);
+    // Nothing happens on the same frame: the fish notices, then bolts a beat later.
+    expect(near.spook).toBeGreaterThan(0);
+    expect(near.pace ?? 1).toBe(1);
+    for (let i = 0; i < 60 && near.spook !== undefined; i++) moveFish(near, SPECIES.neon, WATER, 1 / 60, g);
+    expect(near.spook).toBeUndefined();
+    expect(near.pace).toBeGreaterThan(1.3);
+    expect(near.tx).toBeGreaterThan(100);
+    expect(near.wary).toBeGreaterThan(0);
+    expect(far.spook).toBeUndefined();
+  });
+
+  it("a siphon working nearby pushes fish off without a full panic", async () => {
+    const { moveFish: move } = await import("../src/sim/fish");
+    const g = tankGame(0);
+    const f = spawnFish(SPECIES.neon, "n", WATER, 1);
+    f.x = 120; f.y = 150; f.tx = 120; f.ty = 150; f.retarget = 5;
+    g.fish.push(f);
+    for (let i = 0; i < 30; i++) move(f, SPECIES.neon, WATER, 1 / 60, g, null, null, { x: 100, y: 150 });
+    expect(f.x).toBeGreaterThan(120);
+    expect(f.wary).toBeGreaterThan(0);
+    expect(f.pace ?? 1).toBeLessThan(2);
   });
 });
