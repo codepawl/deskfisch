@@ -220,7 +220,7 @@ function run(state: GameState): void {
     }
     // Scrub and vacuum act while held; a press must not open a fish card.
     if (hud.tool) return;
-    const fish = fishAt(state.fish, x, y);
+    const fish = fishAt(state.fish, x, y, inspect.current);
     inspect.show(fish);
     bagPanel.show(null);
     if (!fish && state.tank.fill > 0.3) {
@@ -355,7 +355,12 @@ const UI_MIN_SCALE = 1.25;
     render() {
       const showCursor = hud.tool && hud.tool !== "feed" && input.inside && inWater(input.x, input.y);
       const cursor = showCursor ? { tool: hud.tool!, x: input.x, y: input.y } : null;
-      scene.render(buf, state, drag, cursor, state.mode === "pet" && state.settings.transparent, state.settings.quality);
+      // Outline the fish a click would open; off in chill mode and while a tool is held.
+      const hover = !state.settings.chill && !hud.tool && !drag && input.inside && inWater(input.x, input.y)
+        ? fishUnder(state.fish, input.x, input.y)[0] ?? null
+        : null;
+      screen.style.cursor = hover ? "pointer" : "";
+      scene.render(buf, state, drag, cursor, state.mode === "pet" && state.settings.transparent, state.settings.quality, hover);
       const scale = buf.present(screen, scene.overlays);
       // Text keeps a readable size in tiny windows; panels then scroll inside the tank.
       overlay.style.setProperty("--s", String(Math.max(scale, UI_MIN_SCALE)));
@@ -403,12 +408,29 @@ function bagAt(bags: Bag[], x: number, y: number): Bag | null {
   return bags.find((b) => x >= b.x && x < b.x + BAG_W && y >= bagY() && y < bagY() + BAG_H) ?? null;
 }
 
-function fishAt(fish: Fish[], x: number, y: number): Fish | null {
+/** Fish under the pointer, nearest centre first, so a crowd picks the one you are actually on. */
+function fishUnder(fish: Fish[], x: number, y: number): Fish[] {
+  const hits: { f: Fish; d: number }[] = [];
   for (const f of fish) {
     const s = SPECIES[f.speciesId].frames[0];
-    if (x >= f.x - 2 && x <= f.x + s.w + 2 && y >= f.y - 2 && y <= f.y + s.h + 2) return f;
+    const w = f.size < 0.5 ? s.w / 2 : s.w;
+    const h = f.size < 0.5 ? s.h / 2 : s.h;
+    if (x >= f.x - 2 && x <= f.x + w + 2 && y >= f.y - 2 && y <= f.y + h + 2) {
+      hits.push({ f, d: Math.hypot(x - (f.x + w / 2), y - (f.y + h / 2)) });
+    }
   }
-  return null;
+  return hits.sort((a, b) => a.d - b.d).map((h) => h.f);
+}
+
+/**
+ * The fish a click should open. Clicking again on the same crowd steps to the
+ * next fish under the pointer, so overlapping fish are all reachable.
+ */
+function fishAt(fish: Fish[], x: number, y: number, current: Fish | null = null): Fish | null {
+  const hits = fishUnder(fish, x, y);
+  if (hits.length === 0) return null;
+  const i = current ? hits.indexOf(current) : -1;
+  return i >= 0 ? hits[(i + 1) % hits.length] : hits[0];
 }
 
 boot().catch((e) => console.error("boot failed", e));

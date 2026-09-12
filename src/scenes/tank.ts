@@ -295,6 +295,7 @@ export class TankScene {
     cursor: { tool: string; x: number; y: number } | null = null,
     transparentBackdrop = false,
     quality: Quality = "high",
+    highlight: Fish | null = null,
   ): void {
     buf.clear(transparentBackdrop ? 0 : COLOR.K);
     this.crest = sandCrest(state.tank.sand);
@@ -309,6 +310,7 @@ export class TankScene {
       buf.set(p.x + 1, p.y, COLOR.s);
     }
     for (const f of state.fish) this.drawFish(buf, f);
+    if (highlight && highlight.alive) this.drawHighlight(buf, highlight);
     this.drawBubbles(buf);
     if (quality !== "low") for (const p of this.particles) buf.set(p.x, p.y, p.color);
     if (quality !== "low") this.refract(buf);
@@ -430,6 +432,23 @@ export class TankScene {
       // Plants are rooted a couple of pixels into the bed; hardscape rests on top of it.
       const top = sandTop(state.tank.sand, d.x + (s.w >> 1)) - s.h + (plant ? 2 : 0);
       buf.blit(s, d.x + sway, top, sway < 0);
+    }
+  }
+
+  /** Four small corner brackets just outside the sprite, blinking slowly. */
+  private drawHighlight(buf: PixelBuffer, f: Fish): void {
+    const sp = SPECIES[f.speciesId];
+    let frame = sp.frames[0];
+    if (f.size < 0.5) frame = halfSize(frame);
+    const x0 = Math.round(f.x) - 2, y0 = Math.round(f.y) - 2;
+    const x1 = x0 + frame.w + 3, y1 = y0 + frame.h + 3;
+    const c = Math.sin(this.time * 6) > -0.3 ? COLOR.y : COLOR.W;
+    const arm = 3;
+    for (let i = 0; i < arm; i++) {
+      buf.set(x0 + i, y0, c); buf.set(x0, y0 + i, c);
+      buf.set(x1 - i, y0, c); buf.set(x1, y0 + i, c);
+      buf.set(x0 + i, y1, c); buf.set(x0, y1 - i, c);
+      buf.set(x1 - i, y1, c); buf.set(x1, y1 - i, c);
     }
   }
 

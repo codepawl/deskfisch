@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.2 — unreleased
+
+- Hovering a fish outlines it with corner brackets and the pointer becomes a hand, so you know which fish a click opens. Off in chill mode and while holding a tool.
+- Crowded fish: a click picks the fish whose centre is nearest the pointer, and clicking the same spot again steps to the next fish underneath, so overlapping fish are all reachable.
+- Toolbar labels are one floating tooltip instead of one per button; the old ones lingered on WebKitGTK.
+- Panels lose the block shadow, per-row rules and bordered buttons; scrollbars are thin and no longer cover content.
+
 ## 0.4.1 — 2026-09-12
 
 - Background music: five slow chiptune tracks made for the tank, a daytime set and a night set that follows the room light, shuffled and crossfaded. Off by default; Settings → Music.
