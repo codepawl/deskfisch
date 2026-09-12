@@ -52,6 +52,8 @@ const sfx = new Sfx();
 const music = new Music();
 /** Seconds between scrub sounds while the sponge is held. */
 const SCRUB_SOUND_INTERVAL = 0.12;
+/** `?stress=1`: uncapped frame rate and 10× sim so leaks show up in minutes (scripts/stress.mjs). */
+const STRESS = new URLSearchParams(location.search).get("stress") === "1";
 
 async function boot(): Promise<void> {
   const embedded = window.self !== window.top;
@@ -71,6 +73,12 @@ async function boot(): Promise<void> {
   // Embedded on the website: skip the onboarding card so the hero shows the tank.
   if (embedded || (shot && shot !== "welcome")) state.guideSeen = state.onboarded = true;
   if (shot) document.documentElement.dataset.shot = shot;
+  if (STRESS) {
+    state.inventory.flakes = 9999;
+    state.settings.clock = "sim";
+    state.settings.simSpeed = 10;
+    state.settings.muted = true;
+  }
   setLang(state.settings.lang === "auto" ? detectLang() : state.settings.lang);
   run(state);
 }
@@ -275,7 +283,7 @@ function run(state: GameState): void {
 /** Below this the VT323 text is unreadable, so the UI stops shrinking with the tank. */
 const UI_MIN_SCALE = 1.25;
   startLoop({
-    maxFps: () => (document.hasFocus() ? state.settings.maxFps : Math.min(state.settings.maxFps, IDLE_FPS)),
+    maxFps: () => (STRESS ? 1000 : document.hasFocus() ? state.settings.maxFps : Math.min(state.settings.maxFps, IDLE_FPS)),
     frame(dt) {
       setFillLevel(state.tank.fill);
       const v = windowVelocity(dt);
