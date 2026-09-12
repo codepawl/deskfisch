@@ -11,7 +11,7 @@ import { spawnFish } from "./sim/fish";
 import { newSand } from "./sim/sand";
 import { advance, SIM_WATER } from "./sim/tick";
 import { loadGame, saveGame } from "./save/store";
-import { BAG_H, BAG_W, bagY, sandTop, SCREEN_H, SCREEN_W, setFillLevel, TankScene, WATER, type DragBag } from "./scenes/tank";
+import { BAG_H, BAG_W, bagY, GLASS_TOP, sandTop, SCREEN_H, SCREEN_W, setFillLevel, TankScene, WATER, type DragBag } from "./scenes/tank";
 import { scrubGlass, vacuumGravel } from "./sim/tank";
 import { CarePanel } from "./ui/care";
 import { Toasts } from "./ui/toast";
@@ -200,7 +200,9 @@ function run(state: GameState): void {
       inspect.show(null);
       return;
     }
-    if (!inWater(x, y)) return;
+    // Feeding works from above the water too: flakes land on the surface and float.
+    const overWater = hud.tool === "feed" && x >= WATER.x0 && x < WATER.x1 && y >= GLASS_TOP && y < WATER.y0;
+    if (!inWater(x, y) && !overWater) return;
     if (!hud.tool && y >= sandTop(state.tank.sand, x) - 14) {
       const item = decorAt(state.decor, x, y, state.tank.sand);
       if (item) {
@@ -212,7 +214,7 @@ function run(state: GameState): void {
       const flakes = state.inventory.flakes ?? 0;
       if (flakes <= 0) return;
       state.inventory.flakes = flakes - 1;
-      dropPellets(state, x, PELLETS_PER_PINCH, WATER);
+      dropPellets(state, x, PELLETS_PER_PINCH, WATER, overWater ? undefined : y);
       scene.splash(x);
       sfx.splash();
       hud.refresh();

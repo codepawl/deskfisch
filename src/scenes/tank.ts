@@ -306,8 +306,9 @@ export class TankScene {
     this.drawSand(buf, state.tank.sand);
     this.drawDecor(buf, state);
     for (const p of state.pellets) {
-      buf.set(p.x, p.y, COLOR.t);
-      buf.set(p.x + 1, p.y, COLOR.s);
+      const dry = p.float > 0;
+      buf.set(p.x, p.y, dry ? COLOR.s : COLOR.t);
+      buf.set(p.x + 1, p.y, dry ? COLOR.S : COLOR.s);
     }
     for (const f of state.fish) this.drawFish(buf, f);
     if (highlight && highlight.alive) this.drawHighlight(buf, highlight);

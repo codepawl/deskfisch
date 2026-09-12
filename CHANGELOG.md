@@ -4,6 +4,7 @@
 
 - Hovering a fish outlines it with corner brackets and the pointer becomes a hand, so you know which fish a click opens. Off in chill mode and while holding a tool.
 - Crowded fish: a click picks the fish whose centre is nearest the pointer, and clicking the same spot again steps to the next fish underneath, so overlapping fish are all reachable.
+- Feeding is physical: flakes dropped from above the water land dry and float on the surface for a while, where only surface feeders reach them, then soak and sink. Click under the water to place food at that depth like a pipette; bottom dwellers only go for what has sunk.
 - Toolbar labels are one floating tooltip instead of one per button; the old ones lingered on WebKitGTK.
 - Panels lose the block shadow, per-row rules and bordered buttons; scrollbars are thin and no longer cover content.
 

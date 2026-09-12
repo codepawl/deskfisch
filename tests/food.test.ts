@@ -1,16 +1,18 @@
 import { describe, expect, it } from "vitest";
 import { tankGame } from "./helpers";
 import { moveFish, spawnFish } from "../src/sim/fish";
-import { dropPellets, updatePellets } from "../src/sim/food";
+import { dropPellets, nearestPellet, updatePellets } from "../src/sim/food";
 import { SPECIES } from "../src/data/species";
 
 const WATER = { x0: 0, y0: 0, x1: 300, y1: 200 };
 
 describe("feeding", () => {
-  it("pellets sink and settle on the substrate", () => {
+  it("flakes dropped from above float first, then sink and settle", () => {
     const g = tankGame(0);
     dropPellets(g, 150, 3, WATER);
-    for (let i = 0; i < 60 * 30; i++) updatePellets(g, WATER, 1 / 60);
+    for (let i = 0; i < 60 * 5; i++) updatePellets(g, WATER, 1 / 60);
+    for (const p of g.pellets) expect(p.y).toBe(WATER.y0 + 1);
+    for (let i = 0; i < 60 * 60; i++) updatePellets(g, WATER, 1 / 60);
     expect(g.pellets).toHaveLength(3);
     for (const p of g.pellets) {
       expect(p.y).toBe(WATER.y1 - 1);
@@ -32,6 +34,21 @@ describe("feeding", () => {
     }
     expect(g.pellets).toHaveLength(0);
     expect(f.hunger).toBe(20);
+  });
+
+  it("food placed under water sinks at once; bottom dwellers ignore floating flakes", () => {
+    const g = tankGame(0);
+    dropPellets(g, 100, 1, WATER, 120);
+    expect(g.pellets[0].float).toBe(0);
+    expect(g.pellets[0].y).toBe(120);
+    dropPellets(g, 100, 1, WATER);
+    const cory = spawnFish(SPECIES.cory, "c", WATER, 2);
+    cory.hunger = 80;
+    const floating = g.pellets[1];
+    expect(floating.float).toBeGreaterThan(0);
+    // the sunk pellet is the only one a cory will go for
+    cory.x = 100; cory.y = 118;
+    expect(nearestPellet(g, cory, true)).toBe(g.pellets[0]);
   });
 
   it("a full fish ignores food", () => {

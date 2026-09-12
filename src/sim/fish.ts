@@ -122,7 +122,7 @@ export function moveFish(f: Fish, sp: Species, water: Bounds, dt: number, state?
     return;
   }
   f.retarget -= dt;
-  const food = state && f.hunger > 15 ? nearestPellet(state, f) : null;
+  const food = state && f.hunger > 15 ? nearestPellet(state, f, sp.depth[0] >= 0.8) : null;
   if (food) {
     // Face the pellet and aim the mouth, not the sprite origin, at it. Facing is
     // pinned while seeking so the target does not flip as the fish settles.
