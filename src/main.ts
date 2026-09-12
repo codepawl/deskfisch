@@ -391,7 +391,7 @@ const UI_MIN_SCALE = 1.25;
       overlay.style.width = screen.style.width;
       overlay.style.height = screen.style.height;
     },
-  });
+  }, STRESS ? "timer" : "raf");
 }
 
 /**
