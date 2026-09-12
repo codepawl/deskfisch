@@ -32,6 +32,9 @@ export interface Fish {
   wary?: number;
   /** Seconds a picky fish ignores food after turning its nose up at a pellet. */
   snub?: number;
+  /** Burst-and-glide gait: seconds left in the current phase, and whether it is a glide. */
+  beat?: number;
+  gliding?: boolean;
   sex: "m" | "f";
   /** Hours a female has carried fry; 0 or absent when not gravid. */
   gravidHours?: number;
@@ -88,6 +91,41 @@ export function isCurious(f: Fish): boolean {
 }
 
 /** A knock on the glass: fish within `radius` dart away from the point for a moment. */
+/**
+ * How a species swims. Real fish do not hold one speed: they beat the tail
+ * for a moment and coast. Danios hardly coast, bettas and angelfish mostly
+ * glide, corys move in hops. `agility` is how fast the heading follows the target.
+ */
+const GAIT: Record<string, { beat: [number, number]; glide: [number, number]; glideMul: number; agility: number }> = {
+  neon: { beat: [0.4, 0.9], glide: [0.3, 1.0], glideMul: 0.55, agility: 2.2 },
+  danio: { beat: [1.0, 3.0], glide: [0.1, 0.35], glideMul: 0.7, agility: 3.0 },
+  guppy: { beat: [0.5, 1.2], glide: [0.3, 0.8], glideMul: 0.5, agility: 2.0 },
+  molly: { beat: [0.5, 1.2], glide: [0.4, 1.0], glideMul: 0.5, agility: 1.8 },
+  betta: { beat: [0.3, 0.6], glide: [1.0, 3.0], glideMul: 0.35, agility: 1.3 },
+  angel: { beat: [0.4, 0.8], glide: [1.5, 3.5], glideMul: 0.4, agility: 1.0 },
+  oto: { beat: [0.3, 0.6], glide: [1.0, 4.0], glideMul: 0.2, agility: 2.0 },
+  cory: { beat: [0.3, 0.7], glide: [0.8, 2.5], glideMul: 0.15, agility: 2.0 },
+};
+const DEFAULT_GAIT = GAIT.guppy;
+
+/** Advance the gait clock; returns the speed multiplier for this frame. */
+function gait(f: Fish, sp: Species, dt: number, urgent: boolean): number {
+  const g = GAIT[sp.id] ?? DEFAULT_GAIT;
+  if (urgent) {
+    // Fleeing or chasing food: tail going the whole time.
+    f.beat = 0;
+    f.gliding = false;
+    return 1;
+  }
+  f.beat = (f.beat ?? 0) - dt;
+  if (f.beat <= 0) {
+    f.gliding = !f.gliding;
+    const [lo, hi] = f.gliding ? g.glide : g.beat;
+    f.beat = rand(lo, hi);
+  }
+  return f.gliding ? g.glideMul : 1;
+}
+
 /**
  * Appetite, species and individual. Species: how keen a kind is on flake
  * (guppies and mollies eat anything, bettas and otos are picky, corys wait
@@ -265,8 +303,9 @@ export function moveFish(f: Fish, sp: Species, water: Bounds, dt: number, state?
   // Stressed fish are sluggish; fish are slow to turn so velocity eases toward the target.
   const dist = Math.max(1, Math.hypot(dx, dy));
   // Slow down on approach so the fish settles on the target instead of overshooting.
-  const speed = Math.min(sp.speed * (1 - f.stress / 200) * (f.pace ?? 1), dist * 3);
-  const ease = 1 - Math.exp(-dt * 1.5);
+  const urgent = !!food || (f.pace ?? 1) > 1.2;
+  const speed = Math.min(sp.speed * (1 - f.stress / 200) * (f.pace ?? 1) * gait(f, sp, dt, urgent), dist * 3);
+  const ease = 1 - Math.exp(-dt * (GAIT[sp.id] ?? DEFAULT_GAIT).agility * (urgent ? 1.6 : 1));
   f.vx += ((dx / dist) * speed - f.vx) * ease;
   // Idle cruising is mostly horizontal; anything urgent (food, lure, hiding) climbs freely.
   const vertical = food || (f.pace ?? 1) !== 1 ? 1 : 0.5;

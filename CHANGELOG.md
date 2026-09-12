@@ -3,6 +3,10 @@
 ## 0.4.3 — unreleased
 
 - Grime you can see and clean: settled waste (mulm) lies on the sand as dark crumbs and algae film grows on the front glass as green specks, both following the water numbers. The siphon now lifts the mulm and leftover food under it, nicks the sand, and takes a little water with it. The scraper lifts the film where you rub, and green flecks drift off.
+- Fish swim at speeds closer to their real pace, and no two species move the same way. Danios are constant darters, neons and guppies beat and coast, angelfish and bettas glide between strokes, corys hop along the sand. Every fish now swims in bursts and glides instead of one steady crawl; chasing food or fleeing keeps the tail going.
+- Fright is softer: a knocked fish notices first and bolts a beat later, bold species (betta, angelfish) barely react, and fish steer around a working siphon or scraper instead of panicking.
+- Appetite differs per fish and species. Some come for every flake, some turn their nose up; leftovers on the sand rot after about 45 minutes, foul the water, and the tank points out a pile the siphon should take.
+- Water slosh follows the drag direction: a pull left sends the wave left, and a hard stop splashes on that wall.
 
 ## 0.4.2 — 2026-09-12
 

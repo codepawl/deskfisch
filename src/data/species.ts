@@ -6,6 +6,7 @@ export interface Species {
   /** Body sprite frames, facing right. Tail animation cycles through them. */
   frames: Sprite[];
   /** Cruise speed in px/s. */
+  /** Cruising speed in px/s (the tank is about 6.4 px per cm); bursts and glides sit on top. */
   speed: number;
   /** Preferred depth band as fraction of water height (0 top .. 1 bottom). */
   depth: [number, number];
@@ -25,7 +26,7 @@ export const SPECIES: Record<string, Species> = {
   neon: {
     id: "neon",
     name: "Neon tetra",
-    speed: 22,
+    speed: 45,
     depth: [0.3, 0.8],
     tempRange: [22, 27],
     phRange: [6.0, 7.5],
@@ -57,7 +58,7 @@ export const SPECIES: Record<string, Species> = {
   guppy: {
     id: "guppy",
     name: "Guppy",
-    speed: 18,
+    speed: 40,
     depth: [0.1, 0.6],
     tempRange: [22, 28],
     phRange: [6.8, 8.0],
@@ -94,7 +95,7 @@ export const SPECIES: Record<string, Species> = {
   danio: {
     id: "danio",
     name: "Zebra danio",
-    speed: 34,
+    speed: 95,
     depth: [0.05, 0.5],
     tempRange: [18, 26],
     phRange: [6.5, 7.8],
@@ -122,7 +123,7 @@ export const SPECIES: Record<string, Species> = {
   molly: {
     id: "molly",
     name: "Molly",
-    speed: 16,
+    speed: 35,
     depth: [0.2, 0.7],
     tempRange: [24, 28],
     phRange: [7.0, 8.4],
@@ -157,7 +158,7 @@ export const SPECIES: Record<string, Species> = {
   betta: {
     id: "betta",
     name: "Betta",
-    speed: 12,
+    speed: 20,
     depth: [0.1, 0.6],
     tempRange: [25, 29],
     phRange: [6.5, 7.5],
@@ -195,7 +196,7 @@ export const SPECIES: Record<string, Species> = {
   angel: {
     id: "angel",
     name: "Angelfish",
-    speed: 14,
+    speed: 24,
     depth: [0.2, 0.7],
     tempRange: [24, 29],
     phRange: [6.5, 7.4],
@@ -241,7 +242,7 @@ export const SPECIES: Record<string, Species> = {
   oto: {
     id: "oto",
     name: "Otocinclus",
-    speed: 10,
+    speed: 22,
     depth: [0.8, 1],
     tempRange: [21, 26],
     phRange: [6.0, 7.5],
@@ -269,7 +270,7 @@ export const SPECIES: Record<string, Species> = {
   cory: {
     id: "cory",
     name: "Corydoras",
-    speed: 14,
+    speed: 30,
     depth: [0.85, 1],
     tempRange: [22, 26],
     phRange: [6.0, 7.8],
