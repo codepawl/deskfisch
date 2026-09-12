@@ -256,9 +256,10 @@ button.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
 
 /* --- Toasts --------------------------------------------------------- */
 
+/* Toasts sit just under the top bar so they never cover the toolbar labels. */
 .toasts {
   position: absolute;
-  bottom: calc(34px * var(--s));
+  top: calc(18px * var(--s));
   left: 50%;
   transform: translateX(-50%);
   display: flex;

@@ -251,7 +251,8 @@ function run(state: GameState): void {
   // machine never loses time; long gaps are replayed coarsely.
   const tick = () => {
     const { away, died, born, sick } = advance(state);
-    if (away) {
+    // A summary is only worth a toast after a real absence.
+    if (away && away.hours >= 5 / 60) {
       const h = away.hours >= 1 ? `${away.hours.toFixed(1)} h` : `${Math.round(away.hours * 60)} min`;
       toasts.show(t("Away {h}{capped}: +{n} coins", { h, capped: away.capped ? t(" (capped)") : "", n: Math.floor(away.coinsEarned) }), 8000);
     }
