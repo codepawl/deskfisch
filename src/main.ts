@@ -52,7 +52,7 @@ const sfx = new Sfx();
 const music = new Music();
 /** Seconds between scrub sounds while the sponge is held. */
 const SCRUB_SOUND_INTERVAL = 0.12;
-/** `?stress=1`: uncapped frame rate and 10× sim so leaks show up in minutes (scripts/stress.mjs). */
+/** `?stress=1`: uncapped frame rate and 30× sim so leaks show up in minutes (scripts/stress.mjs). */
 const STRESS = new URLSearchParams(location.search).get("stress") === "1";
 
 async function boot(): Promise<void> {
@@ -76,7 +76,7 @@ async function boot(): Promise<void> {
   if (STRESS) {
     state.inventory.flakes = 9999;
     state.settings.clock = "sim";
-    state.settings.simSpeed = 10;
+    state.settings.simSpeed = 30;
     state.settings.muted = true;
   }
   setLang(state.settings.lang === "auto" ? detectLang() : state.settings.lang);
