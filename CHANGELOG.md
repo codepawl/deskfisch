@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Phone and tablet layout: the tank fills the screen above a deck of big labelled buttons (or beside it in landscape), panels open as full-width sheets, and everything is sized for thumbs. Two fingers pinch and pan the tank; Settings → Tank view switches between the whole tank and a taller, cropped view. Touch has its own manners: a tap knocks, a held finger draws curious fish, a drag carries a fish or works a tool, and nothing hovers after you lift.
+- An iOS build of the same app (Tauri shell), signed and uploaded to TestFlight by CI.
+
 ## 0.4.4 — 2026-09-13
 
 - macOS builds are signed with a Developer ID certificate and notarized by Apple, so the dmg opens without the "could not verify" block. Windows is still unsigned; SmartScreen's "More info → Run anyway" remains.

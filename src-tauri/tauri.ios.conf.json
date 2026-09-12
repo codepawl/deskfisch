@@ -1,0 +1,9 @@
+{
+  "identifier": "com.codepawl.deskfisch",
+  "bundle": {
+    "iOS": {
+      "developmentTeam": "D884WZQ6N4",
+      "minimumSystemVersion": "15.0"
+    }
+  }
+}

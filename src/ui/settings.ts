@@ -1,5 +1,5 @@
 import type { GameState, Quality } from "../sim/state";
-import { autostart, isTauri, openUrl } from "../platform";
+import { autostart, isMobile, isMobileShell, isTauri, openUrl } from "../platform";
 import { checkForUpdate } from "../updater";
 import { exportSave, pickSaveFile, KEEP } from "../save/backup";
 import { normalise, saveGame } from "../save/store";
@@ -34,7 +34,9 @@ export class SettingsPanel {
         this.onLanguage();
       }, (v) => (v === "auto" ? t("System") : LANGS[v as Lang]))),
       this.row(t("Play style"), (this.styles = playstyleButtons(state, this.onChange)).root),
-      this.row(t("See-through pet window"), this.checkbox(s.transparent, (v) => (s.transparent = v))),
+      ...(isMobile
+        ? [this.row(t("Tank view"), this.select(["fit", "tall"], s.mobileView ?? "fit", (v) => (s.mobileView = v as "fit" | "tall"), (v) => (v === "fit" ? t("Whole tank") : t("Tall, pan around"))))]
+        : [this.row(t("See-through pet window"), this.checkbox(s.transparent, (v) => (s.transparent = v)))]),
       this.row(t("Sound"), this.checkbox(!s.muted, (v) => (s.muted = !v))),
       this.row(t("Ambient hum"), this.checkbox(s.ambient, (v) => (s.ambient = v))),
       this.row(t("Music"), this.checkbox(s.music, (v) => (s.music = v))),
@@ -88,7 +90,7 @@ export class SettingsPanel {
         button("tool", t("License"), () => void openUrl("https://github.com/codepawl/deskfisch/blob/master/LICENSE")),
       ),
     );
-    if (isTauri) {
+    if (isTauri && !isMobileShell) {
       const status = el("span.muted", {}, "");
       const btn = button("tool", t("Check for updates"), async () => {
         status.textContent = t("Checking…");

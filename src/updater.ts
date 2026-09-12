@@ -1,4 +1,4 @@
-import { isTauri } from "./platform";
+import { isMobileShell, isTauri } from "./platform";
 
 export interface AvailableUpdate {
   version: string;
@@ -11,7 +11,7 @@ export interface AvailableUpdate {
  * when already current, or when the check itself fails (offline).
  */
 export async function checkForUpdate(): Promise<AvailableUpdate | null> {
-  if (!isTauri) return null;
+  if (!isTauri || isMobileShell) return null;
   const { check } = await import("@tauri-apps/plugin-updater");
   const update = await check().catch(() => null);
   if (!update) return null;

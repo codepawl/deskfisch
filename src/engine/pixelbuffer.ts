@@ -121,7 +121,7 @@ export class PixelBuffer {
    * pixelated`) do the upscale in the compositor. Scaling with drawImage cost a
    * software raster of the whole window every frame. Returns the on-screen scale.
    */
-  present(screen: HTMLCanvasElement, overlays: Overlay[] = []): number {
+  present(screen: HTMLCanvasElement, overlays: Overlay[] = [], external = false): number {
     if (screen.width !== this.w || screen.height !== this.h) {
       screen.width = this.w;
       screen.height = this.h;
@@ -135,6 +135,8 @@ export class PixelBuffer {
     }
     const stage = screen.parentElement!;
     const fit = Math.max(0.5, Math.min(stage.clientWidth / this.w, stage.clientHeight / this.h));
+    // On phones the viewport sizes and transforms the canvas itself.
+    if (external) return fit;
     screen.style.width = `${Math.floor(this.w * fit)}px`;
     screen.style.height = `${Math.floor(this.h * fit)}px`;
     return fit;

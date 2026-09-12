@@ -1,25 +1,30 @@
+#[cfg(desktop)]
 use tauri::{
     menu::{Menu, MenuItem, PredefinedMenuItem},
     tray::TrayIconBuilder,
     Emitter, Manager, WindowEvent,
 };
 
-/// Closing the window hides it to the tray so the tank keeps simulating.
-/// Quit and display modes are available from the tray menu; mode changes are
-/// forwarded to the webview, which owns the window setup for each mode.
+/// Desktop: closing the window hides it to the tray so the tank keeps
+/// simulating; quit and display modes live in the tray menu, and mode changes
+/// are forwarded to the webview, which owns the window setup for each mode.
+/// Mobile: one full-screen webview, no tray, no updater, no autostart.
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
+    let builder = tauri::Builder::default()
         .plugin(tauri_plugin_store::Builder::new().build())
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_opener::init());
+
+    #[cfg(desktop)]
+    let builder = builder
         .plugin(tauri_plugin_autostart::init(tauri_plugin_autostart::MacosLauncher::LaunchAgent, None))
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
-        .plugin(tauri_plugin_dialog::init())
-        .plugin(tauri_plugin_fs::init())
-        .plugin(tauri_plugin_opener::init())
         .setup(|app| {
             // DESKFISCH_STRESS=1: load the stocked demo tank in stress mode (uncapped
-            // frame rate, 10x sim, never saved) so an endurance run needs minutes, not hours.
+            // frame rate, 30x sim, never saved) so an endurance run needs minutes, not hours.
             if std::env::var_os("DESKFISCH_STRESS").is_some() {
                 if let Some(w) = app.get_webview_window("main") {
                     let _ = w.eval("if (!location.search.includes('stress')) location.replace(location.pathname + '?scene=stocked&stress=1');");
@@ -60,11 +65,14 @@ pub fn run() {
                 api.prevent_close();
                 let _ = window.hide();
             }
-        })
+        });
+
+    builder
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
 
+#[cfg(desktop)]
 fn show_main(app: &tauri::AppHandle) {
     if let Some(w) = app.get_webview_window("main") {
         let _ = w.show();

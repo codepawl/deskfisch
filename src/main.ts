@@ -26,7 +26,8 @@ import { Sfx } from "./engine/audio";
 import { Music } from "./engine/music";
 import { ambientNow } from "./sim/clock";
 import { checkAchievements } from "./sim/achievements";
-import { applyMode, isTauri, onModeRequest, setPinned, startWindowDrag, startWindowResize, windowVelocity, type Mode } from "./platform";
+import { applyMode, isMobile, isMobileShell, isTauri, onModeRequest, setPinned, startWindowDrag, startWindowResize, windowVelocity, type Mode } from "./platform";
+import { Viewport } from "./engine/viewport";
 import { releaseBag, releaseShock, type Bag } from "./sim/bag";
 import type { Decor } from "./sim/state";
 import { DECOR_SPRITES } from "./scenes/tank";
@@ -45,8 +46,14 @@ const VACUUM_REACH = 16;
 
 const screen = document.getElementById("screen") as HTMLCanvasElement;
 const overlay = document.getElementById("overlay") as HTMLElement;
+const tankview = document.getElementById("tankview") as HTMLElement;
+// Phones and tablets get their own layout: tank on top, big labelled buttons below.
+// (The site's hero iframe is a desktop-sized tank even on a phone.)
+document.documentElement.dataset.layout = isMobile && window.self === window.top ? "mobile" : "desktop";
 const buf = new PixelBuffer(SCREEN_W, SCREEN_H);
 const input = new Input(screen, SCREEN_W, SCREEN_H);
+// The glass with its frame: the framebuffer's HUD margins are not worth screen space on a phone.
+const viewport = document.documentElement.dataset.layout === "mobile" ? new Viewport(tankview, screen, input, { x: WATER.x0 - 3, y: GLASS_TOP - 3, w: WATER.x1 - WATER.x0 + 6, h: WATER.y1 - GLASS_TOP + 6 }) : null;
 const scene = new TankScene();
 const sfx = new Sfx();
 const music = new Music();
@@ -128,17 +135,18 @@ function run(state: GameState): void {
 
   const MODES: Mode[] = ["window", "pet", "fullscreen"];
   hud.divider();
-  const modeBtn = hud.addButton("", () => setMode(MODES[(MODES.indexOf(state.mode) + 1) % MODES.length]), "mode");
+  // Window modes are a desktop thing; a phone has one screen and no tray.
+  const modeBtn = viewport ? null : hud.addButton("", () => setMode(MODES[(MODES.indexOf(state.mode) + 1) % MODES.length]), "mode");
   const setMode = (mode: Mode) => {
-    state.mode = mode;
-    setLabel(modeBtn, t("Mode: {mode}", { mode: t(mode) }));
-    void applyMode(mode, state.pinned, state.settings.transparent);
+    state.mode = viewport ? "window" : mode;
+    if (modeBtn) setLabel(modeBtn, t("Mode: {mode}", { mode: t(mode) }));
+    void applyMode(state.mode, state.pinned, state.settings.transparent);
   };
   sfx.setVolume(state.settings.volume, state.settings.muted);
   music.setVolume(state.settings.volume, state.settings.muted);
   setMode(state.mode);
   void onModeRequest(setMode);
-  if (isTauri) {
+  if (isTauri && !isMobileShell) {
     const pinBtn = hud.addButton("", () => {
       state.pinned = !state.pinned;
       setLabel(pinBtn, state.pinned ? t("Unpin") : t("Pin"));
@@ -234,12 +242,17 @@ function run(state: GameState): void {
     }
     inspect.show(fish);
     bagPanel.show(null);
-    if (!fish && state.tank.fill > 0.3) {
-      // A knock on the glass.
-      scene.tap(x, y);
-      sfx.tap();
-      startle(state, x, y, WATER);
-    }
+    if (fish) return;
+    // A finger decides on release: a quick tap knocks, a held finger is a poke.
+    if (input.touch) pendingKnock = true;
+    else knock(x, y);
+  };
+  let pendingKnock = false;
+  const knock = (x: number, y: number) => {
+    if (state.tank.fill <= 0.3) return;
+    scene.tap(x, y);
+    sfx.tap();
+    startle(state, x, y, WATER);
   };
 
   const handleRelease = () => {
@@ -315,8 +328,12 @@ const UI_MIN_SCALE = 1.25;
       const v = windowVelocity(dt);
       if (v) scene.push(v.vx, v.vy);
       scene.stepSand(state.tank.sand, dt);
-      input.beginFrame();
+      input.beginFrame(dt);
       if (input.pressed) handleClick();
+      if (input.released && pendingKnock) {
+        pendingKnock = false;
+        if (input.travel < 4 && input.held < 0.45) knock(input.pressX, input.pressY);
+      }
       if (drag) {
         drag.x = input.x - BAG_W / 2;
         drag.y = input.y - BAG_H / 2;
@@ -396,7 +413,7 @@ const UI_MIN_SCALE = 1.25;
       } else {
         hoverStill += dt;
       }
-      const poke: Poke | null = hoverStill > 0.6 ? { x: hoverX, y: hoverY } : null;
+      const poke: Poke | null = hoverStill > 0.6 && (!input.touch || input.down) ? { x: hoverX, y: hoverY } : null;
       nipCooldown -= dt;
       const current = scene.current;
       // A sponge or siphon working in the water is something fish give room to.
@@ -425,11 +442,30 @@ const UI_MIN_SCALE = 1.25;
         : null;
       screen.style.cursor = fishDrag?.moved ? "grabbing" : hover ? "pointer" : "";
       scene.render(buf, state, drag, cursor, state.mode === "pet" && state.settings.transparent, state.settings.quality, hover);
-      const scale = buf.present(screen, scene.overlays);
-      // Text keeps a readable size in tiny windows; panels then scroll inside the tank.
-      overlay.style.setProperty("--s", String(Math.max(scale, UI_MIN_SCALE)));
-      overlay.style.width = screen.style.width;
-      overlay.style.height = screen.style.height;
+      const scale = buf.present(screen, scene.overlays, viewport !== null);
+      if (viewport) {
+        // Phone layout: the UI scales with the screen, not the tank, and the
+        // overlay covers the whole stage so the deck below the tank is usable.
+        const stage = overlay.parentElement!;
+        overlay.style.setProperty("--s", String(Math.min(3, Math.max(2, stage.clientWidth / 190))));
+        // The deck is whatever the toolbar needs; the tank takes the rest.
+        const bar = hud.root.querySelector<HTMLElement>(".toolbar")!;
+        const landscape = stage.clientWidth > stage.clientHeight;
+        if (landscape) overlay.style.setProperty("--deck-w", `${bar.offsetWidth + 16}px`);
+        else overlay.style.setProperty("--deck-h", `${bar.offsetHeight + 24}px`);
+        stage.style.setProperty("--deck-h", overlay.style.getPropertyValue("--deck-h"));
+        stage.style.setProperty("--deck-w", overlay.style.getPropertyValue("--deck-w"));
+        viewport.layout(state.settings.mobileView === "tall");
+        // Sheets open from the tank's bottom edge, not the box's.
+        const r = screen.getBoundingClientRect();
+        const sr = stage.getBoundingClientRect();
+        overlay.style.setProperty("--tank-h", `${Math.min(r.bottom, sr.bottom) - sr.top}px`);
+      } else {
+        // Text keeps a readable size in tiny windows; panels then scroll inside the tank.
+        overlay.style.setProperty("--s", String(Math.max(scale, UI_MIN_SCALE)));
+        overlay.style.width = screen.style.width;
+        overlay.style.height = screen.style.height;
+      }
     },
   }, STRESS ? "timer" : "raf");
 }

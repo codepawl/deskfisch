@@ -46,3 +46,17 @@
 ## Linux
 
 No signing needed. AppImage users get auto-update; deb/rpm are plain packages.
+
+## iOS (App Store)
+
+The phone build is the same web app in a Tauri iOS shell (`src-tauri/tauri.ios.conf.json`
+sets bundle id `com.codepawl.deskfisch` and the team). It is built and uploaded by
+`.github/workflows/ios.yml`, since Xcode only runs on macOS.
+
+1. App Store Connect → Users and Access → Integrations → App Store Connect API → Team Keys →
+   Generate (role App Manager). Download the `.p8` once.
+2. Repository secrets: `APPLE_API_KEY_ID`, `APPLE_API_ISSUER_ID`, `APPLE_API_KEY_P8` (base64 of the .p8).
+3. App Store Connect → Apps → + → iOS app, bundle id `com.codepawl.deskfisch` (register it under
+   Certificates, Identifiers & Profiles → Identifiers first if it is not offered).
+4. Run the iOS workflow (Actions → iOS → Run workflow) or push an `ios-v*` tag. The build lands
+   in TestFlight; fill in the store listing and submit for review from App Store Connect.

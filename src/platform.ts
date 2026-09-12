@@ -3,6 +3,13 @@ import type { GameState } from "./sim/state";
 export type Mode = GameState["mode"];
 
 export const isTauri = "__TAURI_INTERNALS__" in window;
+/** Touch is the main pointer (phones, tablets); hover-driven UI is off. */
+export const isTouch = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches;
+/** The Tauri iOS/Android shell, or the web build on a phone or tablet. */
+export const isMobile =
+  /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (isTouch && Math.min(screen.width, screen.height) < 900);
+/** Tauri on a phone: no tray, updater, autostart or window modes. */
+export const isMobileShell = isTauri && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
 const WINDOW_SIZE: [number, number] = [1170, 690];
 /** Pet mode shows the tank at 2x with no chrome around it. */
@@ -10,7 +17,7 @@ const PET_SIZE: [number, number] = [384 * 2, 240 * 2];
 
 /** Pinned = fixed to the screen: above other apps and, in pet mode, not resizable. */
 export async function setPinned(pinned: boolean, mode: Mode): Promise<void> {
-  if (!isTauri) return;
+  if (!isTauri || isMobileShell) return;
   const { getCurrentWindow } = await import("@tauri-apps/api/window");
   const w = getCurrentWindow();
   await w.setAlwaysOnTop(pinned);
@@ -19,7 +26,7 @@ export async function setPinned(pinned: boolean, mode: Mode): Promise<void> {
 
 /** Resize the borderless pet window from its bottom-right corner. */
 export async function startWindowResize(): Promise<void> {
-  if (!isTauri) return;
+  if (!isTauri || isMobileShell) return;
   const { getCurrentWindow } = await import("@tauri-apps/api/window");
   await getCurrentWindow().startResizeDragging("SouthEast");
 }
@@ -29,6 +36,7 @@ export async function applyMode(mode: Mode, pinned: boolean, transparent: boolea
   // On <html>, not <body>: both carry a background and pet mode must clear both.
   document.documentElement.dataset.mode = mode;
   document.documentElement.dataset.transparent = String(mode === "pet" && transparent);
+  if (isMobileShell) return;
   if (!isTauri) {
     if (mode === "fullscreen") await document.documentElement.requestFullscreen?.().catch(() => undefined);
     else if (document.fullscreenElement) await document.exitFullscreen();
@@ -62,14 +70,14 @@ export async function applyMode(mode: Mode, pinned: boolean, transparent: boolea
 
 /** Mode changes requested from the tray menu. */
 export async function onModeRequest(cb: (mode: Mode) => void): Promise<void> {
-  if (!isTauri) return;
+  if (!isTauri || isMobileShell) return;
   const { listen } = await import("@tauri-apps/api/event");
   await listen<Mode>("mode", (e) => cb(e.payload));
 }
 
 /** Move the borderless pet window by dragging. */
 export async function startWindowDrag(): Promise<void> {
-  if (!isTauri) return;
+  if (!isTauri || isMobileShell) return;
   const { getCurrentWindow } = await import("@tauri-apps/api/window");
   await getCurrentWindow().startDragging();
 }
@@ -112,7 +120,7 @@ export async function openUrl(url: string): Promise<void> {
 }
 
 export async function autostart(enable?: boolean): Promise<boolean | null> {
-  if (!isTauri) return null;
+  if (!isTauri || isMobileShell) return null;
   const a = await import("@tauri-apps/plugin-autostart");
   if (enable === true) await a.enable();
   if (enable === false) await a.disable();

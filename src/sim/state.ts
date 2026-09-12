@@ -76,6 +76,8 @@ export interface Settings {
   lang: "auto" | "en" | "vi";
   /** Real time locks sim speed to 1× and lights the room by the real sun; simulated uses game time. */
   clock: "real" | "sim";
+  /** Phones: "fit" shows the whole tank, "tall" fills a taller box and lets you pan. */
+  mobileView?: "fit" | "tall";
   /** "HH:MM" local; used unless a location is set. */
   sunrise: string;
   sunset: string;
