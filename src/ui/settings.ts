@@ -201,6 +201,8 @@ export class SettingsPanel {
 
   private select(options: string[], value: string, set: (v: string) => void, label = (v: string) => v): HTMLSelectElement {
     const sel = document.createElement("select");
+    // A value set outside the UI (stress mode, an old save) still shows as itself.
+    if (!options.includes(value)) options = [...options, value];
     for (const o of options) {
       const opt = document.createElement("option");
       opt.value = o;
