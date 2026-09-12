@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.4.3 — unreleased
+## 0.4.3 — 2026-09-12
 
 - Grime you can see and clean: settled waste (mulm) lies on the sand as dark crumbs and algae film grows on the front glass as green specks, both following the water numbers. The siphon now lifts the mulm and leftover food under it, nicks the sand, and takes a little water with it. The scraper lifts the film where you rub, and green flecks drift off.
 - Fish swim at speeds closer to their real pace, and no two species move the same way. Danios are constant darters, neons and guppies beat and coast, angelfish and bettas glide between strokes, corys hop along the sand. Every fish now swims in bursts and glides instead of one steady crawl; chasing food or fleeing keeps the tail going.
