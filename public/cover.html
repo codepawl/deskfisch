@@ -1,0 +1,74 @@
+<!doctype html><meta charset="utf-8"><title>cover</title>
+<link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;background:#1a1c2c;overflow:hidden}
+body{position:relative;font-family:VT323,monospace}
+iframe{position:absolute;border:0;pointer-events:none}
+canvas{position:absolute;image-rendering:pixelated}
+.tag{position:absolute;left:0;right:0;text-align:center;color:#f4f4f4;text-shadow:0 2px 0 #1a1c2c,2px 0 0 #1a1c2c,-2px 0 0 #1a1c2c,0 -2px 0 #1a1c2c}
+</style>
+<body>
+<script>
+// ?w=630&h=500&s=3&ox=261&oy=60&p=6&logo=8&tag=1  (s = tank scale, ox/oy = crop offset)
+const q = Object.fromEntries(new URLSearchParams(location.search));
+const W = +q.w || 630, H = +q.h || 500, S = +q.s || 3, OX = +q.ox || 0, OY = +q.oy || 0;
+document.body.style.width = W + "px"; document.body.style.height = H + "px";
+const f = document.createElement("iframe");
+f.src = "http://localhost:1420/?scene=stocked"; f.width = 384 * S; f.height = 240 * S;
+f.style.left = -OX + "px"; f.style.top = -OY + "px"; document.body.append(f);
+
+const PAL = { B: "#41a6f6", b: "#3b5dc9", R: "#ef7d57", D: "#566c86", K: "#1a1c2c", W: "#f4f4f4" };
+// Logo fish: 15×9, same fish as the app icon, drawn as a clean grid.
+const FISH = [
+  ".....BBBBBBB...",
+  "...BBBBBBBBBB..",
+  "D.BBBBBBBBBKBB.",
+  "DDBBBBBBBBBBKWB",
+  "DDDBBBBBBBBBBWW",
+  "DDRRRRRRRRRRRR.",
+  "D.RRRRRRRRRRR..",
+  "...RRRRRRRRR...",
+  ".....RRRRR.....",
+];
+// 5×7 caps for the wordmark.
+const FONT = {
+  D: ["####.", "#...#", "#...#", "#...#", "#...#", "#...#", "####."],
+  E: ["#####", "#....", "#....", "####.", "#....", "#....", "#####"],
+  S: [".####", "#....", "#....", ".###.", "....#", "....#", "####."],
+  K: ["#...#", "#..#.", "#.#..", "##...", "#.#..", "#..#.", "#...#"],
+  F: ["#####", "#....", "#....", "####.", "#....", "#....", "#...."],
+  I: ["#####", "..#..", "..#..", "..#..", "..#..", "..#..", "#####"],
+  C: [".####", "#....", "#....", "#....", "#....", "#....", ".####"],
+  H: ["#...#", "#...#", "#...#", "#####", "#...#", "#...#", "#...#"],
+};
+function grid(rows, p, pal, outline) {
+  const w = rows[0].length, h = rows.length;
+  const c = document.createElement("canvas"); c.width = (w + 2) * p; c.height = (h + 2) * p;
+  const g = c.getContext("2d");
+  const on = (x, y) => rows[y]?.[x] && rows[y][x] !== ".";
+  if (outline) for (let y = -1; y <= h; y++) for (let x = -1; x <= w; x++) {
+    if (on(x, y)) continue;
+    if (on(x - 1, y) || on(x + 1, y) || on(x, y - 1) || on(x, y + 1)) { g.fillStyle = outline; g.fillRect((x + 1) * p, (y + 1) * p, p, p); }
+  }
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (on(x, y)) { g.fillStyle = pal[rows[y][x]] ?? pal["#"]; g.fillRect((x + 1) * p, (y + 1) * p, p, p); }
+  return c;
+}
+function word(text, p, color) {
+  const rows = Array.from({ length: 7 }, (_, r) => [...text].map((ch) => FONT[ch][r]).join("."));
+  return grid(rows, p, { "#": color }, "#1a1c2c");
+}
+const LP = +q.logo || 8, TP = +q.p || 6;
+const logo = grid(FISH, LP, PAL, "#1a1c2c");
+const name = word("DESKFISCH", TP, "#ffcd75");
+const gap = TP * 2;
+const total = logo.height + gap + name.height;
+const y0 = Math.round((H - total) / 2) - (+q.lift || 0);
+logo.style.left = Math.round((W - logo.width) / 2) + "px"; logo.style.top = y0 + "px";
+name.style.left = Math.round((W - name.width) / 2) + "px"; name.style.top = y0 + logo.height + gap + "px";
+document.body.append(logo, name);
+if (q.tag !== "0") {
+  const t = document.createElement("div"); t.className = "tag"; t.textContent = "a pixel aquarium for your desk";
+  t.style.top = y0 + total + TP * 2 + "px"; t.style.fontSize = TP * 4.5 + "px"; document.body.append(t);
+}
+</script>
+</body>
