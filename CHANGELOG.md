@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.4 — 2026-09-13
+
+- macOS builds are signed with a Developer ID certificate and notarized by Apple, so the dmg opens without the "could not verify" block. Windows is still unsigned; SmartScreen's "More info → Run anyway" remains.
+- The canvas and HUD reserve their shape before the first frame, so the toolbar no longer jumps on launch; the two Latin fonts are preloaded and the version number keeps a fixed width.
+
 ## 0.4.3 — 2026-09-12
 
 - Grime you can see and clean: settled waste (mulm) lies on the sand as dark crumbs and algae film grows on the front glass as green specks, both following the water numbers. The siphon now lifts the mulm and leftover food under it, nicks the sand, and takes a little water with it. The scraper lifts the film where you rub, and green flecks drift off.
