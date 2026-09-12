@@ -39,7 +39,6 @@ export const vi: Record<string, string> = {
   "{name} has ich (white spots). Check the fish card.": "{name} bị nấm trắng (ich). Xem thẻ cá.",
   "{name} has fin rot. Check the fish card.": "{name} bị thối vây. Xem thẻ cá.",
   "{title}: +{n} coins": "{title}: +{n} xu",
-  "The siphon only lifts dirt from the gravel. Drag it along the bottom.": "Ống hút chỉ hút bẩn ở lớp sỏi. Kéo dọc đáy hồ.",
   "Deskfisch {v} is available.": "Đã có Deskfisch {v}.",
   "Update and restart": "Cập nhật và khởi động lại",
   "Downloading update…": "Đang tải bản cập nhật…",
