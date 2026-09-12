@@ -30,6 +30,8 @@ export interface Fish {
   spookY?: number;
   /** Seconds the fish keeps its distance from the last scare. */
   wary?: number;
+  /** Seconds a picky fish ignores food after turning its nose up at a pellet. */
+  snub?: number;
   sex: "m" | "f";
   /** Hours a female has carried fry; 0 or absent when not gravid. */
   gravidHours?: number;
@@ -86,6 +88,27 @@ export function isCurious(f: Fish): boolean {
 }
 
 /** A knock on the glass: fish within `radius` dart away from the point for a moment. */
+/**
+ * Appetite, species and individual. Species: how keen a kind is on flake
+ * (guppies and mollies eat anything, bettas and otos are picky, corys wait
+ * for what sinks). Individual: a stable "greed" from the id so two neons
+ * are not the same fish. Returns the hunger a fish must reach before it
+ * bothers, how much one pellet fills it, and the odds it passes on a pellet.
+ */
+export function appetite(f: Fish, sp: Species): { threshold: number; fill: number; ignore: number } {
+  const greed = 0.75 + ((f.id * 71) % 100) / 100 * 0.5; // 0.75 .. 1.25, fixed per fish
+  let keen = 1; // species keenness on dry food
+  if (sp.id === "guppy" || sp.id === "molly" || sp.id === "danio") keen = 1.25;
+  if (sp.id === "betta" || sp.id === "oto") keen = 0.6;
+  if (sp.id === "angel") keen = 0.85;
+  const k = keen * greed;
+  return {
+    threshold: Math.max(5, 40 - 25 * (k - 0.75) / 0.8), // gluttons start at ~5, picky ones wait until ~40
+    fill: HUNGER_PER_PELLET * (0.7 + 0.5 * (k - 0.75) / 0.8),
+    ignore: Math.max(0, 0.35 - 0.35 * (k - 0.75) / 0.8), // picky fish sometimes look and turn away
+  };
+}
+
 /**
  * How much a species holds its ground: 0 darts at anything (tetras, danios),
  * 1 barely flinches unless something is right on it (betta, angelfish).
@@ -201,15 +224,23 @@ export function moveFish(f: Fish, sp: Species, water: Bounds, dt: number, state?
     return;
   }
   f.retarget -= dt;
-  const food = state && f.hunger > 15 ? nearestPellet(state, f, sp.depth[0] >= 0.8) : null;
+  const ap = appetite(f, sp);
+  // Some fish eat past full; the greedy ones keep going a while after hunger hits 0.
+  const food = state && f.hunger > ap.threshold && (f.snub ?? 0) <= 0 ? nearestPellet(state, f, sp.depth[0] >= 0.8) : null;
+  if ((f.snub ?? 0) > 0) f.snub! -= dt;
   if (food) {
     // Face the pellet and aim the mouth, not the sprite origin, at it. Facing is
     // pinned while seeking so the target does not flip as the fish settles.
     f.facing = food.x >= f.x + w / 2 ? 1 : -1;
     const mouth = mouthOffset(sp, f.facing);
     if (Math.hypot(f.x + mouth.x - food.x, f.y + mouth.y - food.y) < EAT_RADIUS) {
-      state!.pellets.splice(state!.pellets.indexOf(food), 1);
-      f.hunger = Math.max(0, f.hunger - HUNGER_PER_PELLET);
+      if (Math.random() < ap.ignore) {
+        // Sniffed it and turned away; leave this one alone for a while.
+        f.snub = rand(2, 5);
+      } else {
+        state!.pellets.splice(state!.pellets.indexOf(food), 1);
+        f.hunger = Math.max(0, f.hunger - ap.fill);
+      }
     }
     f.tx = clamp(food.x - mouth.x, water.x0, water.x1 - w);
     f.ty = clamp(food.y - mouth.y, water.y0, floorAt(water, food.x, h));

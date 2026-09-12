@@ -189,6 +189,7 @@ export const vi: Record<string, string> = {
   "See-through pet window": "Cửa sổ pet trong suốt",
   "Sound": "Âm thanh",
   "Ambient hum": "Tiếng lọc nền",
+  "Leftover food is going off on the sand. Siphon it up before it turns into ammonia.": "Thức ăn thừa đang thối trên cát. Hút lên trước khi nó thành ammonia.",
   "The siphon works on the sand: drag it along the bottom to lift waste and leftover food.": "Ống hút làm việc trên cát: kéo dọc đáy để hút cặn và thức ăn thừa.",
   "Music": "Nhạc nền",
   "Volume": "Âm lượng",

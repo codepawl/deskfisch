@@ -2,6 +2,7 @@ import { COLOR, rgba } from "../engine/palette";
 import { DECALS } from "../data/items";
 import { relaxSand, sandAt, shiftSand } from "../sim/sand";
 import { algaeOf, mulmOf } from "../sim/grime";
+import { isStale } from "../sim/food";
 import { PixelBuffer, type Overlay } from "../engine/pixelbuffer";
 import { sprite, type Sprite } from "../engine/sprite";
 import { rand } from "../engine/rng";
@@ -284,6 +285,20 @@ export class TankScene {
     }
   }
 
+  /** A small blinking marker over something the player should deal with. */
+  private marker: { x: number; y: number } | null = null;
+  pointAt(x: number | null, y = 0): void {
+    this.marker = x === null ? null : { x, y };
+  }
+  private drawMarker(buf: PixelBuffer): void {
+    if (!this.marker || Math.sin(this.time * 5) < 0) return;
+    const { x, y } = this.marker;
+    const top = y - 9 + Math.round(Math.sin(this.time * 3) * 1.5);
+    // a little down arrow
+    buf.set(x, top, COLOR.y); buf.set(x, top + 1, COLOR.y); buf.set(x, top + 2, COLOR.y); buf.set(x, top + 3, COLOR.y);
+    buf.set(x - 1, top + 2, COLOR.y); buf.set(x + 1, top + 2, COLOR.y);
+  }
+
   /** Something solid went up the tube: a darker puff for each spot or pellet. */
   gulp(x: number, y: number, n: number): void {
     for (let i = 0; i < n * 3; i++) {
@@ -369,11 +384,19 @@ export class TankScene {
     this.drawDecor(buf, state);
     for (const p of state.pellets) {
       const dry = p.float > 0;
+      if (isStale(p)) {
+        // Going off: darker crumb with a pale fuzz on top.
+        buf.set(p.x, p.y, COLOR.d);
+        buf.set(p.x + 1, p.y, COLOR.t);
+        buf.set(p.x + (Math.floor(this.time * 2 + p.x) & 1), p.y - 1, COLOR.L);
+        continue;
+      }
       buf.set(p.x, p.y, dry ? COLOR.s : COLOR.t);
       buf.set(p.x + 1, p.y, dry ? COLOR.S : COLOR.s);
     }
     for (const f of state.fish) this.drawFish(buf, f);
     if (highlight && highlight.alive) this.drawHighlight(buf, highlight);
+    this.drawMarker(buf);
     this.drawBubbles(buf);
     if (quality !== "low") for (const p of this.particles) buf.set(p.x, p.y, p.color);
     if (quality !== "low") this.refract(buf);

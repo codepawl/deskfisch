@@ -19,8 +19,14 @@ export const EAT_RADIUS = 5;
 export const SMELL_RADIUS = 160;
 export const HUNGER_PER_PELLET = 20;
 /** Uneaten food rots after this long, dumping ammonia into the water. */
-const ROT_HOURS = 2;
+export const ROT_HOURS = 2;
+/** Older than this a pellet is visibly going off: pale fuzz, fish stop wanting it. */
+export const STALE_HOURS = 0.75;
 const NH3_PER_ROTTEN_PELLET = 0.03;
+
+export function isStale(p: Pellet): boolean {
+  return p.age >= STALE_HOURS;
+}
 
 /** Seconds a dry flake sits on the surface before it soaks and sinks. */
 const FLOAT_SECONDS: [number, number] = [12, 35];
@@ -82,6 +88,8 @@ export function nearestPellet(state: GameState, f: Fish, bottomDweller = false):
   for (const p of state.pellets) {
     // Bottom dwellers do not come up for floating flakes; they wait for what sinks.
     if (bottomDweller && p.float > 0) continue;
+    // Nobody eats food that has started to rot; the siphon is the only way out for it.
+    if (isStale(p)) continue;
     const d = Math.hypot(p.x - f.x, p.y - f.y);
     if (d < bestD) {
       best = p;
@@ -102,4 +110,9 @@ export function decayPellets(state: GameState, hours: number): void {
   });
   state.tank.nh3 += rotten * NH3_PER_ROTTEN_PELLET;
   state.tank.dirt = Math.min(100, state.tank.dirt + rotten * 2);
+}
+
+/** Leftover food lying on the sand that nobody will eat any more. */
+export function leftovers(state: GameState): Pellet[] {
+  return state.pellets.filter((p) => p.vy === 0 && p.float === 0 && isStale(p));
 }

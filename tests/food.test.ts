@@ -31,13 +31,15 @@ describe("feeding", () => {
     f.y = 100;
     f.hunger = 60;
     g.fish.push(f);
-    dropPellets(g, 120, 2, WATER);
-    for (let i = 0; i < 60 * 40; i++) {
+    dropPellets(g, 120, 2, WATER, 100);
+    for (let i = 0; i < 60 * 90; i++) {
       updatePellets(g, WATER, 1 / 60);
       moveFish(f, SPECIES.neon, WATER, 1 / 60, g);
     }
+    // Two pellets gone (a picky pass or two is allowed), each worth roughly a fifth of the bar.
     expect(g.pellets).toHaveLength(0);
-    expect(f.hunger).toBe(20);
+    expect(f.hunger).toBeLessThan(30);
+    expect(f.hunger).toBeGreaterThan(10);
   });
 
   it("food placed under water sinks at once; bottom dwellers ignore floating flakes", () => {

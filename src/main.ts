@@ -5,7 +5,7 @@ import { startLoop } from "./engine/loop";
 import { SPECIES } from "./data/species";
 import { AUTOSAVE_SECONDS } from "./data/constants";
 import { isCurious, moveFish, startle, type Fish, type Poke, type Threat } from "./sim/fish";
-import { dropPellets, updatePellets } from "./sim/food";
+import { dropPellets, leftovers, updatePellets } from "./sim/food";
 import { demoGame, newGame, type GameState } from "./sim/state";
 import { spawnFish } from "./sim/fish";
 import { newSand } from "./sim/sand";
@@ -276,6 +276,7 @@ function run(state: GameState): void {
 
   let scrubSoundIn = 0;
   let vacuumHintShown = false;
+  let leftoverHintAt = -1;
   // A finger resting on the glass (pointer still for a moment, no tool) draws curious fish.
   let hoverStill = 0;
   let hoverX = 0;
@@ -335,6 +336,18 @@ const UI_MIN_SCALE = 1.25;
       sfx.ambient(state.settings.ambient && !state.settings.muted && (eq.filter > 0 || eq.airPump > 0), eq.airPump > 0);
       music.update(state.settings.music && !state.settings.muted && window.self === window.top, ambientNow(state).phase === "night");
       updatePellets(state, WATER, dt);
+      // Food nobody will eat any more: point at it once so the siphon gets used before it rots.
+      if (hud.tool !== "vacuum" && !state.settings.chill) {
+        const stale = leftovers(state);
+        if (stale.length >= 3 && leftoverHintAt < 0) {
+          leftoverHintAt = stale[0].x;
+          scene.pointAt(stale[0].x, stale[0].y);
+          toasts.show(t("Leftover food is going off on the sand. Siphon it up before it turns into ammonia."), 7000);
+        } else if (stale.length === 0) {
+          leftoverHintAt = -1;
+          scene.pointAt(null);
+        }
+      }
       const lure = hud.tool === "feed" && input.inside && inWater(input.x, input.y) ? { x: input.x } : null;
       if (Math.hypot(input.x - hoverX, input.y - hoverY) > 2 || !input.inside || hud.tool || drag || !inWater(input.x, input.y)) {
         hoverStill = 0;
