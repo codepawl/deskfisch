@@ -157,7 +157,15 @@ button.tool:disabled { opacity: 0.4; cursor: default; }
   max-height: calc(100% - 58px * var(--s));
   overflow-y: auto;
   overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--panel-edge) transparent;
 }
+/* Thin pixel scrollbar; the native WebKitGTK one is wide, light and sits on top of the content. */
+.panel::-webkit-scrollbar { width: calc(3px * var(--s)); }
+.panel::-webkit-scrollbar-track { background: transparent; }
+.panel::-webkit-scrollbar-thumb { background: var(--panel-edge); }
+.panel::-webkit-scrollbar-thumb:hover { background: #94b0c2; }
 /* Buttons at the foot of a scrolling panel stay in view; the row carries the
    panel's bottom padding so it sits flush against the border. */
 .panel:has(> .panel-actions) { padding-bottom: 0; }
