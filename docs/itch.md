@@ -43,7 +43,7 @@ Pixel fish with real needs. The water runs a real nitrogen cycle, new fish have 
 
 Source-available under PolyForm Noncommercial at github.com/codepawl/deskfisch. Website: deskfisch.codepawl.com.
 
-*Installers are not code-signed yet. macOS: right-click → Open. Windows: More info → Run anyway. Details on the website's Questions section.*
+*Installers are not code-signed yet. macOS: System Settings → Privacy & Security → Open Anyway. Windows: More info → Run anyway. Details on the website's Questions section.*
 
 ## Uploads
 

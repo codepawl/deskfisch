@@ -95,8 +95,8 @@
     <section class="faq" id="faq">
       <h2 data-i18n="faq.title">Questions</h2>
       <dl>
-        <dt data-i18n="q1.t">macOS says the app is damaged or from an unidentified developer.</dt>
-        <dd data-i18n="q1.p">The build is not notarized yet. Right-click Deskfisch in Applications, choose Open, then Open again. If it still refuses, run this once in Terminal and try again:</dd>
+        <dt data-i18n="q1.t">macOS says it could not verify the app, or that it may be malware.</dt>
+        <dd data-i18n="q1.p">The build is not notarized yet, so macOS blocks the first launch. Close that box, open System Settings → Privacy &amp; Security, scroll down to “Deskfisch was blocked” and click Open Anyway. On older macOS, right-click the app and choose Open. If it still refuses, run this once in Terminal and try again:</dd>
         <dd><code>xattr -dr com.apple.quarantine /Applications/Deskfisch.app</code></dd>
         <dt data-i18n="q2.t">Windows shows a blue SmartScreen box.</dt>
         <dd data-i18n="q2.p">Click “More info”, then “Run anyway”. The installer is not code-signed yet, so Windows has no publisher to show. The download is exactly what GitHub Actions built from the public source.</dd>
