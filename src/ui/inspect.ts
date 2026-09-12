@@ -61,6 +61,11 @@ export class InspectPanel {
     input.select();
   }
 
+  /** The fish whose card is open, if any. */
+  get current(): Fish | null {
+    return this.root.hidden ? null : this.fish;
+  }
+
   show(f: Fish | null): void {
     this.fish = f;
     this.root.hidden = !f;
