@@ -113,6 +113,15 @@ button.tool.active {
   box-shadow: 0 0 0 calc(1px * var(--s)) var(--accent);
 }
 button.tool:disabled { opacity: 0.4; cursor: default; }
+/* Inside panels buttons are flat tiles: a lighter face, no border, no inset
+   shadow. The border returns only for the active choice. */
+.panel button.tool {
+  background: var(--panel-edge);
+  border-color: transparent;
+  box-shadow: none;
+}
+.panel button.tool:hover { border-color: var(--accent); }
+.panel button.tool.active { background: var(--panel-edge); box-shadow: none; border-color: var(--accent); }
 
 /* Toolbar buttons show only their icon. The label floats above the button
    (no layout shift, so neighbours stay put) and slides in on hover; a click
@@ -141,7 +150,6 @@ button.tool:disabled { opacity: 0.4; cursor: default; }
   position: absolute;
   background: var(--panel);
   border: calc(1px * var(--s)) solid var(--panel-edge);
-  box-shadow: calc(2px * var(--s)) calc(2px * var(--s)) 0 #000;
   padding: calc(3px * var(--s)) calc(4px * var(--s));
   min-width: calc(80px * var(--s));
   max-width: calc(100% - 8px * var(--s));
@@ -188,7 +196,6 @@ button.tool:disabled { opacity: 0.4; cursor: default; }
   width: calc(40px * var(--s));
   height: calc(4px * var(--s));
   background: #000;
-  border: calc(1px * var(--s)) solid var(--panel-edge);
 }
 .bar-fill { height: 100%; background: #a7f070; }
 .bar-fill.warn { background: #ffcd75; }
@@ -220,8 +227,7 @@ button.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
   justify-content: space-between;
   align-items: center;
   gap: calc(4px * var(--s));
-  padding: calc(1px * var(--s)) 0;
-  border-bottom: 1px solid #000;
+  padding: calc(1.5px * var(--s)) 0;
 }
 .shop-row button.tool { min-width: calc(24px * var(--s)); }
 .shop-note { color: #ef7d57; min-height: 1.2em; }
@@ -235,7 +241,7 @@ button.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
   flex: none;
 }
 .shop-icon > * { image-rendering: pixelated; shape-rendering: crispEdges; }
-.swatch { width: calc(12px * var(--s)); height: calc(12px * var(--s)); border: calc(1px * var(--s)) solid var(--panel-edge); }
+.swatch { width: calc(12px * var(--s)); height: calc(12px * var(--s)); }
 .panel-actions { display: flex; gap: calc(2px * var(--s)); margin-top: calc(2px * var(--s)); }
 .panel-care { bottom: calc(32px * var(--s)); right: calc(8px * var(--s)); max-width: calc(130px * var(--s)); }
 .panel-care .panel-actions { align-items: center; margin-top: 0; }
@@ -288,10 +294,11 @@ html[data-mode="pet"][data-pinned="true"] .grip { opacity: 0.35; }
   font: inherit;
   line-height: 1;
   color: var(--ink);
-  background: #000;
-  border: calc(1px * var(--s)) solid var(--panel-edge);
+  background: var(--panel-edge);
+  border: calc(1px * var(--s)) solid transparent;
   accent-color: var(--accent);
 }
+.settings-row select:focus, .settings-row input:focus { outline: none; border-color: var(--accent); }
 /* WebKitGTK paints native (light) form widgets unless appearance is off. */
 .settings-row select {
   -webkit-appearance: none;
@@ -312,6 +319,7 @@ html[data-mode="pet"][data-pinned="true"] .grip { opacity: 0.35; }
   margin: 0;
   cursor: pointer;
 }
+.settings-row input[type="checkbox"] { border-color: var(--panel-edge); background: #000; }
 .settings-row input[type="checkbox"]:checked { background: var(--accent); border-color: var(--accent); }
 .settings-row input[type="range"] { width: calc(50px * var(--s)); }
 .settings-row input[type="time"] { -webkit-appearance: none; appearance: none; padding: calc(1px * var(--s)) calc(2px * var(--s)); }
@@ -379,16 +387,12 @@ html[data-chill="true"] .hud, html[data-chill="true"] .panel, html[data-chill="t
   margin: 0 0 calc(2px * var(--s));
   font-size: inherit;
   font-weight: normal;
-  color: #94b0c2;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
+  color: var(--accent);
 }
 .panel-guide h2 {
   text-align: center;
   font-size: calc(11px * var(--s));
   margin-bottom: calc(4px * var(--s));
-  padding-bottom: calc(2px * var(--s));
-  border-bottom: calc(1px * var(--s)) solid var(--panel-edge);
 }
 .panel-guide .panel-actions { justify-content: center; margin-top: calc(4px * var(--s)); }
 .guide-list { display: flex; flex-direction: column; gap: calc(3px * var(--s)); }
@@ -405,8 +409,8 @@ html[data-chill="true"] .hud, html[data-chill="true"] .panel, html[data-chill="t
 input.rename {
   font: inherit;
   color: var(--accent);
-  background: #000;
-  border: calc(1px * var(--s)) solid var(--panel-edge);
+  background: var(--panel-edge);
+  border: calc(1px * var(--s)) solid transparent;
   width: calc(60px * var(--s));
   margin-bottom: calc(2px * var(--s));
 }
@@ -427,8 +431,8 @@ button.playstyle {
   font: inherit;
   color: inherit;
   text-align: left;
-  background: var(--panel);
-  border: calc(1px * var(--s)) solid var(--panel-edge);
+  background: var(--panel-edge);
+  border: calc(1px * var(--s)) solid transparent;
   padding: calc(3px * var(--s)) calc(4px * var(--s));
   cursor: pointer;
   line-height: 1.35;
