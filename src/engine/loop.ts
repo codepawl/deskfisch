@@ -12,8 +12,24 @@ export interface LoopHooks {
  */
 export function startLoop(hooks: LoopHooks, driver: "raf" | "timer" = "raf"): void {
   let last = performance.now();
-  // "timer" keeps rendering while the window is hidden (rAF would pause); only for stress runs.
-  const schedule = driver === "raf" ? (fn: (t: number) => void) => requestAnimationFrame(fn) : (fn: (t: number) => void) => setTimeout(() => fn(performance.now()), 0);
+  // "timer" keeps rendering while the window is hidden (rAF pauses and WebKit
+  // throttles setTimeout to 1 Hz on hidden pages); a MessageChannel ping is
+  // neither paused nor throttled. Only for stress runs.
+  let schedule: (fn: (t: number) => void) => void;
+  if (driver === "raf") schedule = (fn) => requestAnimationFrame(fn);
+  else {
+    const channel = new MessageChannel();
+    let pending: ((t: number) => void) | null = null;
+    channel.port1.onmessage = () => {
+      const fn = pending;
+      pending = null;
+      fn?.(performance.now());
+    };
+    schedule = (fn) => {
+      pending = fn;
+      channel.port2.postMessage(0);
+    };
+  }
   const step = (now: number) => {
     schedule(step);
     const elapsed = (now - last) / 1000;
