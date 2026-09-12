@@ -4,7 +4,7 @@ import { Input } from "./engine/input";
 import { startLoop } from "./engine/loop";
 import { SPECIES } from "./data/species";
 import { AUTOSAVE_SECONDS } from "./data/constants";
-import { isCurious, moveFish, startle, type Fish, type Poke, type Threat } from "./sim/fish";
+import { isCurious, moveFish, releaseFish, startle, type Fish, type Poke, type Threat } from "./sim/fish";
 import { dropPellets, leftovers, updatePellets } from "./sim/food";
 import { demoGame, newGame, type GameState } from "./sim/state";
 import { spawnFish } from "./sim/fish";
@@ -192,6 +192,8 @@ function run(state: GameState): void {
   let drag: DragBag | null = null;
   /** A decoration being slid along the substrate. */
   let decorDrag: { item: Decor; grabX: number } | null = null;
+  // A fish in hand: where it was grabbed and the hand's recent velocity.
+  let fishDrag: { f: Fish; grabX: number; grabY: number; moved: boolean; vx: number; vy: number } | null = null;
 
   const handleClick = () => {
     const { pressX: x, pressY: y } = input;
@@ -225,6 +227,11 @@ function run(state: GameState): void {
     // Scrub and vacuum act while held; a press must not open a fish card.
     if (hud.tool) return;
     const fish = fishAt(state.fish, x, y, inspect.current);
+    if (fish && fish.alive) {
+      // Decide on release: a still press opens the card, a move carries the fish.
+      fishDrag = { f: fish, grabX: x - fish.x, grabY: y - fish.y, moved: false, vx: 0, vy: 0 };
+      return;
+    }
     inspect.show(fish);
     bagPanel.show(null);
     if (!fish && state.tank.fill > 0.3) {
@@ -236,6 +243,19 @@ function run(state: GameState): void {
   };
 
   const handleRelease = () => {
+    if (fishDrag) {
+      const { f, moved, vx, vy } = fishDrag;
+      fishDrag = null;
+      if (moved) {
+        releaseFish(f, vx, vy);
+        scene.splash(f.x + SPECIES[f.speciesId].frames[0].w / 2);
+        sfx.bubble(0.6);
+      } else {
+        inspect.show(f);
+        bagPanel.show(null);
+      }
+      return;
+    }
     if (!drag) return;
     // Let go well below the surface to release the fish; otherwise the bag floats back.
     if (drag.y + BAG_H / 2 > WATER.y0 + 24) {
@@ -300,6 +320,26 @@ const UI_MIN_SCALE = 1.25;
       if (drag) {
         drag.x = input.x - BAG_W / 2;
         drag.y = input.y - BAG_H / 2;
+      }
+      if (fishDrag && input.down) {
+        const { f } = fishDrag;
+        const sp = SPECIES[f.speciesId];
+        const w = sp.frames[0].w;
+        const h = sp.frames[0].h;
+        if (!fishDrag.moved && Math.hypot(input.x - input.pressX, input.y - input.pressY) > 3) {
+          fishDrag.moved = true;
+          f.held = true;
+        }
+        if (fishDrag.moved) {
+          const nx = Math.max(WATER.x0, Math.min(WATER.x1 - w, input.x - fishDrag.grabX));
+          const ny = Math.max(WATER.y0, Math.min(sandTop(state.tank.sand, nx + w / 2) - h, input.y - fishDrag.grabY));
+          // Smoothed hand velocity, so a flick throws the fish on release.
+          fishDrag.vx += ((nx - f.x) / dt - fishDrag.vx) * 0.3;
+          fishDrag.vy += ((ny - f.y) / dt - fishDrag.vy) * 0.3;
+          if (Math.abs(nx - f.x) > 0.5) f.facing = nx > f.x ? 1 : -1;
+          f.x = nx;
+          f.y = ny;
+        }
       }
       if (decorDrag) {
         const w = DECOR_SPRITES[decorDrag.item.kind]?.w ?? 8;
@@ -383,7 +423,7 @@ const UI_MIN_SCALE = 1.25;
       const hover = !state.settings.chill && !hud.tool && !drag && input.inside && inWater(input.x, input.y)
         ? fishUnder(state.fish, input.x, input.y)[0] ?? null
         : null;
-      screen.style.cursor = hover ? "pointer" : "";
+      screen.style.cursor = fishDrag?.moved ? "grabbing" : hover ? "pointer" : "";
       scene.render(buf, state, drag, cursor, state.mode === "pet" && state.settings.transparent, state.settings.quality, hover);
       const scale = buf.present(screen, scene.overlays);
       // Text keeps a readable size in tiny windows; panels then scroll inside the tank.

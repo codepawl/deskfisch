@@ -92,3 +92,34 @@ describe("glass", () => {
     expect(f.pace ?? 1).toBeLessThan(2);
   });
 });
+
+describe("hands", () => {
+  it("a held fish stays where the hand puts it and swims off once let go", async () => {
+    const { releaseFish } = await import("../src/sim/fish");
+    const g = tankGame(0);
+    const f = spawnFish(SPECIES.guppy, "g", WATER, 1);
+    f.x = 100; f.y = 100; f.held = true;
+    g.fish.push(f);
+    run(g, 2);
+    expect(f.x).toBe(100);
+    expect(f.y).toBe(100);
+    releaseFish(f, 120, 0);
+    expect(f.held).toBe(false);
+    expect(f.wary).toBeGreaterThan(0);
+    run(g, 1);
+    expect(f.x).not.toBe(100);
+  });
+
+  it("a school keeps room between fish so each one can be picked", () => {
+    const g = tankGame(0);
+    for (let i = 0; i < 8; i++) {
+      const f = spawnFish(SPECIES.neon, `n${i}`, WATER, i + 1);
+      f.x = 150; f.y = 100;
+      g.fish.push(f);
+    }
+    run(g, 30);
+    let closest = Infinity;
+    for (const a of g.fish) for (const b of g.fish) if (a !== b) closest = Math.min(closest, Math.hypot(a.x - b.x, a.y - b.y));
+    expect(closest).toBeGreaterThan(4);
+  });
+});

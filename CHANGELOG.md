@@ -6,6 +6,8 @@
 - Fish swim at speeds closer to their real pace, and no two species move the same way. Danios are constant darters, neons and guppies beat and coast, angelfish and bettas glide between strokes, corys hop along the sand. Every fish now swims in bursts and glides instead of one steady crawl; chasing food or fleeing keeps the tail going.
 - Fright is softer: a knocked fish notices first and bolts a beat later, bold species (betta, angelfish) barely react, and fish steer around a working siphon or scraper instead of panicking.
 - Appetite differs per fish and species. Some come for every flake, some turn their nose up; leftovers on the sand rot after about 45 minutes, foul the water, and the tank points out a pile the siphon should take.
+- Pick a fish up: press and drag it anywhere in the tank, flick to throw. It wriggles in hand, splashes down, and darts off a little rattled. A plain click still opens the card.
+- Schools spread out as they grow and every fish keeps a little room from its neighbours, so a crowd no longer stacks into one unclickable blob.
 - Water slosh follows the drag direction: a pull left sends the wave left, and a hard stop splashes on that wall.
 
 ## 0.4.2 — 2026-09-12

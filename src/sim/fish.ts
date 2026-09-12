@@ -32,6 +32,8 @@ export interface Fish {
   wary?: number;
   /** Seconds a picky fish ignores food after turning its nose up at a pellet. */
   snub?: number;
+  /** Picked up by the player: the fish wriggles in place until let go. */
+  held?: boolean;
   /** Burst-and-glide gait: seconds left in the current phase, and whether it is a glide. */
   beat?: number;
   gliding?: boolean;
@@ -231,9 +233,31 @@ function avoid(f: Fish, sp: Species, water: Bounds, dt: number, threat: Threat):
   }
 }
 
-/** Per-fish position inside its school, stable across sessions. */
-function schoolOffset(f: Fish): { x: number; y: number } {
-  return { x: ((f.id * 37) % 25) - 12, y: ((f.id * 53) % 15) - 7 };
+/**
+ * Per-fish position inside its school, stable across sessions. The school
+ * spreads out as it grows so a big group stays a loose cloud you can click
+ * into rather than a stack of sprites.
+ */
+function schoolOffset(f: Fish, size: number): { x: number; y: number } {
+  const sx = 12 + 3 * size;
+  const sy = 6 + 1.5 * size;
+  return { x: Math.round((((f.id * 37) % 101) / 100 - 0.5) * 2 * sx), y: Math.round((((f.id * 53) % 101) / 100 - 0.5) * 2 * sy) };
+}
+
+/**
+ * Let go of a held fish. It gets the throw's velocity, a fright, and picks a
+ * new place to go once it has its bearings.
+ */
+export function releaseFish(f: Fish, vx: number, vy: number): void {
+  f.held = false;
+  f.vx = clamp(vx, -160, 160);
+  f.vy = clamp(vy, -160, 160);
+  f.stress = clamp(f.stress + 3, 0, 100);
+  f.wary = 3;
+  f.pace = 1.5;
+  f.retarget = 0.3;
+  f.beat = 0;
+  f.gliding = false;
 }
 
 /** Wander: drift toward a target, pick a new one when reached or on a timer. Dead fish float up. */
@@ -255,6 +279,13 @@ export function moveFish(f: Fish, sp: Species, water: Bounds, dt: number, state?
   }
   if (f.alive && (f.wary ?? 0) > 0) f.wary! -= dt;
   if (f.alive && threat) avoid(f, sp, water, dt, threat);
+  if (f.held) {
+    // In hand: no swimming, just a frantic wriggle.
+    f.vx = 0;
+    f.vy = 0;
+    f.phase += dt * 12;
+    return;
+  }
   if (!f.alive) {
     f.vx *= 0.9;
     f.y = Math.max(water.y0 + 1, f.y - 6 * dt);
@@ -310,7 +341,7 @@ export function moveFish(f: Fish, sp: Species, water: Bounds, dt: number, state?
   // Idle cruising is mostly horizontal; anything urgent (food, lure, hiding) climbs freely.
   const vertical = food || (f.pace ?? 1) !== 1 ? 1 : 0.5;
   f.vy += ((dy / dist) * speed * vertical - f.vy) * ease;
-  if (state && sp.minGroup >= 4) separate(f, state, dt);
+  if (state) separate(f, state, dt);
   f.x = clamp(f.x + f.vx * dt, water.x0, water.x1 - w);
   f.y = clamp(f.y + f.vy * dt, water.y0, floorAt(water, f.x + w / 2, h));
   if (!food && Math.abs(f.vx) > 2) f.facing = f.vx > 0 ? 1 : -1;
@@ -321,7 +352,7 @@ export function moveFish(f: Fish, sp: Species, water: Bounds, dt: number, state?
 function chooseTarget(f: Fish, sp: Species, water: Bounds, state: GameState | undefined, lure: Lure | null, poke: Poke | null): void {
   const w = sp.frames[0].w;
   const h = sp.frames[0].h;
-  const off = schoolOffset(f);
+  const off = schoolOffset(f, state ? state.fish.filter((o) => o.alive && o.speciesId === sp.id).length : 1);
   f.pace = 1;
   if (poke && isCurious(f) && f.stress < 50 && Math.hypot(poke.x - f.x, poke.y - f.y) < 130 && Math.random() < 0.6) {
     // Drift over for a look, mouth toward the finger, then hang there a moment.
@@ -387,16 +418,18 @@ function chooseTarget(f: Fish, sp: Species, water: Bounds, state: GameState | un
   f.retarget = rand(2, 6);
 }
 
-/** Nudge schooling fish apart so they do not stack on one pixel. */
+/** Nudge fish apart so they do not stack on one pixel; schoolmates keep a little more room. */
 function separate(f: Fish, state: GameState, dt: number): void {
   for (const o of state.fish) {
-    if (o === f || !o.alive || o.speciesId !== f.speciesId) continue;
+    if (o === f || !o.alive || o.held) continue;
     const dx = f.x - o.x;
     const dy = f.y - o.y;
     const d = Math.hypot(dx, dy);
-    if (d > 0 && d < 10) {
-      f.vx += (dx / d) * 30 * dt;
-      f.vy += (dy / d) * 30 * dt;
+    const room = o.speciesId === f.speciesId ? 14 : 10;
+    if (d > 0 && d < room) {
+      const push = 40 * (1 - d / room);
+      f.vx += (dx / d) * push * dt;
+      f.vy += (dy / d) * push * dt;
     }
   }
 }
