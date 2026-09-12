@@ -3,6 +3,18 @@
    unicode-range slices intact, so a page only downloads the glyphs it shows.
    Galmuri11 is galmuri@2.40.3 from npm. To add a family, fetch its css2 URL
    with a Chrome user agent and save the woff2 files here the same way. */
+/* Fallback faces sized to the pixel fonts' widths, so the swap when the real
+   files arrive changes glyphs but not line breaks (measured with Playwright). */
+@font-face {
+  font-family: 'VT323 Fallback';
+  src: local('DejaVu Sans Mono'), local('Menlo'), local('Consolas'), local('Liberation Mono'), local('Courier New');
+  size-adjust: 66.4%;
+}
+@font-face {
+  font-family: 'Silkscreen Fallback';
+  src: local('Arial'), local('Helvetica'), local('Roboto'), local('DejaVu Sans'), local('Liberation Sans');
+  size-adjust: 147%;
+}
 @font-face {
   font-family: 'DotGothic16';
   font-style: normal;

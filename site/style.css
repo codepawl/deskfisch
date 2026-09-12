@@ -18,14 +18,14 @@ html[lang="ja"] h1, html[lang="zh"] h1, html[lang="ko"] h1,
 html[lang="ja"] h2, html[lang="zh"] h2, html[lang="ko"] h2,
 html[lang="ja"] h3, html[lang="zh"] h3, html[lang="ko"] h3,
 html[lang="ja"] .steps b, html[lang="zh"] .steps b, html[lang="ko"] .steps b { font-family: var(--cjk), "Silkscreen", monospace; letter-spacing: 0; }
-html[lang="vi"] h1, html[lang="vi"] h2, html[lang="vi"] h3, html[lang="es"] h1, html[lang="es"] h2, html[lang="es"] h3 { font-family: "VT323", monospace; text-transform: none; font-size: 1.35em; }
+html[lang="vi"] h1, html[lang="vi"] h2, html[lang="vi"] h3, html[lang="es"] h1, html[lang="es"] h2, html[lang="es"] h3 { font-family: "VT323", "VT323 Fallback", monospace; text-transform: none; font-size: 1.35em; }
 
 * { box-sizing: border-box; }
-html { background: var(--bg); color: var(--ink); font-family: "VT323", monospace; font-size: 22px; line-height: 1.25; }
+html { background: var(--bg); color: var(--ink); font-family: "VT323", "VT323 Fallback", monospace; font-size: 22px; line-height: 1.25; }
 body { margin: 0; }
 a { color: var(--accent); }
 /* Silkscreen: square pixel caps, no fi ligature, an f that keeps clear of the i's dot. */
-h1, h2, h3, .brand { font-family: "Silkscreen", "VT323", monospace; font-weight: 400; margin: 0; text-wrap: balance; font-variant-ligatures: none; letter-spacing: 0.01em; }
+h1, h2, h3, .brand { font-family: "Silkscreen", "Silkscreen Fallback", "VT323", "VT323 Fallback", monospace; font-weight: 400; margin: 0; text-wrap: balance; font-variant-ligatures: none; letter-spacing: 0.01em; }
 h1 { font-size: 34px; line-height: 1.25; }
 h2 { font-size: 24px; margin-bottom: calc(4 * var(--u)); }
 h3 { font-size: 15px; margin-bottom: var(--u); }
@@ -59,11 +59,12 @@ main { max-width: 1080px; margin: 0 auto; padding: 0 24px 80px; display: flex; f
   overflow: hidden;
 }
 .frame iframe { width: 100%; height: 100%; border: 0; display: block; background: var(--bg); }
+#ver { display: inline-block; min-width: 3ch; }
 .caption { color: var(--muted); font-size: 18px; margin-top: 10px; text-align: center; }
 
 .btn {
   display: inline-block;
-  font-family: "VT323", monospace; font-size: 22px; line-height: 1;
+  font-family: "VT323", "VT323 Fallback", monospace; font-size: 22px; line-height: 1;
   color: var(--ink); background: var(--panel); text-decoration: none;
   border: calc(1 * var(--u)) solid var(--edge);
   box-shadow: inset 0 calc(-1 * var(--u)) 0 #000;
