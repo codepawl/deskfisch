@@ -27,7 +27,7 @@ s.decor = [
   { kind: "wood", x: 196 }, { kind: "plant", x: 236 },
   { kind: "rock", x: 268 }, { kind: "plant", x: 300 }, { kind: "plantTall", x: 322 }, { kind: "plant", x: 352 },
 ];
-s.decal = "deep";
+// Back glass stays clear so a see-through pet window shows the desktop.
 s.inventory = { ...s.inventory, flakes: Math.max(30, s.inventory?.flakes ?? 0), conditioner: Math.max(3, s.inventory?.conditioner ?? 0), "decal:deep": 1 };
 s.fish = [];
 let n = 0;
