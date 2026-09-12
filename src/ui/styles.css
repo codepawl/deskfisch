@@ -37,6 +37,11 @@ html, body {
   image-rendering: pixelated;
   image-rendering: crisp-edges;
   display: block;
+  /* Reserve the framebuffer's shape before the game sizes it, so the first
+     frame does not shove the page around. */
+  width: 100%;
+  height: auto;
+  aspect-ratio: 384 / 240;
 }
 
 #overlay {
