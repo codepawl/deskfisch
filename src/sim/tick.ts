@@ -2,6 +2,7 @@ import { CATCHUP_STEP_SECONDS, MAX_CATCHUP_HOURS } from "../data/constants";
 import { SPECIES } from "../data/species";
 import { happiness, stepFish, wasteLoad } from "./fish";
 import type { GameState } from "./state";
+import { syncGrime } from "./grime";
 import { stepTank } from "./tank";
 import { decayPellets } from "./food";
 import { stepBags } from "./bag";
@@ -30,6 +31,7 @@ export interface SimEvents {
 export function simulate(state: GameState, seconds: number): SimEvents {
   const hours = seconds / 3600;
   stepTank(state, hours, wasteLoad(state));
+  syncGrime(state, SIM_WATER);
   decayPellets(state, hours);
   stepBags(state, hours);
   const sick = stepDisease(state, hours);

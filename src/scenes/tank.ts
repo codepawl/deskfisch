@@ -1,6 +1,7 @@
 import { COLOR, rgba } from "../engine/palette";
 import { DECALS } from "../data/items";
 import { relaxSand, sandAt, shiftSand } from "../sim/sand";
+import { algaeOf, mulmOf } from "../sim/grime";
 import { PixelBuffer, type Overlay } from "../engine/pixelbuffer";
 import { sprite, type Sprite } from "../engine/sprite";
 import { rand } from "../engine/rng";
@@ -263,6 +264,33 @@ export class TankScene {
     }
   }
 
+  /** Something solid went up the tube: a darker puff for each spot or pellet. */
+  gulp(x: number, y: number, n: number): void {
+    for (let i = 0; i < n * 3; i++) {
+      this.particles.push({ x: x + rand(-3, 3), y: y - rand(0, 3), vx: 0, vy: -40, life: 0.3, color: Math.random() < 0.5 ? COLOR.d : COLOR.t });
+    }
+  }
+
+  /** Scraped film drifts off the glass as green flecks. */
+  flakeOff(x: number, y: number, n: number): void {
+    for (let i = 0; i < n * 4; i++) {
+      this.particles.push({ x: x + rand(-4, 4), y: y + rand(-4, 4), vx: rand(-8, 8), vy: rand(4, 12), life: rand(0.5, 1.1), color: Math.random() < 0.5 ? COLOR.g : COLOR.G });
+    }
+  }
+
+  /** The siphon lifts a grain now and then; the sides slump back in. */
+  private nickAccum = 0;
+  nickSand(sand: number[], col: number, dt: number): void {
+    this.nickAccum += dt;
+    if (this.nickAccum < 0.35) return;
+    this.nickAccum = 0;
+    const i = Math.max(0, Math.min(sand.length - 1, col | 0));
+    if (sand[i] > 2) {
+      sand[i] -= 1;
+      relaxSand(sand);
+    }
+  }
+
   /** Suction: grains around the siphon mouth get pulled in and vanish. */
   suck(x: number, y: number): void {
     this.working = true;
@@ -311,6 +339,13 @@ export class TankScene {
     // Only a transparent window has anything behind the glass to see through.
     this.drawWater(buf, quality, lit, state.decal === null && transparentBackdrop, this.crest);
     this.drawSand(buf, state.tank.sand);
+    // Mulm: dark crumbs lying on the sand, wider when older.
+    for (const m of mulmOf(state)) {
+      const y = sandTop(state.tank.sand, m.x) - 1;
+      buf.set(m.x, y, COLOR.d);
+      buf.set(m.x + 1, y, COLOR.t);
+      if (m.s > 1) { buf.set(m.x + 2, y, COLOR.d); buf.set(m.x + 1, y - 1, COLOR.d); }
+    }
     this.drawDecor(buf, state);
     for (const p of state.pellets) {
       const dry = p.float > 0;
@@ -337,6 +372,11 @@ export class TankScene {
       this.overlays.push({ ...water, color: a.alpha > 0 ? a.color : COLOR.n, alpha: Math.max(0.15, a.alpha) });
     }
     if (state.tank.algae > 10) this.overlays.push({ ...water, color: COLOR.g, alpha: state.tank.algae / 250 });
+    // Algae film on the front glass, over everything in the water.
+    for (const a of algaeOf(state)) {
+      buf.set(a.x, a.y, COLOR.g);
+      if (a.s > 1) { buf.set(a.x + 1, a.y, COLOR.G); buf.set(a.x, a.y + 1, COLOR.G); }
+    }
     this.drawGlass(buf);
     const toolSprite = cursor && TOOL_SPRITES[cursor.tool];
     if (toolSprite && cursor) {

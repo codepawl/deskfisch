@@ -6,6 +6,10 @@ import { newSand } from "./sand";
 import type { Playstyle } from "./rules";
 
 export interface TankState {
+  /** Visible settled waste on the sand; follows `dirt` (sim/grime.ts). */
+  mulm?: { x: number; y: number; s: number }[];
+  /** Visible algae film on the front glass; follows `algae`. */
+  algaeSpots?: { x: number; y: number; s: number }[];
   volumeL: number;
   temp: number;
   pH: number;

@@ -12,7 +12,7 @@ import { newSand } from "./sim/sand";
 import { advance, SIM_WATER } from "./sim/tick";
 import { loadGame, saveGame } from "./save/store";
 import { BAG_H, BAG_W, bagY, GLASS_TOP, sandTop, SCREEN_H, SCREEN_W, setFillLevel, TankScene, WATER, type DragBag } from "./scenes/tank";
-import { scrubGlass, vacuumGravel } from "./sim/tank";
+import { scrapeAt, vacuumAt } from "./sim/grime";
 import { CarePanel } from "./ui/care";
 import { Toasts } from "./ui/toast";
 import { SettingsPanel } from "./ui/settings";
@@ -38,8 +38,8 @@ import { ShopPanel } from "./ui/shop";
 
 const PELLETS_PER_PINCH = 6;
 /** Percentage points of algae/dirt removed per second of dragging. */
-const SCRUB_RATE = 40;
-const VACUUM_RATE = 30;
+/** Scraper and siphon reach, in tank pixels. */
+const SCRUB_REACH = 9;
 /** The siphon reaches this far above the substrate. */
 const VACUUM_REACH = 16;
 
@@ -309,8 +309,9 @@ const UI_MIN_SCALE = 1.25;
       scene.update(dt, state.settings.quality);
       const working = input.down && !drag && inWater(input.x, input.y);
       if (working && hud.tool === "scrub") {
-        scrubGlass(state, SCRUB_RATE * dt);
+        const lifted = scrapeAt(state, input.x, input.y, SCRUB_REACH, dt);
         scene.foam(input.x, input.y);
+        if (lifted > 0) scene.flakeOff(input.x, input.y, lifted);
         scrubSoundIn -= dt;
         if (scrubSoundIn <= 0) {
           sfx.scrub();
@@ -321,10 +322,12 @@ const UI_MIN_SCALE = 1.25;
       if (vacuuming) {
         scene.suck(input.x, input.y + 3);
         if (input.y >= sandTop(state.tank.sand, input.x) - VACUUM_REACH) {
-          vacuumGravel(state, VACUUM_RATE * dt);
+          const took = vacuumAt(state, input.x, VACUUM_REACH, dt, (x) => sandTop(state.tank.sand, x));
+          if (took.spots + took.pellets > 0) scene.gulp(input.x, sandTop(state.tank.sand, input.x), took.spots + took.pellets);
+          scene.nickSand(state.tank.sand, input.x - WATER.x0, dt);
         } else if (!vacuumHintShown) {
           vacuumHintShown = true;
-          toasts.show(t("The siphon only lifts dirt from the gravel. Drag it along the bottom."), 5000);
+          toasts.show(t("The siphon works on the sand: drag it along the bottom to lift waste and leftover food."), 5000);
         }
       }
       sfx.vacuum(vacuuming);

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.3 — unreleased
+
+- Grime you can see and clean: settled waste (mulm) lies on the sand as dark crumbs and algae film grows on the front glass as green specks, both following the water numbers. The siphon now lifts the mulm and leftover food under it, nicks the sand, and takes a little water with it. The scraper lifts the film where you rub, and green flecks drift off.
+
 ## 0.4.2 — 2026-09-12
 
 - Hovering a fish outlines it with corner brackets and the pointer becomes a hand, so you know which fish a click opens. Off in chill mode and while holding a tool.
