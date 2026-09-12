@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { tankGame } from "./helpers";
 import { moveFish, spawnFish } from "../src/sim/fish";
 import { dropPellets, nearestPellet, updatePellets } from "../src/sim/food";
@@ -7,9 +7,13 @@ import { SPECIES } from "../src/data/species";
 const WATER = { x0: 0, y0: 0, x1: 300, y1: 200 };
 
 describe("feeding", () => {
+  afterEach(() => vi.restoreAllMocks());
+
   it("flakes dropped from above float first, then sink and settle", () => {
     const g = tankGame(0);
+    vi.spyOn(Math, "random").mockReturnValue(0.9); // every flake floats
     dropPellets(g, 150, 3, WATER);
+    vi.restoreAllMocks();
     for (let i = 0; i < 60 * 5; i++) updatePellets(g, WATER, 1 / 60);
     for (const p of g.pellets) expect(p.y).toBe(WATER.y0 + 1);
     for (let i = 0; i < 60 * 60; i++) updatePellets(g, WATER, 1 / 60);
@@ -41,7 +45,9 @@ describe("feeding", () => {
     dropPellets(g, 100, 1, WATER, 120);
     expect(g.pellets[0].float).toBe(0);
     expect(g.pellets[0].y).toBe(120);
+    vi.spyOn(Math, "random").mockReturnValue(0.9);
     dropPellets(g, 100, 1, WATER);
+    vi.restoreAllMocks();
     const cory = spawnFish(SPECIES.cory, "c", WATER, 2);
     cory.hunger = 80;
     const floating = g.pellets[1];
@@ -49,6 +55,13 @@ describe("feeding", () => {
     // the sunk pellet is the only one a cory will go for
     cory.x = 100; cory.y = 118;
     expect(nearestPellet(g, cory, true)).toBe(g.pellets[0]);
+  });
+
+  it("some of a pinch sinks straight away", () => {
+    const g = tankGame(0);
+    vi.spyOn(Math, "random").mockReturnValue(0.1);
+    dropPellets(g, 100, 2, WATER);
+    expect(g.pellets.every((p) => p.float === 0 && p.vy > 0)).toBe(true);
   });
 
   it("a full fish ignores food", () => {

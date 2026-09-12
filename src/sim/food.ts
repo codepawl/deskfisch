@@ -24,6 +24,8 @@ const NH3_PER_ROTTEN_PELLET = 0.03;
 
 /** Seconds a dry flake sits on the surface before it soaks and sinks. */
 const FLOAT_SECONDS: [number, number] = [12, 35];
+/** Share of a pinch that sinks straight away instead of floating. */
+const SINK_AT_ONCE = 0.35;
 
 /**
  * Drop a pinch. From above the water (no `y`, or `y` at the surface) the flakes
@@ -35,6 +37,9 @@ export function dropPellets(state: GameState, x: number, count: number, water: B
   for (let i = 0; i < count; i++) {
     if (underWater) {
       state.pellets.push({ x: x + rand(-4, 4), y: Math.min(y, floorAt(water, x, 1)), vy: rand(10, 16), float: 0, age: 0 });
+    } else if (Math.random() < SINK_AT_ONCE) {
+      // The bigger, heavier bits break the surface and go straight down.
+      state.pellets.push({ x: x + rand(-6, 6), y: water.y0 + 1, vy: rand(10, 16), float: 0, age: 0 });
     } else {
       state.pellets.push({ x: x + rand(-6, 6), y: water.y0 + 1, vy: 0, float: rand(FLOAT_SECONDS[0], FLOAT_SECONDS[1]), age: 0 });
     }

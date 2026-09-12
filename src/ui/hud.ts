@@ -71,6 +71,11 @@ export class Hud {
     this.refresh();
   }
 
+  /** A gap with a thin line: the bar reads as groups (care tools, tank, window). */
+  divider(): void {
+    this.bar.append(el("span.toolbar-gap"));
+  }
+
   addButton(label: string, onclick: () => void, iconName?: IconName): HTMLButtonElement {
     const b = button("tool", label, onclick, iconName);
     this.bar.append(b);

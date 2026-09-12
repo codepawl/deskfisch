@@ -121,11 +121,13 @@ function run(state: GameState): void {
     hud.refresh();
     if (!state.guideSeen) guide.toggle();
   });
+  hud.divider();
   hud.addButton(t("Change water"), () => care.toggle(), "water");
   hud.addButton(t("Test water"), () => stats.toggle(), "test");
   hud.addButton(t("Shop"), () => shop.toggle(), "coin");
 
   const MODES: Mode[] = ["window", "pet", "fullscreen"];
+  hud.divider();
   const modeBtn = hud.addButton("", () => setMode(MODES[(MODES.indexOf(state.mode) + 1) % MODES.length]), "mode");
   const setMode = (mode: Mode) => {
     state.mode = mode;
@@ -356,7 +358,8 @@ const UI_MIN_SCALE = 1.25;
       }
     },
     render() {
-      const showCursor = hud.tool && hud.tool !== "feed" && input.inside && inWater(input.x, input.y);
+      const feedZone = input.x >= WATER.x0 && input.x < WATER.x1 && input.y >= GLASS_TOP && input.y < WATER.y1;
+      const showCursor = hud.tool && input.inside && (hud.tool === "feed" ? feedZone : inWater(input.x, input.y));
       const cursor = showCursor ? { tool: hud.tool!, x: input.x, y: input.y } : null;
       // Outline the fish a click would open; off in chill mode and while a tool is held.
       const hover = !state.settings.chill && !hud.tool && !drag && input.inside && inWater(input.x, input.y)

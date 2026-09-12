@@ -48,7 +48,14 @@ const SIPHON = sprite([
   "DLLD",
   "DDDD",
 ]);
-export const TOOL_SPRITES: Record<string, Sprite> = { scrub: SPONGE, vacuum: SIPHON };
+const PINCH = sprite([
+  "S....S",
+  "SS..SS",
+  ".SysS.",
+  ".SysS.",
+  "..SS..",
+]);
+export const TOOL_SPRITES: Record<string, Sprite> = { scrub: SPONGE, vacuum: SIPHON, feed: PINCH };
 /** Sand top at a column, from the state's heightmap. Columns outside the water fall back to the glass bottom. */
 export function sandTop(sand: number[], x: number): number {
   return WATER.y1 - sandAt(sand, x - WATER.x0);

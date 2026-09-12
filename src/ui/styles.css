@@ -452,3 +452,12 @@ button.playstyle:hover { border-color: var(--accent); }
 .settings-heading { margin: calc(4px * var(--s)) 0 calc(1px * var(--s)); font-size: inherit; font-weight: normal; color: var(--accent); }
 .panel-actions.wrap { flex-wrap: wrap; }
 .playstyle-hint { display: block; font-size: inherit; color: #94b0c2; }
+
+/* Toolbar groups: care tools · tank · window. */
+.toolbar-gap {
+  width: calc(1px * var(--s));
+  height: calc(14px * var(--s));
+  margin: 0 calc(3px * var(--s));
+  background: var(--panel-edge);
+  flex: none;
+}
