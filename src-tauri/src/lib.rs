@@ -18,6 +18,13 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
+            // DESKFISCH_STRESS=1: load the stocked demo tank in stress mode (uncapped
+            // frame rate, 10x sim, never saved) so an endurance run needs minutes, not hours.
+            if std::env::var_os("DESKFISCH_STRESS").is_some() {
+                if let Some(w) = app.get_webview_window("main") {
+                    let _ = w.eval("if (!location.search.includes('stress')) location.replace(location.pathname + '?scene=stocked&stress=1');");
+                }
+            }
             let show = MenuItem::with_id(app, "show", "Show tank", true, None::<&str>)?;
             let window = MenuItem::with_id(app, "mode:window", "Window mode", true, None::<&str>)?;
             let pet = MenuItem::with_id(app, "mode:pet", "Pet mode", true, None::<&str>)?;
