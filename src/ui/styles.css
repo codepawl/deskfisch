@@ -47,6 +47,8 @@ html, body {
 #overlay {
   position: relative;
   pointer-events: none;
+  width: 100%;
+  aspect-ratio: 384 / 240;
 }
 
 /* --- HUD ------------------------------------------------------------ */
